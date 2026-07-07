@@ -17,6 +17,7 @@ export default function PublicLayout() {
         </Link>
 
         <nav className="site-nav" aria-label="Main navigation">
+          <NavLink to="/opportunities">Opportunities</NavLink>
           <NavLink to="/login">Log in</NavLink>
           <NavLink to="/register">Register</NavLink>
         </nav>
