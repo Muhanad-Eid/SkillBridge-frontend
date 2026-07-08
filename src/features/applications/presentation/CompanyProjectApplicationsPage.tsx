@@ -9,6 +9,7 @@ import {
   ApplicationStatuses,
   getApplicationStatusLabel,
   type Application,
+  type ApplicationStatus,
 } from "../domain/applicationTypes";
 import {
   getProjectApplicationsAsync,
@@ -40,7 +41,7 @@ export default function CompanyProjectApplicationsPage() {
     loadApplications();
   }, [projectId]);
 
-  async function changeStatus(applicationId: number, status: number) {
+  async function changeStatus(applicationId: number, status: ApplicationStatus) {
     await updateApplicationStatusAsync(applicationId, { status });
     await loadApplications();
   }

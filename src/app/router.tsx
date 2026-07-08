@@ -10,7 +10,9 @@ import LoginPage from "../features/auth/presentation/LoginPage";
 import RegisterPage from "../features/auth/presentation/RegisterPage";
 import CompanyProjectApplicationsPage from "../features/applications/presentation/CompanyProjectApplicationsPage";
 import MyApplicationsPage from "../features/applications/presentation/MyApplicationsPage";
-import DashboardHomePage from "../features/home/presentation/DashboardHomePage";
+import CompanyDashboardPage from "../features/home/presentation/CompanyDashboardPage";
+import HomePage from "../features/home/presentation/HomePage";
+import JobSeekerDashboardPage from "../features/home/presentation/JobSeekerDashboardPage";
 import MessagesPage from "../features/messages/presentation/MessagesPage";
 import NotificationsPage from "../features/notifications/presentation/NotificationsPage";
 import PortfolioPage from "../features/portfolio/presentation/PortfolioPage";
@@ -27,7 +29,7 @@ export const router = createBrowserRouter([
     path: "/",
     element: <PublicLayout />,
     children: [
-      { index: true, element: <Navigate to="/opportunities" replace /> },
+      { index: true, element: <HomePage /> },
       { path: "login", element: <LoginPage /> },
       { path: "register", element: <RegisterPage /> },
       { path: "opportunities", element: <ProjectsPage /> },
@@ -43,7 +45,7 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <Navigate to="/company/dashboard" replace /> },
-      { path: "dashboard", element: <DashboardHomePage /> },
+      { path: "dashboard", element: <CompanyDashboardPage /> },
       { path: "projects", element: <CompanyProjectsPage /> },
       {
         path: "projects/:projectId/applications",
@@ -73,7 +75,7 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <Navigate to="/job-seeker/dashboard" replace /> },
-      { path: "dashboard", element: <DashboardHomePage /> },
+      { path: "dashboard", element: <JobSeekerDashboardPage /> },
       { path: "applications", element: <MyApplicationsPage /> },
       { path: "profile", element: <JobSeekerProfilePage /> },
       { path: "skills", element: <SkillsPage /> },

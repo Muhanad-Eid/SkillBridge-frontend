@@ -61,27 +61,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <section className="auth-page">
-      <div className="auth-copy">
-        <p className="eyebrow">Join SkillBridge</p>
-        <h1>Create the right account.</h1>
-        <p>
-          Companies can post internships and training. Job seekers can apply,
-          build profiles, and show real portfolio proof.
-        </p>
-
-        <div className="auth-highlights">
-          <article>
-            <strong>Company account</strong>
-            <span>Create opportunities and review applicants.</span>
-          </article>
-          <article>
-            <strong>Job seeker account</strong>
-            <span>Find opportunities and track your progress.</span>
-          </article>
-        </div>
-      </div>
-
+    <section className="auth-page auth-simple">
       <form className="auth-card" onSubmit={handleSubmit}>
         <div>
           <h2>Register</h2>

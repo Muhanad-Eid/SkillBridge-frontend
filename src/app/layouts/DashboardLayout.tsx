@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
-import { useAuth } from "../../shared/auth/AuthContext";
+import { getRoleHomePath, useAuth } from "../../shared/auth/AuthContext";
 import Button from "../../shared/components/Button";
 
 const navigationByRole = {
@@ -49,7 +49,7 @@ export default function DashboardLayout() {
   return (
     <div className="app-shell dashboard-shell">
       <header className="site-header dashboard-topbar">
-        <Link className="brand" to="/opportunities">
+        <Link className="brand" to={getRoleHomePath(user?.role)}>
           <span className="brand-mark">SB</span>
           <span>
             <strong>SkillBridge</strong>

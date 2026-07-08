@@ -8,7 +8,7 @@ export default function PublicLayout() {
   return (
     <div className="app-shell public-shell">
       <header className="site-header">
-        <Link className="brand" to="/login">
+        <Link className="brand" to="/">
           <span className="brand-mark">SB</span>
           <span>
             <strong>SkillBridge</strong>
@@ -17,7 +17,7 @@ export default function PublicLayout() {
         </Link>
 
         <nav className="site-nav" aria-label="Main navigation">
-          <NavLink to="/opportunities">Opportunities</NavLink>
+          <NavLink to="/">About</NavLink>
           <NavLink to="/login">Log in</NavLink>
           <NavLink to="/register">Register</NavLink>
         </nav>
@@ -26,11 +26,7 @@ export default function PublicLayout() {
           <Button to={getRoleHomePath(user.role)} variant="primary">
             Dashboard
           </Button>
-        ) : (
-          <Button to="/register" variant="primary">
-            Join now
-          </Button>
-        )}
+        ) : null}
       </header>
 
       <main className="public-main">
@@ -38,12 +34,11 @@ export default function PublicLayout() {
       </main>
 
       <footer className="site-footer">
-        <strong>SkillBridge</strong>
-        <nav aria-label="Footer navigation">
-          <a href="/login">Login</a>
-          <a href="/register">Register</a>
-          <a href="/register">Companies</a>
-        </nav>
+        <div>
+          <strong>SkillBridge</strong>
+          <small>Real opportunities, cleaner applicant proof.</small>
+        </div>
+        <small>2026 SkillBridge</small>
       </footer>
     </div>
   );

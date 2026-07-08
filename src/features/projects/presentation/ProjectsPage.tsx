@@ -60,12 +60,33 @@ export default function ProjectsPage() {
   }, [projects, search, typeFilter]);
 
   return (
-    <section className="page">
-      <PageHeader
-        eyebrow="Marketplace"
-        title="Opportunities"
-        description="Browse internships, training tracks, and real projects from companies."
-      />
+    <section className="page marketplace-page">
+      <div className="marketplace-hero">
+        <PageHeader
+          eyebrow="Marketplace"
+          title="Find work-based learning that builds proof."
+          description="Browse internships, guided training, and real projects from companies. Filter quickly, compare fit, then apply with your SkillBridge profile."
+          actions={
+            <Link className="button button-primary" to="/register">
+              Create profile
+            </Link>
+          }
+        />
+        <div className="marketplace-stats" aria-label="Marketplace summary">
+          <article>
+            <strong>{projects.length}</strong>
+            <span>Open listings</span>
+          </article>
+          <article>
+            <strong>{projects.filter((project) => project.type === OpportunityTypes.Training).length}</strong>
+            <span>Training paths</span>
+          </article>
+          <article>
+            <strong>{projects.filter((project) => project.status === ProjectStatuses.Open).length}</strong>
+            <span>Accepting applicants</span>
+          </article>
+        </div>
+      </div>
 
       <div className="toolbar">
         <input
@@ -97,6 +118,7 @@ export default function ProjectsPage() {
         {filteredProjects.map((project) => (
           <Card
             key={project.id}
+            className="project-card"
             eyebrow={getOpportunityTypeLabel(project.type)}
             title={project.title}
             description={project.companyName}

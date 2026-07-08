@@ -40,27 +40,7 @@ export default function LoginPage() {
   }
 
   return (
-    <section className="auth-page">
-      <div className="auth-copy">
-        <p className="eyebrow">SkillBridge access</p>
-        <h1>Welcome back.</h1>
-        <p>
-          Log in to manage opportunities, applications, profiles, messages, and
-          portfolio proof from one workspace.
-        </p>
-
-        <div className="auth-highlights">
-          <article>
-            <strong>Companies</strong>
-            <span>Post internships, training, and real projects.</span>
-          </article>
-          <article>
-            <strong>Job seekers</strong>
-            <span>Apply with skills, profile, and portfolio evidence.</span>
-          </article>
-        </div>
-      </div>
-
+    <section className="auth-page auth-simple">
       <form className="auth-card" onSubmit={handleSubmit}>
         <div>
           <h2>Log in</h2>
