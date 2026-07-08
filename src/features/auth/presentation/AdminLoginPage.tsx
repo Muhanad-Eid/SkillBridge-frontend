@@ -1,11 +1,11 @@
 import { type FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getRoleHomePath, useAuth } from "../../../shared/auth/AuthContext";
+import { useAuth } from "../../../shared/auth/AuthContext";
 import Button from "../../../shared/components/Button";
 import Input from "../../../shared/components/Input";
 import { loginAsync } from "../infrastructure/authApi";
 
-export default function LoginPage() {
+export default function AdminLoginPage() {
   const navigate = useNavigate();
   const { logout, setAuth } = useAuth();
   const [email, setEmail] = useState("");
@@ -24,64 +24,57 @@ export default function LoginPage() {
         password,
       });
 
-      if (user.role === "Admin") {
+      if (user.role !== "Admin") {
         logout();
-        setError("Admin accounts must use the admin portal login.");
+        setError(
+          `This account is not an admin account. The API returned role: ${user.role}.`,
+        );
         return;
       }
 
       setAuth(user);
-      navigate(getRoleHomePath(user.role), { replace: true });
+      navigate("/admin/dashboard", { replace: true });
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : "Login failed.");
+      setError(
+        caughtError instanceof Error ? caughtError.message : "Admin login failed.",
+      );
     } finally {
       setIsSubmitting(false);
     }
   }
 
   return (
-    <main className="user-login-shell">
-      <section className="user-login-panel">
-        <div className="user-login-copy">
-          <Link className="portal-brand" to="/">
+    <main className="admin-login-shell">
+      <section className="admin-login-panel">
+        <div className="admin-login-copy">
+          <Link className="portal-brand admin-brand" to="/">
             <span className="brand-mark">SB</span>
             <span>
               <strong>SkillBridge</strong>
-              <small>User portal</small>
+              <small>Admin portal</small>
             </span>
           </Link>
 
           <div>
-            <p className="eyebrow">Company and job seeker access</p>
-            <h1>Enter your SkillBridge workspace.</h1>
+            <p className="eyebrow">Admin access only</p>
+            <h1>Platform control starts here.</h1>
             <p>
-              Companies manage opportunities and applicants. Job seekers browse
-              openings, track applications, and build portfolio proof.
+              Sign in with an admin account to manage users, companies, job
+              seekers, and projects.
             </p>
-          </div>
-
-          <div className="user-login-options">
-            <article>
-              <strong>Company portal</strong>
-              <span>Post work, review applicants, and manage profile trust.</span>
-            </article>
-            <article>
-              <strong>Job seeker portal</strong>
-              <span>Apply to opportunities and build visible skill proof.</span>
-            </article>
           </div>
         </div>
 
-        <form className="user-login-card" onSubmit={handleSubmit}>
+        <form className="admin-login-card" onSubmit={handleSubmit}>
           <div>
-            <h2>User login</h2>
-            <p>Use a company or job seeker account.</p>
+            <h2>Admin login</h2>
+            <p>Only accounts with the Admin role can enter this portal.</p>
           </div>
 
           {error ? <div className="auth-error">{error}</div> : null}
 
           <Input
-            label="Email"
+            label="Admin email"
             name="email"
             type="email"
             autoComplete="email"
@@ -101,15 +94,11 @@ export default function LoginPage() {
           />
 
           <Button type="submit" fullWidth isLoading={isSubmitting}>
-            Enter user portal
-          </Button>
-
-          <Button to="/admin/login" variant="ghost" fullWidth>
-            Login as admin
+            Enter admin portal
           </Button>
 
           <p className="auth-switch">
-            New to SkillBridge? <Link to="/register">Create account</Link>
+            Not an admin? <Link to="/login">Use normal login</Link>
           </p>
         </form>
       </section>

@@ -9,6 +9,10 @@ export function getProjectsAsync() {
   return httpClient<Project[]>("/api/projects", { skipAuth: true });
 }
 
+export function getMyCompanyProjectsAsync() {
+  return httpClient<Project[]>("/api/projects/my");
+}
+
 export function getProjectAsync(projectId: number) {
   return httpClient<Project>(`/api/projects/${projectId}`, {
     skipAuth: true,

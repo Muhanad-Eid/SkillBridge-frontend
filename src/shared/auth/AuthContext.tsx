@@ -1,5 +1,8 @@
 ﻿import { createContext, useContext, useState, type ReactNode } from "react";
-import type { AuthResponse } from "../../features/auth/domain/authTypes";
+import {
+  normalizeAuthRole,
+  type AuthResponse,
+} from "../../features/auth/domain/authTypes";
 import {
   clearStoredAuth,
   getStoredAuth,
@@ -16,11 +19,26 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthResponse | null>(() => getStoredAuth());
+  const [user, setUser] = useState<AuthResponse | null>(() => {
+    const storedAuth = getStoredAuth();
+    const role = normalizeAuthRole(storedAuth?.role);
+
+    return storedAuth && role ? { ...storedAuth, role } : null;
+  });
 
   function setAuth(nextUser: AuthResponse) {
-    saveAuth(nextUser);
-    setUser(nextUser);
+    const role = normalizeAuthRole(nextUser.role);
+
+    if (!role) {
+      clearStoredAuth();
+      setUser(null);
+      return;
+    }
+
+    const normalizedUser = { ...nextUser, role };
+
+    saveAuth(normalizedUser);
+    setUser(normalizedUser);
   }
 
   function logout() {
@@ -53,16 +71,18 @@ export function useAuth() {
   return context;
 }
 
-export function getRoleHomePath(role?: string) {
-  if (role === "Company") {
+export function getRoleHomePath(role?: unknown) {
+  const normalizedRole = normalizeAuthRole(role);
+
+  if (normalizedRole === "Company") {
     return "/company/dashboard";
   }
 
-  if (role === "JobSeeker") {
+  if (normalizedRole === "JobSeeker") {
     return "/job-seeker/dashboard";
   }
 
-  if (role === "Admin") {
+  if (normalizedRole === "Admin") {
     return "/admin/dashboard";
   }
 

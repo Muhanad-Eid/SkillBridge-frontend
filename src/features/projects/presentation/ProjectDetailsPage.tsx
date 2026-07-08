@@ -89,7 +89,7 @@ export default function ProjectDetailsPage() {
           <PageHeader
             eyebrow={getOpportunityTypeLabel(project.type)}
             title={project.title}
-            description={`${project.companyName} · ${project.durationWeeks} weeks`}
+            description={`${project.companyName} - ${project.durationWeeks} weeks`}
             actions={
               <StatusBadge
                 tone={project.status === ProjectStatuses.Open ? "green" : "neutral"}
@@ -128,6 +128,8 @@ export default function ProjectDetailsPage() {
                     Apply now
                   </Button>
                 </form>
+              ) : user ? (
+                <p>Only job seekers can apply to opportunities.</p>
               ) : (
                 <p>
                   <Link className="text-link" to="/login">

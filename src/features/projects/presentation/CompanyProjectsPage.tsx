@@ -13,7 +13,7 @@ import {
 } from "../domain/projectTypes";
 import {
   createProjectAsync,
-  getProjectsAsync,
+  getMyCompanyProjectsAsync,
 } from "../infrastructure/projectApi";
 
 export default function CompanyProjectsPage() {
@@ -31,7 +31,7 @@ export default function CompanyProjectsPage() {
   async function loadProjects() {
     setIsLoading(true);
     try {
-      setProjects(await getProjectsAsync());
+      setProjects(await getMyCompanyProjectsAsync());
     } catch (caughtError) {
       setError(
         caughtError instanceof Error

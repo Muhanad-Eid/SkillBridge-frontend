@@ -6,17 +6,19 @@ import { getRoleHomePath, useAuth } from "./AuthContext";
 type RequireRoleProps = {
   allowedRoles: AuthRole[];
   children: ReactNode;
+  loginPath?: string;
 };
 
 export default function RequireRole({
   allowedRoles,
   children,
+  loginPath = "/portal/login",
 }: RequireRoleProps) {
   const { isAuthenticated, user } = useAuth();
   const location = useLocation();
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace state={{ from: location }} />;
+    return <Navigate to={loginPath} replace state={{ from: location }} />;
   }
 
   if (!user || !allowedRoles.includes(user.role)) {

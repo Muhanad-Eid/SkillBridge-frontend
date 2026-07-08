@@ -19,6 +19,10 @@ export function getMyApplicationsAsync() {
   return httpClient<Application[]>("/api/applications/my");
 }
 
+export function getCompanyApplicationsAsync() {
+  return httpClient<Application[]>("/api/applications/company");
+}
+
 export function getProjectApplicationsAsync(projectId: number) {
   return httpClient<Application[]>(`/api/applications/projects/${projectId}`);
 }

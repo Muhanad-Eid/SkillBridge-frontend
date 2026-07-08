@@ -1,13 +1,18 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import DashboardLayout from "./layouts/DashboardLayout";
+import AdminPortalLayout from "./layouts/AdminPortalLayout";
+import CompanyPortalLayout from "./layouts/CompanyPortalLayout";
+import JobSeekerPortalLayout from "./layouts/JobSeekerPortalLayout";
 import PublicLayout from "./layouts/PublicLayout";
 import RequireRole from "../shared/auth/RequireRole";
-import EmptyState from "../shared/components/EmptyState";
 import AdminDashboard from "../features/admin/presentation/AdminDashboard";
+import AdminProjectsPage from "../features/admin/presentation/AdminProjectsPage";
 import CompaniesPage from "../features/admin/presentation/CompaniesPage";
+import JobSeekersPage from "../features/admin/presentation/JobSeekersPage";
 import UsersPage from "../features/admin/presentation/UsersPage";
+import AdminLoginPage from "../features/auth/presentation/AdminLoginPage";
 import LoginPage from "../features/auth/presentation/LoginPage";
 import RegisterPage from "../features/auth/presentation/RegisterPage";
+import CompanyApplicationsPage from "../features/applications/presentation/CompanyApplicationsPage";
 import CompanyProjectApplicationsPage from "../features/applications/presentation/CompanyProjectApplicationsPage";
 import MyApplicationsPage from "../features/applications/presentation/MyApplicationsPage";
 import CompanyDashboardPage from "../features/home/presentation/CompanyDashboardPage";
@@ -31,16 +36,21 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <HomePage /> },
       { path: "login", element: <LoginPage /> },
+      { path: "portal/login", element: <LoginPage /> },
       { path: "register", element: <RegisterPage /> },
       { path: "opportunities", element: <ProjectsPage /> },
       { path: "opportunities/:projectId", element: <ProjectDetailsPage /> },
     ],
   },
   {
+    path: "/admin/login",
+    element: <AdminLoginPage />,
+  },
+  {
     path: "/company",
     element: (
       <RequireRole allowedRoles={["Company"]}>
-        <DashboardLayout />
+        <CompanyPortalLayout />
       </RequireRole>
     ),
     children: [
@@ -51,15 +61,7 @@ export const router = createBrowserRouter([
         path: "projects/:projectId/applications",
         element: <CompanyProjectApplicationsPage />,
       },
-      {
-        path: "applications",
-        element: (
-          <EmptyState
-            title="Choose an opportunity"
-            description="Open a project from the opportunities page to review its applicants."
-          />
-        ),
-      },
+      { path: "applications", element: <CompanyApplicationsPage /> },
       { path: "profile", element: <CompanyProfilePage /> },
       { path: "messages", element: <MessagesPage /> },
       { path: "notifications", element: <NotificationsPage /> },
@@ -70,12 +72,14 @@ export const router = createBrowserRouter([
     path: "/job-seeker",
     element: (
       <RequireRole allowedRoles={["JobSeeker"]}>
-        <DashboardLayout />
+        <JobSeekerPortalLayout />
       </RequireRole>
     ),
     children: [
       { index: true, element: <Navigate to="/job-seeker/dashboard" replace /> },
       { path: "dashboard", element: <JobSeekerDashboardPage /> },
+      { path: "opportunities", element: <ProjectsPage /> },
+      { path: "opportunities/:projectId", element: <ProjectDetailsPage /> },
       { path: "applications", element: <MyApplicationsPage /> },
       { path: "profile", element: <JobSeekerProfilePage /> },
       { path: "skills", element: <SkillsPage /> },
@@ -87,8 +91,8 @@ export const router = createBrowserRouter([
   {
     path: "/admin",
     element: (
-      <RequireRole allowedRoles={["Admin"]}>
-        <DashboardLayout />
+      <RequireRole allowedRoles={["Admin"]} loginPath="/admin/login">
+        <AdminPortalLayout />
       </RequireRole>
     ),
     children: [
@@ -96,8 +100,8 @@ export const router = createBrowserRouter([
       { path: "dashboard", element: <AdminDashboard /> },
       { path: "users", element: <UsersPage /> },
       { path: "companies", element: <CompaniesPage /> },
-      { path: "messages", element: <MessagesPage /> },
-      { path: "notifications", element: <NotificationsPage /> },
+      { path: "job-seekers", element: <JobSeekersPage /> },
+      { path: "projects", element: <AdminProjectsPage /> },
     ],
   },
   { path: "*", element: <Navigate to="/opportunities" replace /> },

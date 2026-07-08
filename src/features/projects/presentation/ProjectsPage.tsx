@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../../shared/auth/AuthContext";
 import Card from "../../../shared/components/Card";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
@@ -14,6 +15,7 @@ import {
 import { getProjectsAsync } from "../infrastructure/projectApi";
 
 export default function ProjectsPage() {
+  const { user } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -59,6 +61,11 @@ export default function ProjectsPage() {
     });
   }, [projects, search, typeFilter]);
 
+  const isJobSeeker = user?.role === "JobSeeker";
+  const detailsBasePath = isJobSeeker
+    ? "/job-seeker/opportunities"
+    : "/opportunities";
+
   return (
     <section className="page marketplace-page">
       <div className="marketplace-hero">
@@ -67,9 +74,15 @@ export default function ProjectsPage() {
           title="Find work-based learning that builds proof."
           description="Browse internships, guided training, and real projects from companies. Filter quickly, compare fit, then apply with your SkillBridge profile."
           actions={
-            <Link className="button button-primary" to="/register">
-              Create profile
-            </Link>
+            isJobSeeker ? (
+              <Link className="button button-primary" to="/job-seeker/applications">
+                My applications
+              </Link>
+            ) : (
+              <Link className="button button-primary" to="/register">
+                Create profile
+              </Link>
+            )
           }
         />
         <div className="marketplace-stats" aria-label="Marketplace summary">
@@ -135,7 +148,7 @@ export default function ProjectsPage() {
               <span>{project.durationWeeks} weeks</span>
               <span>{project.budget ? `$${project.budget}` : "No budget listed"}</span>
             </div>
-            <Link className="text-link" to={`/opportunities/${project.id}`}>
+            <Link className="text-link" to={`${detailsBasePath}/${project.id}`}>
               View details
             </Link>
           </Card>

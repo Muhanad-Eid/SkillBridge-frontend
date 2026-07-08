@@ -1,5 +1,25 @@
 export type AuthRole = "Admin" | "Company" | "JobSeeker";
 
+export function normalizeAuthRole(role: unknown): AuthRole | null {
+  const normalized = String(role ?? "")
+    .replace(/[\s_-]/g, "")
+    .toLowerCase();
+
+  if (normalized === "1" || normalized === "admin") {
+    return "Admin";
+  }
+
+  if (normalized === "2" || normalized === "company") {
+    return "Company";
+  }
+
+  if (normalized === "3" || normalized === "jobseeker") {
+    return "JobSeeker";
+  }
+
+  return null;
+}
+
 export const RegisterRoles = {
   Company: 2,
   JobSeeker: 3,
