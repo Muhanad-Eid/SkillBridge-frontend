@@ -1,4 +1,5 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
@@ -43,9 +44,11 @@ const emptyProjectForm: ProjectForm = {
 };
 
 export default function AdminProjectsPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [projects, setProjects] = useState<AdminProject[]>([]);
   const [companies, setCompanies] = useState<AdminCompany[]>([]);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
   const [mode, setMode] = useState<FormMode | null>(null);
   const [editingProject, setEditingProject] = useState<AdminProject | null>(
     null,
@@ -82,21 +85,61 @@ export default function AdminProjectsPage() {
     loadProjects();
   }, []);
 
+  useEffect(() => {
+    if (searchParams.get("action") !== "create") {
+      return;
+    }
+
+    setMode("create");
+    setEditingProject(null);
+    setForm({
+      ...emptyProjectForm,
+      companyId: companies[0]?.id.toString() ?? "",
+    });
+    setError("");
+    setSearchParams({}, { replace: true });
+  }, [companies, searchParams, setSearchParams]);
+
+  useEffect(() => {
+    if (mode !== "create" || form.companyId || companies.length === 0) {
+      return;
+    }
+
+    setForm((current) => ({
+      ...current,
+      companyId: companies[0].id.toString(),
+    }));
+  }, [companies, form.companyId, mode]);
+
   const filteredProjects = useMemo(() => {
     const value = search.trim().toLowerCase();
 
-    if (!value) {
-      return projects;
-    }
-
     return projects.filter((project) => {
-      return (
+      const matchesStatus =
+        statusFilter === "All" || project.status === Number(statusFilter);
+      const matchesSearch =
+        !value ||
         project.title.toLowerCase().includes(value) ||
         project.companyName.toLowerCase().includes(value) ||
-        project.description.toLowerCase().includes(value)
-      );
+        project.description.toLowerCase().includes(value);
+
+      return matchesStatus && matchesSearch;
     });
-  }, [projects, search]);
+  }, [projects, search, statusFilter]);
+
+  const projectStats = useMemo(() => {
+    return {
+      total: projects.length,
+      open: projects.filter((project) => project.status === ProjectStatuses.Open)
+        .length,
+      inProgress: projects.filter(
+        (project) => project.status === ProjectStatuses.InProgress,
+      ).length,
+      completed: projects.filter(
+        (project) => project.status === ProjectStatuses.Completed,
+      ).length,
+    };
+  }, [projects]);
 
   function startCreate() {
     setMode("create");
@@ -208,6 +251,36 @@ export default function AdminProjectsPage() {
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
+        <select
+          aria-label="Filter projects by status"
+          value={statusFilter}
+          onChange={(event) => setStatusFilter(event.target.value)}
+        >
+          <option value="All">All statuses</option>
+          <option value={ProjectStatuses.Open}>Open</option>
+          <option value={ProjectStatuses.InProgress}>In progress</option>
+          <option value={ProjectStatuses.Completed}>Completed</option>
+          <option value={ProjectStatuses.Cancelled}>Cancelled</option>
+        </select>
+      </div>
+
+      <div className="admin-list-stats">
+        <article>
+          <span>Total projects</span>
+          <strong>{projectStats.total}</strong>
+        </article>
+        <article>
+          <span>Open</span>
+          <strong>{projectStats.open}</strong>
+        </article>
+        <article>
+          <span>In progress</span>
+          <strong>{projectStats.inProgress}</strong>
+        </article>
+        <article>
+          <span>Completed</span>
+          <strong>{projectStats.completed}</strong>
+        </article>
       </div>
 
       {mode ? (

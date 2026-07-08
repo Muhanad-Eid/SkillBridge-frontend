@@ -1,4 +1,5 @@
 import type { AuthRole } from "../../auth/domain/authTypes";
+import type { ApplicationStatus } from "../../applications/domain/applicationTypes";
 import type {
   OpportunityType,
   ProjectStatus,
@@ -49,6 +50,38 @@ export type AdminProject = {
   applicationsCount: number;
 };
 
+export type AdminApplication = {
+  id: number;
+  projectId: number;
+  projectTitle: string;
+  companyId: number;
+  companyName: string;
+  jobSeekerId: number;
+  jobSeekerName: string;
+  coverLetter: string | null;
+  status: ApplicationStatus;
+};
+
+export type AdminReview = {
+  id: number;
+  companyId: number;
+  companyName: string;
+  jobSeekerId: number;
+  jobSeekerName: string;
+  projectId: number;
+  projectTitle: string;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+};
+
+export type AdminSkill = {
+  id: number;
+  name: string;
+  jobSeekersCount: number;
+  projectsCount: number;
+};
+
 export const AdminUserRoles = {
   Admin: 1,
   Company: 2,
@@ -76,6 +109,10 @@ export type CreateAdminProjectRequest = {
   durationWeeks: number;
   type: OpportunityType;
   status: ProjectStatus;
+};
+
+export type CreateAdminSkillRequest = {
+  name: string;
 };
 
 export type UpdateAdminUserRequest = {
@@ -106,4 +143,12 @@ export type UpdateAdminProjectRequest = {
   durationWeeks: number;
   type: OpportunityType;
   status: ProjectStatus;
+};
+
+export type UpdateAdminApplicationStatusRequest = {
+  status: ApplicationStatus;
+};
+
+export type UpdateAdminSkillRequest = {
+  name: string;
 };

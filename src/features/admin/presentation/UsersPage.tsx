@@ -1,4 +1,5 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
@@ -37,8 +38,10 @@ const emptyForm: UserForm = {
 };
 
 export default function UsersPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState("All");
   const [mode, setMode] = useState<FormMode | null>(null);
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
   const [form, setForm] = useState<UserForm>(emptyForm);
@@ -65,24 +68,54 @@ export default function UsersPage() {
     loadUsers();
   }, []);
 
+  useEffect(() => {
+    if (searchParams.get("action") !== "create") {
+      return;
+    }
+
+    setMode("create");
+    setEditingUser(null);
+    setForm(emptyForm);
+    setError("");
+    setSearchParams({}, { replace: true });
+  }, [searchParams, setSearchParams]);
+
   const filteredUsers = useMemo(() => {
     const value = search.trim().toLowerCase();
 
-    if (!value) {
-      return users;
-    }
-
     return users.filter((user) => {
       const role = normalizeAuthRole(user.role) ?? String(user.role);
-
-      return (
+      const matchesRole = roleFilter === "All" || role === roleFilter;
+      const matchesSearch =
+        !value ||
         user.firstName.toLowerCase().includes(value) ||
         user.lastName.toLowerCase().includes(value) ||
         user.email.toLowerCase().includes(value) ||
-        role.toLowerCase().includes(value)
-      );
+        role.toLowerCase().includes(value);
+
+      return matchesRole && matchesSearch;
     });
-  }, [users, search]);
+  }, [users, search, roleFilter]);
+
+  const userStats = useMemo(() => {
+    return users.reduce(
+      (stats, user) => {
+        const role = normalizeAuthRole(user.role);
+
+        if (role === "Admin") stats.admins += 1;
+        if (role === "Company") stats.companies += 1;
+        if (role === "JobSeeker") stats.jobSeekers += 1;
+
+        return stats;
+      },
+      {
+        total: users.length,
+        admins: 0,
+        companies: 0,
+        jobSeekers: 0,
+      },
+    );
+  }, [users]);
 
   function startCreate() {
     setMode("create");
@@ -193,6 +226,35 @@ export default function UsersPage() {
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
+        <select
+          aria-label="Filter users by role"
+          value={roleFilter}
+          onChange={(event) => setRoleFilter(event.target.value)}
+        >
+          <option value="All">All roles</option>
+          <option value="Admin">Admins</option>
+          <option value="Company">Companies</option>
+          <option value="JobSeeker">Job seekers</option>
+        </select>
+      </div>
+
+      <div className="admin-list-stats">
+        <article>
+          <span>Total users</span>
+          <strong>{userStats.total}</strong>
+        </article>
+        <article>
+          <span>Admins</span>
+          <strong>{userStats.admins}</strong>
+        </article>
+        <article>
+          <span>Companies</span>
+          <strong>{userStats.companies}</strong>
+        </article>
+        <article>
+          <span>Job seekers</span>
+          <strong>{userStats.jobSeekers}</strong>
+        </article>
       </div>
 
       {mode ? (

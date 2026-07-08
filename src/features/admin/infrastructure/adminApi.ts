@@ -1,14 +1,20 @@
 import { httpClient } from "../../../shared/api/httpClient";
 import type {
   AdminCompany,
+  AdminApplication,
   AdminJobSeeker,
   AdminProject,
+  AdminReview,
+  AdminSkill,
   AdminUser,
   CreateAdminProjectRequest,
+  CreateAdminSkillRequest,
   CreateAdminUserRequest,
   UpdateAdminCompanyRequest,
+  UpdateAdminApplicationStatusRequest,
   UpdateAdminJobSeekerRequest,
   UpdateAdminProjectRequest,
+  UpdateAdminSkillRequest,
   UpdateAdminUserRequest,
 } from "../domain/adminTypes";
 
@@ -28,6 +34,18 @@ export function getAdminProjectsAsync() {
   return httpClient<AdminProject[]>("/api/admin/projects");
 }
 
+export function getAdminApplicationsAsync() {
+  return httpClient<AdminApplication[]>("/api/admin/applications");
+}
+
+export function getAdminReviewsAsync() {
+  return httpClient<AdminReview[]>("/api/admin/reviews");
+}
+
+export function getAdminSkillsAsync() {
+  return httpClient<AdminSkill[]>("/api/admin/skills");
+}
+
 export function createAdminUserAsync(request: CreateAdminUserRequest) {
   return httpClient<AdminUser>("/api/admin/users", {
     method: "POST",
@@ -37,6 +55,13 @@ export function createAdminUserAsync(request: CreateAdminUserRequest) {
 
 export function createAdminProjectAsync(request: CreateAdminProjectRequest) {
   return httpClient<AdminProject>("/api/admin/projects", {
+    method: "POST",
+    body: JSON.stringify(request),
+  });
+}
+
+export function createAdminSkillAsync(request: CreateAdminSkillRequest) {
+  return httpClient<AdminSkill>("/api/admin/skills", {
     method: "POST",
     body: JSON.stringify(request),
   });
@@ -82,6 +107,26 @@ export function updateAdminProjectAsync(
   });
 }
 
+export function updateAdminApplicationStatusAsync(
+  applicationId: number,
+  request: UpdateAdminApplicationStatusRequest,
+) {
+  return httpClient<void>(`/api/admin/applications/${applicationId}/status`, {
+    method: "PUT",
+    body: JSON.stringify(request),
+  });
+}
+
+export function updateAdminSkillAsync(
+  skillId: number,
+  request: UpdateAdminSkillRequest,
+) {
+  return httpClient<void>(`/api/admin/skills/${skillId}`, {
+    method: "PUT",
+    body: JSON.stringify(request),
+  });
+}
+
 export function verifyCompanyAsync(companyId: number) {
   return httpClient<void>(`/api/admin/companies/${companyId}/verify`, {
     method: "PUT",
@@ -114,6 +159,24 @@ export function deleteJobSeekerAsync(userId: string) {
 
 export function deleteProjectAsync(projectId: number) {
   return httpClient<void>(`/api/admin/projects/${projectId}`, {
+    method: "DELETE",
+  });
+}
+
+export function deleteApplicationAsync(applicationId: number) {
+  return httpClient<void>(`/api/admin/applications/${applicationId}`, {
+    method: "DELETE",
+  });
+}
+
+export function deleteReviewAsync(reviewId: number) {
+  return httpClient<void>(`/api/admin/reviews/${reviewId}`, {
+    method: "DELETE",
+  });
+}
+
+export function deleteSkillAsync(skillId: number) {
+  return httpClient<void>(`/api/admin/skills/${skillId}`, {
     method: "DELETE",
   });
 }

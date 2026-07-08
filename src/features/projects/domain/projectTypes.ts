@@ -26,6 +26,7 @@ export type Project = {
   status: ProjectStatus;
   companyProfileId: number;
   companyName: string;
+  applicationsCount: number;
 };
 
 export type CreateProjectRequest = {

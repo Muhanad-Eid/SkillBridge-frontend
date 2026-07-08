@@ -16,6 +16,7 @@ import {
 export default function JobSeekersPage() {
   const [jobSeekers, setJobSeekers] = useState<AdminJobSeeker[]>([]);
   const [search, setSearch] = useState("");
+  const [profileFilter, setProfileFilter] = useState("All");
   const [editingJobSeeker, setEditingJobSeeker] =
     useState<AdminJobSeeker | null>(null);
   const [form, setForm] = useState<UpdateAdminJobSeekerRequest>({
@@ -52,19 +53,40 @@ export default function JobSeekersPage() {
   const filteredJobSeekers = useMemo(() => {
     const value = search.trim().toLowerCase();
 
-    if (!value) {
-      return jobSeekers;
-    }
-
     return jobSeekers.filter((jobSeeker) => {
-      return (
+      const hasProfile = jobSeeker.id !== 0;
+      const matchesProfile =
+        profileFilter === "All" ||
+        (profileFilter === "Ready" && hasProfile) ||
+        (profileFilter === "Missing" && !hasProfile);
+
+      const matchesSearch =
+        !value ||
         jobSeeker.fullName.toLowerCase().includes(value) ||
         jobSeeker.email.toLowerCase().includes(value) ||
         (jobSeeker.city ?? "").toLowerCase().includes(value) ||
-        (jobSeeker.bio ?? "").toLowerCase().includes(value)
-      );
+        (jobSeeker.bio ?? "").toLowerCase().includes(value);
+
+      return matchesProfile && matchesSearch;
     });
-  }, [jobSeekers, search]);
+  }, [jobSeekers, search, profileFilter]);
+
+  const jobSeekerStats = useMemo(() => {
+    const missingProfiles = jobSeekers.filter(
+      (jobSeeker) => jobSeeker.id === 0,
+    ).length;
+    const applications = jobSeekers.reduce(
+      (sum, jobSeeker) => sum + jobSeeker.applicationsCount,
+      0,
+    );
+
+    return {
+      total: jobSeekers.length,
+      readyProfiles: jobSeekers.length - missingProfiles,
+      missingProfiles,
+      applications,
+    };
+  }, [jobSeekers]);
 
   function startEdit(jobSeeker: AdminJobSeeker) {
     setEditingJobSeeker(jobSeeker);
@@ -140,6 +162,34 @@ export default function JobSeekersPage() {
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
+        <select
+          aria-label="Filter job seekers by profile status"
+          value={profileFilter}
+          onChange={(event) => setProfileFilter(event.target.value)}
+        >
+          <option value="All">All profiles</option>
+          <option value="Ready">Profile ready</option>
+          <option value="Missing">Profile missing</option>
+        </select>
+      </div>
+
+      <div className="admin-list-stats">
+        <article>
+          <span>Job seekers</span>
+          <strong>{jobSeekerStats.total}</strong>
+        </article>
+        <article>
+          <span>Profile ready</span>
+          <strong>{jobSeekerStats.readyProfiles}</strong>
+        </article>
+        <article>
+          <span>Profile missing</span>
+          <strong>{jobSeekerStats.missingProfiles}</strong>
+        </article>
+        <article>
+          <span>Applications</span>
+          <strong>{jobSeekerStats.applications}</strong>
+        </article>
       </div>
 
       {editingJobSeeker ? (

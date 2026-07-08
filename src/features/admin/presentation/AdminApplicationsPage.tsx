@@ -1,19 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import Button from "../../../shared/components/Button";
-import Card from "../../../shared/components/Card";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
 import StatusBadge from "../../../shared/components/StatusBadge";
 import {
   ApplicationStatuses,
   getApplicationStatusLabel,
-  type Application,
   type ApplicationStatus,
-} from "../domain/applicationTypes";
+} from "../../applications/domain/applicationTypes";
+import type { AdminApplication } from "../domain/adminTypes";
 import {
-  getMyApplicationsAsync,
-  withdrawApplicationAsync,
-} from "../infrastructure/applicationApi";
+  deleteApplicationAsync,
+  getAdminApplicationsAsync,
+  updateAdminApplicationStatusAsync,
+} from "../infrastructure/adminApi";
 
 function getApplicationTone(status: ApplicationStatus) {
   if (status === ApplicationStatuses.Accepted) return "green";
@@ -22,20 +22,19 @@ function getApplicationTone(status: ApplicationStatus) {
   return "amber";
 }
 
-export default function MyApplicationsPage() {
-  const [applications, setApplications] = useState<Application[]>([]);
+export default function AdminApplicationsPage() {
+  const [applications, setApplications] = useState<AdminApplication[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
 
   async function loadApplications() {
     setIsLoading(true);
     setError("");
 
     try {
-      setApplications(await getMyApplicationsAsync());
+      setApplications(await getAdminApplicationsAsync());
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -60,6 +59,8 @@ export default function MyApplicationsPage() {
       const matchesSearch =
         !value ||
         application.projectTitle.toLowerCase().includes(value) ||
+        application.companyName.toLowerCase().includes(value) ||
+        application.jobSeekerName.toLowerCase().includes(value) ||
         (application.coverLetter ?? "").toLowerCase().includes(value);
 
       return matchesStatus && matchesSearch;
@@ -81,67 +82,59 @@ export default function MyApplicationsPage() {
     };
   }, [applications]);
 
-  async function handleWithdraw(application: Application) {
+  async function updateStatus(
+    application: AdminApplication,
+    status: ApplicationStatus,
+  ) {
+    setError("");
+
+    try {
+      await updateAdminApplicationStatusAsync(application.id, { status });
+      await loadApplications();
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Unable to update application.",
+      );
+    }
+  }
+
+  async function handleDelete(application: AdminApplication) {
     const confirmed = window.confirm(
-      `Withdraw your application for "${application.projectTitle}"?`,
+      `Delete ${application.jobSeekerName}'s application for "${application.projectTitle}"?`,
     );
 
     if (!confirmed) {
       return;
     }
 
-    setMessage("");
     setError("");
 
     try {
-      await withdrawApplicationAsync(application.id);
-      setMessage("Application withdrawn.");
+      await deleteApplicationAsync(application.id);
       await loadApplications();
     } catch (caughtError) {
-      setMessage(
+      setError(
         caughtError instanceof Error
           ? caughtError.message
-          : "Unable to withdraw application.",
+          : "Unable to delete application.",
       );
     }
   }
 
   return (
-    <section className="page jobseeker-applications-page">
+    <section className="page admin-list-page">
       <PageHeader
-        eyebrow="Job seeker"
-        title="My applications"
-        description="Track decisions, filter your pipeline, and withdraw pending applications."
-        actions={
-          <Button to="/job-seeker/opportunities" variant="primary">
-            Browse opportunities
-          </Button>
-        }
+        eyebrow="Admin"
+        title="Applications"
+        description="Review every application, change status, and remove invalid application records."
       />
 
-      <div className="portal-list-stats jobseeker-list-stats">
-        <article>
-          <span>Total</span>
-          <strong>{applicationStats.total}</strong>
-        </article>
-        <article>
-          <span>Pending</span>
-          <strong>{applicationStats.pending}</strong>
-        </article>
-        <article>
-          <span>Accepted</span>
-          <strong>{applicationStats.accepted}</strong>
-        </article>
-        <article>
-          <span>Rejected</span>
-          <strong>{applicationStats.rejected}</strong>
-        </article>
-      </div>
-
-      <div className="toolbar">
+      <div className="toolbar admin-toolbar">
         <input
           aria-label="Search applications"
-          placeholder="Search by project or cover letter"
+          placeholder="Search by project, company, applicant, or cover letter"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
@@ -158,43 +151,75 @@ export default function MyApplicationsPage() {
         </select>
       </div>
 
-      {message ? <div className="notice">{message}</div> : null}
+      <div className="admin-list-stats">
+        <article>
+          <span>Total applications</span>
+          <strong>{applicationStats.total}</strong>
+        </article>
+        <article>
+          <span>Pending</span>
+          <strong>{applicationStats.pending}</strong>
+        </article>
+        <article>
+          <span>Accepted</span>
+          <strong>{applicationStats.accepted}</strong>
+        </article>
+        <article>
+          <span>Rejected</span>
+          <strong>{applicationStats.rejected}</strong>
+        </article>
+      </div>
 
       <DataState
         isLoading={isLoading}
         error={error}
         empty={filteredApplications.length === 0}
-        emptyTitle="No applications yet"
-        emptyDescription="Browse opportunities and apply when you find a good match."
+        emptyTitle="No applications"
+        emptyDescription="Applications submitted by job seekers will appear here."
       />
 
-      <div className="card-grid">
+      <div className="table-card admin-table-card">
         {filteredApplications.map((application) => (
-          <Card
-            key={application.id}
-            title={application.projectTitle}
-            description={application.coverLetter ?? "No cover letter"}
-            actions={
+          <div className="table-row" key={application.id}>
+            <div>
+              <strong>{application.projectTitle}</strong>
+              <span>
+                {application.companyName} - {application.jobSeekerName}
+              </span>
+              <span>{application.coverLetter ?? "No cover letter"}</span>
+            </div>
+            <div className="admin-status-stack">
               <StatusBadge tone={getApplicationTone(application.status)}>
                 {getApplicationStatusLabel(application.status)}
               </StatusBadge>
-            }
-          >
-            {application.status === ApplicationStatuses.Pending ? (
+              <span>Application #{application.id}</span>
+            </div>
+            <div className="admin-row-actions">
               <Button
                 variant="secondary"
-                onClick={() => handleWithdraw(application)}
+                onClick={() =>
+                  updateStatus(application, ApplicationStatuses.Accepted)
+                }
               >
-                Withdraw
+                Accept
               </Button>
-            ) : (
-              <p>
-                {application.status === ApplicationStatuses.Accepted
-                  ? "Accepted applications can be added to your portfolio after work is complete."
-                  : "This application is no longer pending."}
-              </p>
-            )}
-          </Card>
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  updateStatus(application, ApplicationStatuses.Rejected)
+                }
+              >
+                Reject
+              </Button>
+              <Button
+                variant="secondary"
+                className="button-danger"
+                onClick={() => handleDelete(application)}
+              >
+                Delete
+              </Button>
+            </div>
+          </div>
         ))}
       </div>
     </section>

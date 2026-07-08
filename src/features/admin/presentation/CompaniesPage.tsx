@@ -18,6 +18,7 @@ import {
 export default function CompaniesPage() {
   const [companies, setCompanies] = useState<AdminCompany[]>([]);
   const [search, setSearch] = useState("");
+  const [verificationFilter, setVerificationFilter] = useState("All");
   const [editingCompany, setEditingCompany] = useState<AdminCompany | null>(
     null,
   );
@@ -56,19 +57,32 @@ export default function CompaniesPage() {
   const filteredCompanies = useMemo(() => {
     const value = search.trim().toLowerCase();
 
-    if (!value) {
-      return companies;
-    }
-
     return companies.filter((company) => {
-      return (
+      const matchesVerification =
+        verificationFilter === "All" ||
+        (verificationFilter === "Verified" && company.isVerified) ||
+        (verificationFilter === "Unverified" && !company.isVerified);
+
+      const matchesSearch =
+        !value ||
         company.companyName.toLowerCase().includes(value) ||
         (company.description ?? "").toLowerCase().includes(value) ||
         (company.city ?? "").toLowerCase().includes(value) ||
-        (company.website ?? "").toLowerCase().includes(value)
-      );
+        (company.website ?? "").toLowerCase().includes(value);
+
+      return matchesVerification && matchesSearch;
     });
-  }, [companies, search]);
+  }, [companies, search, verificationFilter]);
+
+  const companyStats = useMemo(() => {
+    const verified = companies.filter((company) => company.isVerified).length;
+
+    return {
+      total: companies.length,
+      verified,
+      unverified: companies.length - verified,
+    };
+  }, [companies]);
 
   function startEdit(company: AdminCompany) {
     setEditingCompany(company);
@@ -165,6 +179,30 @@ export default function CompaniesPage() {
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
+        <select
+          aria-label="Filter companies by verification"
+          value={verificationFilter}
+          onChange={(event) => setVerificationFilter(event.target.value)}
+        >
+          <option value="All">All companies</option>
+          <option value="Verified">Verified</option>
+          <option value="Unverified">Not verified</option>
+        </select>
+      </div>
+
+      <div className="admin-list-stats">
+        <article>
+          <span>Total companies</span>
+          <strong>{companyStats.total}</strong>
+        </article>
+        <article>
+          <span>Verified</span>
+          <strong>{companyStats.verified}</strong>
+        </article>
+        <article>
+          <span>Not verified</span>
+          <strong>{companyStats.unverified}</strong>
+        </article>
       </div>
 
       {editingCompany ? (

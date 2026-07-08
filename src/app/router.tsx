@@ -4,8 +4,11 @@ import CompanyPortalLayout from "./layouts/CompanyPortalLayout";
 import JobSeekerPortalLayout from "./layouts/JobSeekerPortalLayout";
 import PublicLayout from "./layouts/PublicLayout";
 import RequireRole from "../shared/auth/RequireRole";
+import AdminApplicationsPage from "../features/admin/presentation/AdminApplicationsPage";
 import AdminDashboard from "../features/admin/presentation/AdminDashboard";
 import AdminProjectsPage from "../features/admin/presentation/AdminProjectsPage";
+import AdminReviewsPage from "../features/admin/presentation/AdminReviewsPage";
+import AdminSkillsPage from "../features/admin/presentation/AdminSkillsPage";
 import CompaniesPage from "../features/admin/presentation/CompaniesPage";
 import JobSeekersPage from "../features/admin/presentation/JobSeekersPage";
 import UsersPage from "../features/admin/presentation/UsersPage";
@@ -102,6 +105,9 @@ export const router = createBrowserRouter([
       { path: "companies", element: <CompaniesPage /> },
       { path: "job-seekers", element: <JobSeekersPage /> },
       { path: "projects", element: <AdminProjectsPage /> },
+      { path: "applications", element: <AdminApplicationsPage /> },
+      { path: "reviews", element: <AdminReviewsPage /> },
+      { path: "skills", element: <AdminSkillsPage /> },
     ],
   },
   { path: "*", element: <Navigate to="/opportunities" replace /> },

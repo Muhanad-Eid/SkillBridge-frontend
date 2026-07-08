@@ -8,6 +8,9 @@ const adminNavItems = [
   { label: "Companies", to: "/admin/companies" },
   { label: "Job seekers", to: "/admin/job-seekers" },
   { label: "Projects", to: "/admin/projects" },
+  { label: "Applications", to: "/admin/applications" },
+  { label: "Reviews", to: "/admin/reviews" },
+  { label: "Skills", to: "/admin/skills" },
 ];
 
 export default function AdminPortalLayout() {

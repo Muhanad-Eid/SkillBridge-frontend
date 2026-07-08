@@ -32,10 +32,10 @@ export async function httpClient<T>(
     headers,
   });
 
-  const data = await response.json().catch(() => null);
+  const data = await readResponse(response);
 
   if (!response.ok) {
-    throw new Error(data?.message ?? "Request failed.");
+    throw new Error(getErrorMessage(data, response.status));
   }
 
   return data as T;
@@ -53,4 +53,53 @@ export function getStoredAuth(): AuthResponse | null {
 
 export function clearStoredAuth() {
   localStorage.removeItem(AUTH_STORAGE_KEY);
+}
+
+async function readResponse(response: Response) {
+  const text = await response.text();
+
+  if (!text) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    return text;
+  }
+}
+
+function getErrorMessage(data: unknown, status: number) {
+  if (typeof data === "string" && data.trim()) {
+    return data;
+  }
+
+  if (!data || typeof data !== "object") {
+    return `Request failed (${status}).`;
+  }
+
+  if ("message" in data && data.message) {
+    return String(data.message);
+  }
+
+  if ("detail" in data && data.detail) {
+    return String(data.detail);
+  }
+
+  if ("title" in data && data.title) {
+    return String(data.title);
+  }
+
+  if ("errors" in data && data.errors && typeof data.errors === "object") {
+    const messages = Object.values(data.errors as Record<string, unknown>)
+      .flatMap((value) => (Array.isArray(value) ? value : [value]))
+      .filter(Boolean)
+      .map(String);
+
+    if (messages.length > 0) {
+      return messages.join(" ");
+    }
+  }
+
+  return `Request failed (${status}).`;
 }
