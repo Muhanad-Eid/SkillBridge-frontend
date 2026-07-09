@@ -4,5 +4,6 @@ export type Skill = {
 };
 
 export type AddSkillRequest = {
-  skillId: number;
+  skillId?: number;
+  skillName?: string;
 };

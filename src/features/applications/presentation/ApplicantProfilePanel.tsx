@@ -15,6 +15,20 @@ type ApplicantProfilePanelProps = {
   profile: JobSeekerProfile | null;
 };
 
+function getApplicantMessagePath(
+  application: Application,
+  profile: JobSeekerProfile,
+) {
+  const params = new URLSearchParams({
+    receiverId: profile.userId,
+    receiverName: application.jobSeekerName,
+    projectId: String(application.projectId),
+    projectTitle: application.projectTitle,
+  });
+
+  return `/company/messages?${params}`;
+}
+
 export default function ApplicantProfilePanel({
   application,
   error,
@@ -29,9 +43,16 @@ export default function ApplicantProfilePanel({
       title={application.jobSeekerName}
       description={application.projectTitle}
       actions={
-        <Button type="button" variant="secondary" onClick={onClose}>
-          Close
-        </Button>
+        <>
+          {profile ? (
+            <Button to={getApplicantMessagePath(application, profile)}>
+              Message applicant
+            </Button>
+          ) : null}
+          <Button type="button" variant="secondary" onClick={onClose}>
+            Close
+          </Button>
+        </>
       }
     >
       {isLoading ? <div className="notice">Loading profile...</div> : null}

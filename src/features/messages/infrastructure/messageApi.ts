@@ -5,6 +5,15 @@ export function getMyMessagesAsync() {
   return httpClient<Message[]>("/api/messages/my");
 }
 
+export function getConversationAsync(otherUserId: string, projectId: number) {
+  const params = new URLSearchParams({
+    otherUserId,
+    projectId: String(projectId),
+  });
+
+  return httpClient<Message[]>(`/api/messages/conversation?${params}`);
+}
+
 export function sendMessageAsync(request: SendMessageRequest) {
   return httpClient<Message>("/api/messages", {
     method: "POST",

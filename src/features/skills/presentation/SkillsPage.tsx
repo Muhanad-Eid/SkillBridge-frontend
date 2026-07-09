@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
 import Button from "../../../shared/components/Button";
 import Card from "../../../shared/components/Card";
 import DataState from "../../../shared/components/DataState";
+import Input from "../../../shared/components/Input";
 import PageHeader from "../../../shared/components/PageHeader";
 import type { Skill } from "../domain/skillTypes";
 import {
@@ -14,12 +15,15 @@ import {
 export default function SkillsPage() {
   const [allSkills, setAllSkills] = useState<Skill[]>([]);
   const [mySkills, setMySkills] = useState<Skill[]>([]);
-  const [selectedSkillId, setSelectedSkillId] = useState("");
+  const [skillName, setSkillName] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
   async function loadSkills() {
     setIsLoading(true);
+
     try {
       const [skills, profileSkills] = await Promise.all([
         getSkillsAsync(),
@@ -29,7 +33,9 @@ export default function SkillsPage() {
       setMySkills(profileSkills);
     } catch (caughtError) {
       setError(
-        caughtError instanceof Error ? caughtError.message : "Unable to load skills.",
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Unable to load skills.",
       );
     } finally {
       setIsLoading(false);
@@ -41,20 +47,68 @@ export default function SkillsPage() {
   }, []);
 
   const availableSkills = useMemo(() => {
-    const selectedIds = new Set(mySkills.map((skill) => skill.id));
-    return allSkills.filter((skill) => !selectedIds.has(skill.id));
+    const selectedNames = new Set(
+      mySkills.map((skill) => skill.name.trim().toLowerCase()),
+    );
+
+    return allSkills.filter(
+      (skill) => !selectedNames.has(skill.name.trim().toLowerCase()),
+    );
   }, [allSkills, mySkills]);
 
-  async function handleAddSkill() {
-    if (!selectedSkillId) return;
-    await addSkillAsync({ skillId: Number(selectedSkillId) });
-    setSelectedSkillId("");
-    await loadSkills();
+  async function handleAddSkill(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const trimmedSkillName = skillName.trim();
+
+    if (!trimmedSkillName) {
+      setError("Write a skill before adding it.");
+      return;
+    }
+
+    const alreadyAdded = mySkills.some(
+      (skill) =>
+        skill.name.trim().toLowerCase() === trimmedSkillName.toLowerCase(),
+    );
+
+    if (alreadyAdded) {
+      setError("This skill is already added.");
+      return;
+    }
+
+    setIsSaving(true);
+    setError("");
+    setMessage("");
+
+    try {
+      await addSkillAsync({ skillName: trimmedSkillName });
+      setSkillName("");
+      setMessage("Skill added.");
+      await loadSkills();
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error ? caughtError.message : "Unable to add skill.",
+      );
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   async function handleRemoveSkill(skillId: number) {
-    await removeSkillAsync(skillId);
-    await loadSkills();
+    setError("");
+    setMessage("");
+
+    try {
+      await removeSkillAsync(skillId);
+      setMessage("Skill removed.");
+      await loadSkills();
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Unable to remove skill.",
+      );
+    }
   }
 
   return (
@@ -62,7 +116,7 @@ export default function SkillsPage() {
       <PageHeader
         eyebrow="Skills"
         title="My skills"
-        description="Choose skills that companies can use to match you with opportunities."
+        description="Write the skills companies should see on your profile."
       />
 
       <DataState
@@ -74,29 +128,34 @@ export default function SkillsPage() {
       />
 
       <div className="two-column">
-        <Card title="Add skill">
-          <div className="stack">
-            <label className="field">
-              <span>Skill</span>
-              <select
-                value={selectedSkillId}
-                onChange={(event) => setSelectedSkillId(event.target.value)}
-              >
-                <option value="">Select a skill</option>
-                {availableSkills.map((skill) => (
-                  <option key={skill.id} value={skill.id}>
-                    {skill.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <Button onClick={handleAddSkill}>Add skill</Button>
-          </div>
+        <Card
+          title="Add skill"
+          description="Type a skill name. Existing skills appear as suggestions, but you can add a new one."
+        >
+          <form className="stack" onSubmit={handleAddSkill}>
+            <Input
+              label="Skill"
+              list="skill-suggestions"
+              placeholder="React, SQL, UI design, QA automation"
+              value={skillName}
+              onChange={(event) => setSkillName(event.target.value)}
+              required
+            />
+            <datalist id="skill-suggestions">
+              {availableSkills.map((skill) => (
+                <option key={skill.id} value={skill.name} />
+              ))}
+            </datalist>
+            {message ? <div className="notice">{message}</div> : null}
+            <Button type="submit" isLoading={isSaving}>
+              Add skill
+            </Button>
+          </form>
         </Card>
 
         <Card title="Selected skills">
           {mySkills.length === 0 ? (
-            <p>No skills selected yet.</p>
+            <p>No skills added yet.</p>
           ) : (
             <div className="chip-list">
               {mySkills.map((skill) => (
@@ -106,7 +165,7 @@ export default function SkillsPage() {
                   type="button"
                   onClick={() => handleRemoveSkill(skill.id)}
                 >
-                  {skill.name} ×
+                  {skill.name} x
                 </button>
               ))}
             </div>

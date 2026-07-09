@@ -17,6 +17,12 @@ export function getPublicJobSeekerProfileAsync(jobSeekerId: number) {
   );
 }
 
+export function getPublicCompanyProfileAsync(companyId: number) {
+  return httpClient<CompanyProfile>(`/api/profiles/companies/${companyId}`, {
+    skipAuth: true,
+  });
+}
+
 export function updateMyJobSeekerProfileAsync(
   request: UpdateJobSeekerProfileRequest,
 ) {

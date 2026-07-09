@@ -7,6 +7,8 @@ import PageHeader from "../../../shared/components/PageHeader";
 import StatusBadge from "../../../shared/components/StatusBadge";
 import { useAuth } from "../../../shared/auth/AuthContext";
 import { applyToProjectAsync } from "../../applications/infrastructure/applicationApi";
+import type { CompanyProfile } from "../../profiles/domain/profileTypes";
+import { getPublicCompanyProfileAsync } from "../../profiles/infrastructure/profileApi";
 import {
   getOpportunityTypeLabel,
   getProjectStatusLabel,
@@ -19,6 +21,9 @@ export default function ProjectDetailsPage() {
   const { projectId } = useParams();
   const { user } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
+  const [companyProfile, setCompanyProfile] = useState<CompanyProfile | null>(
+    null,
+  );
   const [coverLetter, setCoverLetter] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isApplying, setIsApplying] = useState(false);
@@ -31,7 +36,14 @@ export default function ProjectDetailsPage() {
     async function loadProject() {
       try {
         const data = await getProjectAsync(Number(projectId));
-        if (isMounted) setProject(data);
+        const companyData = await getPublicCompanyProfileAsync(
+          data.companyProfileId,
+        );
+
+        if (isMounted) {
+          setProject(data);
+          setCompanyProfile(companyData);
+        }
       } catch (caughtError) {
         if (isMounted) {
           setError(
@@ -51,6 +63,16 @@ export default function ProjectDetailsPage() {
       isMounted = false;
     };
   }, [projectId]);
+
+  const companyMessagePath =
+    project && companyProfile
+      ? `/job-seeker/messages?${new URLSearchParams({
+          receiverId: companyProfile.userId,
+          receiverName: project.companyName,
+          projectId: String(project.id),
+          projectTitle: project.title,
+        })}`
+      : "";
 
   async function handleApply(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -110,6 +132,13 @@ export default function ProjectDetailsPage() {
                 <span>Duration</span>
                 <strong>{project.durationWeeks} weeks</strong>
               </div>
+              {user?.role === "JobSeeker" && companyMessagePath ? (
+                <div className="actions-row">
+                  <Button to={companyMessagePath} variant="secondary">
+                    Message company
+                  </Button>
+                </div>
+              ) : null}
             </Card>
 
             <Card title="Apply">
