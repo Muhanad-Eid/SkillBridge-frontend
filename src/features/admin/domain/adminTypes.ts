@@ -98,7 +98,6 @@ export type CreateAdminUserRequest = {
   password: string;
   role: AdminUserRole;
   companyName?: string | null;
-  isVerified: boolean;
 };
 
 export type CreateAdminProjectRequest = {

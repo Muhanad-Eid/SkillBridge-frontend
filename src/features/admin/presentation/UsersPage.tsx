@@ -24,7 +24,6 @@ type UserForm = UpdateAdminUserRequest & {
   password: string;
   role: AdminUserRole;
   companyName: string;
-  isVerified: boolean;
 };
 
 const emptyForm: UserForm = {
@@ -34,7 +33,6 @@ const emptyForm: UserForm = {
   password: "",
   role: AdminUserRoles.JobSeeker,
   companyName: "",
-  isVerified: false,
 };
 
 export default function UsersPage() {
@@ -160,7 +158,6 @@ export default function UsersPage() {
             form.role === AdminUserRoles.Company
               ? form.companyName.trim()
               : undefined,
-          isVerified: form.isVerified,
         };
 
         await createAdminUserAsync(request);
@@ -359,19 +356,6 @@ export default function UsersPage() {
                         }
                         required
                       />
-                    </label>
-                    <label className="field field-check">
-                      <input
-                        type="checkbox"
-                        checked={form.isVerified}
-                        onChange={(event) =>
-                          setForm((current) => ({
-                            ...current,
-                            isVerified: event.target.checked,
-                          }))
-                        }
-                      />
-                      <span>Verified company</span>
                     </label>
                   </>
                 ) : null}

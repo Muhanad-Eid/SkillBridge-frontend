@@ -15,6 +15,12 @@ export type UpdateJobSeekerProfileRequest = {
   gitHubUrl?: string;
 };
 
+export function isJobSeekerProfileComplete(
+  profile: Pick<JobSeekerProfile, "bio" | "city"> | null | undefined,
+) {
+  return Boolean(profile?.bio?.trim() && profile.city?.trim());
+}
+
 export type CompanyProfile = {
   id: number;
   userId: string;
