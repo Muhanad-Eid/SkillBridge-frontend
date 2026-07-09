@@ -3,6 +3,9 @@ import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
 import StatusBadge from "../../../shared/components/StatusBadge";
+import type { JobSeekerProfile } from "../../profiles/domain/profileTypes";
+import { getPublicJobSeekerProfileAsync } from "../../profiles/infrastructure/profileApi";
+import ApplicantProfilePanel from "./ApplicantProfilePanel";
 import {
   ApplicationStatuses,
   getApplicationStatusLabel,
@@ -15,9 +18,15 @@ import {
 
 export default function CompanyApplicationsPage() {
   const [applications, setApplications] = useState<Application[]>([]);
+  const [selectedApplication, setSelectedApplication] =
+    useState<Application | null>(null);
+  const [selectedProfile, setSelectedProfile] =
+    useState<JobSeekerProfile | null>(null);
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isProfileLoading, setIsProfileLoading] = useState(false);
   const [error, setError] = useState("");
+  const [profileError, setProfileError] = useState("");
 
   async function loadApplications() {
     setIsLoading(true);
@@ -58,7 +67,31 @@ export default function CompanyApplicationsPage() {
     status: typeof ApplicationStatuses.Accepted | typeof ApplicationStatuses.Rejected,
   ) {
     await updateApplicationStatusAsync(application.id, { status });
+    setSelectedApplication((current) =>
+      current?.id === application.id ? { ...current, status } : current,
+    );
     await loadApplications();
+  }
+
+  async function openApplicantProfile(application: Application) {
+    setSelectedApplication(application);
+    setSelectedProfile(null);
+    setProfileError("");
+    setIsProfileLoading(true);
+
+    try {
+      setSelectedProfile(
+        await getPublicJobSeekerProfileAsync(application.jobSeekerId),
+      );
+    } catch (caughtError) {
+      setProfileError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Unable to load applicant profile.",
+      );
+    } finally {
+      setIsProfileLoading(false);
+    }
   }
 
   return (
@@ -86,11 +119,31 @@ export default function CompanyApplicationsPage() {
         emptyDescription="Applications will appear here when job seekers apply to your opportunities."
       />
 
+      {selectedApplication ? (
+        <ApplicantProfilePanel
+          application={selectedApplication}
+          error={profileError}
+          isLoading={isProfileLoading}
+          onClose={() => {
+            setSelectedApplication(null);
+            setSelectedProfile(null);
+            setProfileError("");
+          }}
+          profile={selectedProfile}
+        />
+      ) : null}
+
       <div className="table-card company-pipeline-table">
         {filteredApplications.map((application) => (
           <div className="table-row" key={application.id}>
             <div>
-              <strong>{application.jobSeekerName}</strong>
+              <button
+                className="text-link-button"
+                type="button"
+                onClick={() => openApplicantProfile(application)}
+              >
+                {application.jobSeekerName}
+              </button>
               <span>{application.projectTitle}</span>
               <span>{application.coverLetter ?? "No cover letter"}</span>
             </div>

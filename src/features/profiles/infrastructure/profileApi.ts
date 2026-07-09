@@ -10,6 +10,13 @@ export function getMyJobSeekerProfileAsync() {
   return httpClient<JobSeekerProfile>("/api/profiles/job-seeker/me");
 }
 
+export function getPublicJobSeekerProfileAsync(jobSeekerId: number) {
+  return httpClient<JobSeekerProfile>(
+    `/api/profiles/job-seekers/${jobSeekerId}`,
+    { skipAuth: true },
+  );
+}
+
 export function updateMyJobSeekerProfileAsync(
   request: UpdateJobSeekerProfileRequest,
 ) {

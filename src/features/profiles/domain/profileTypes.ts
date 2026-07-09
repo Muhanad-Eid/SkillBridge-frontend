@@ -31,6 +31,19 @@ export type CompanyProfile = {
   isVerified: boolean;
 };
 
+export function isCompanyProfileComplete(
+  profile:
+    | Pick<CompanyProfile, "companyName" | "description" | "city">
+    | null
+    | undefined,
+) {
+  return Boolean(
+    profile?.companyName?.trim() &&
+      profile.description?.trim() &&
+      profile.city?.trim(),
+  );
+}
+
 export type UpdateCompanyProfileRequest = {
   companyName: string;
   description?: string;

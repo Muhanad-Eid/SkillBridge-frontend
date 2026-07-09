@@ -1242,6 +1242,32 @@ input {
   font-weight: 900;
 }
 
+.text-link-button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--blue-dark);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 950;
+  padding: 0;
+  text-align: left;
+}
+
+.text-link-button:hover {
+  text-decoration: underline;
+}
+
+.applicant-title-button {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 20px;
+}
+
+.applicant-profile-panel {
+  margin-bottom: 18px;
+}
+
 .detail-list {
   display: grid;
   grid-template-columns: 120px 1fr;

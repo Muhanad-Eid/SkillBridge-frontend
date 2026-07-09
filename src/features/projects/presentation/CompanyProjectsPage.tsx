@@ -511,7 +511,7 @@ export default function CompanyProjectsPage() {
                     to={`/company/projects/${project.id}/applications`}
                     variant="primary"
                   >
-                    View applicants
+                    Workers & applicants
                   </Button>
                   <Button variant="secondary" onClick={() => startEdit(project)}>
                     Edit

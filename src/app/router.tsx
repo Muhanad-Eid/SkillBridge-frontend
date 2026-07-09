@@ -29,7 +29,6 @@ import JobSeekerProfilePage from "../features/profiles/presentation/JobSeekerPro
 import CompanyProjectsPage from "../features/projects/presentation/CompanyProjectsPage";
 import ProjectDetailsPage from "../features/projects/presentation/ProjectDetailsPage";
 import ProjectsPage from "../features/projects/presentation/ProjectsPage";
-import ReviewsPage from "../features/reviews/presentation/ReviewsPage";
 import SkillsPage from "../features/skills/presentation/SkillsPage";
 
 export const router = createBrowserRouter([
@@ -68,7 +67,7 @@ export const router = createBrowserRouter([
       { path: "profile", element: <CompanyProfilePage /> },
       { path: "messages", element: <MessagesPage /> },
       { path: "notifications", element: <NotificationsPage /> },
-      { path: "reviews", element: <ReviewsPage /> },
+      { path: "reviews", element: <Navigate to="/company/projects" replace /> },
     ],
   },
   {
