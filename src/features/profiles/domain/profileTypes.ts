@@ -6,6 +6,10 @@ export type JobSeekerProfile = {
   city: string | null;
   linkedInUrl: string | null;
   gitHubUrl: string | null;
+  skills: string[];
+  portfolioItemsCount: number;
+  reviewsCount: number;
+  averageRating: number | null;
 };
 
 export type UpdateJobSeekerProfileRequest = {

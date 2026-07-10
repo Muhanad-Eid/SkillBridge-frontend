@@ -1,12 +1,18 @@
 import { type FormEvent, useEffect, useState } from "react";
 import {
+  Building2,
+  CheckCircle2,
+  Clock3,
+  ExternalLink,
+  ShieldCheck,
+} from "lucide-react";
+import {
   useLocation,
   useNavigate,
   useOutletContext,
   useSearchParams,
 } from "react-router-dom";
 import Button from "../../../shared/components/Button";
-import Card from "../../../shared/components/Card";
 import DataState from "../../../shared/components/DataState";
 import Input from "../../../shared/components/Input";
 import PageHeader from "../../../shared/components/PageHeader";
@@ -46,20 +52,25 @@ export default function CompanyProfilePage() {
       ? stateFrom
       : "/company/dashboard";
 
+  function applyProfile(data: CompanyProfile) {
+    setProfile(data);
+    setCompanyName(data.companyName);
+    setDescription(data.description ?? "");
+    setWebsite(data.website ?? "");
+    setCity(data.city ?? "");
+  }
+
   useEffect(() => {
     async function loadProfile() {
+      setError("");
+
       try {
-        const data = await getMyCompanyProfileAsync();
-        setProfile(data);
-        setCompanyName(data.companyName);
-        setDescription(data.description ?? "");
-        setWebsite(data.website ?? "");
-        setCity(data.city ?? "");
+        applyProfile(await getMyCompanyProfileAsync());
       } catch (caughtError) {
         setError(
           caughtError instanceof Error
             ? caughtError.message
-            : "Unable to load profile.",
+            : "Unable to load company profile.",
         );
       } finally {
         setIsLoading(false);
@@ -90,9 +101,7 @@ export default function CompanyProfilePage() {
     const trimmedCity = city.trim();
 
     if (!trimmedCompanyName || !trimmedDescription || !trimmedCity) {
-      setError(
-        "Company name, description, and city are required before you can use the portal.",
-      );
+      setError("Company name, description, and city are required.");
       return;
     }
 
@@ -106,104 +115,176 @@ export default function CompanyProfilePage() {
         city: trimmedCity,
       });
 
-      const nextProfile = profile
-        ? {
-            ...profile,
-            companyName: trimmedCompanyName,
-            description: trimmedDescription,
-            website: website.trim() || null,
-            city: trimmedCity,
-          }
-        : null;
-
-      setProfile(nextProfile);
+      const refreshedProfile = await getMyCompanyProfileAsync();
+      applyProfile(refreshedProfile);
       await portalContext.refreshProfileCompletion?.();
 
-      if (isRequiredFlow && isCompanyProfileComplete(nextProfile)) {
+      if (isRequiredFlow && isCompanyProfileComplete(refreshedProfile)) {
         navigate(returnPath, { replace: true });
         return;
       }
 
-      setMessage("Company profile updated.");
+      setMessage(
+        refreshedProfile.isVerified
+          ? "Company profile updated."
+          : "Company profile saved and ready for admin verification.",
+      );
     } catch (caughtError) {
       setError(
-        caughtError instanceof Error ? caughtError.message : "Unable to save.",
+        caughtError instanceof Error ? caughtError.message : "Unable to save profile.",
       );
     } finally {
       setIsSaving(false);
     }
   }
 
+  const profileComplete = isCompanyProfileComplete(profile);
+
   return (
-    <section className="page">
+    <section className="page company-profile-page-v2">
       <PageHeader
-        eyebrow="Profile"
+        eyebrow="Company settings"
         title="Company profile"
-        description={
-          isRequiredFlow
-            ? "Complete the required fields before using opportunities, applications, messages, and notifications."
-            : "Help job seekers understand who you are and why your opportunities are credible."
+        description="Maintain the company identity job seekers see on every opportunity."
+        actions={
+          profile?.website ? (
+            <a
+              className="button button-secondary button-with-icon"
+              href={profile.website}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <ExternalLink size={16} aria-hidden="true" />
+              Open website
+            </a>
+          ) : null
         }
       />
 
       {isRequiredFlow ? (
-        <div className="notice">
-          Complete your company profile first. Company name, description, and
-          city are required.
+        <div className="company-profile-required" role="status">
+          <Building2 size={20} aria-hidden="true" />
+          <div>
+            <strong>Complete your profile to open the company workspace.</strong>
+            <span>Company name, description, and city are required.</span>
+          </div>
         </div>
       ) : null}
 
       <DataState
         isLoading={isLoading}
-        error={error}
-        empty={!profile}
+        error={profile ? "" : error}
+        empty={!isLoading && !error && !profile}
         emptyTitle="Company profile not found"
-        emptyDescription="The API did not return a company profile."
+        emptyDescription="The account does not have a company profile."
       />
 
-      {profile ? (
-        <Card
-          title={profile.companyName}
-          description={`Company ID ${profile.id}`}
-          actions={
-            <StatusBadge tone={profile.isVerified ? "green" : "amber"}>
-              {profile.isVerified ? "Verified" : "Not verified"}
-            </StatusBadge>
-          }
-        >
-          <form className="stack" onSubmit={handleSubmit}>
-            <Input
-              label="Company name"
-              value={companyName}
-              onChange={(event) => setCompanyName(event.target.value)}
-              required
-            />
-            <label className="field">
-              <span>Description</span>
-              <textarea
-                value={description}
-                onChange={(event) => setDescription(event.target.value)}
-                required
+      {!isLoading && profile ? (
+        <>
+          <section className="company-verification-panel">
+            <div className="company-verification-state">
+              <span className={profile.isVerified ? "verified" : "pending"}>
+                {profile.isVerified ? (
+                  <ShieldCheck size={24} aria-hidden="true" />
+                ) : (
+                  <Clock3 size={24} aria-hidden="true" />
+                )}
+              </span>
+              <div>
+                <StatusBadge tone={profile.isVerified ? "green" : "amber"}>
+                  {profile.isVerified ? "Verified company" : "Pending verification"}
+                </StatusBadge>
+                <h2>
+                  {profile.isVerified
+                    ? "Your company can publish opportunities"
+                    : "An admin must verify this profile"}
+                </h2>
+                <p>
+                  {profile.isVerified
+                    ? "Changing company identity details will require admin verification again."
+                    : "You can use the workspace while waiting, but publishing and reopening opportunities are disabled."}
+                </p>
+              </div>
+            </div>
+
+            <div className="company-verification-steps" aria-label="Verification progress">
+              <div className={profileComplete ? "complete" : "current"}>
+                <CheckCircle2 size={18} aria-hidden="true" />
+                <span>Profile complete</span>
+              </div>
+              <div className={profile.isVerified ? "complete" : "current"}>
+                {profile.isVerified ? (
+                  <CheckCircle2 size={18} aria-hidden="true" />
+                ) : (
+                  <Clock3 size={18} aria-hidden="true" />
+                )}
+                <span>Admin review</span>
+              </div>
+              <div className={profile.isVerified ? "complete" : ""}>
+                <BriefcaseStatusIcon />
+                <span>Publishing enabled</span>
+              </div>
+            </div>
+          </section>
+
+          <section className="company-profile-form-panel">
+            <header>
+              <div>
+                <span>Company ID #{profile.id}</span>
+                <h2>Public company details</h2>
+              </div>
+            </header>
+
+            <form onSubmit={handleSubmit}>
+              <div className="company-form-grid">
+                <Input
+                  label="Company name"
+                  value={companyName}
+                  maxLength={120}
+                  required
+                  onChange={(event) => setCompanyName(event.target.value)}
+                />
+                <Input
+                  label="City"
+                  value={city}
+                  maxLength={120}
+                  required
+                  onChange={(event) => setCity(event.target.value)}
+                />
+              </div>
+              <Input
+                label="Website"
+                type="url"
+                placeholder="https://company.example"
+                value={website}
+                onChange={(event) => setWebsite(event.target.value)}
               />
-            </label>
-            <Input
-              label="Website"
-              value={website}
-              onChange={(event) => setWebsite(event.target.value)}
-            />
-            <Input
-              label="City"
-              value={city}
-              onChange={(event) => setCity(event.target.value)}
-              required
-            />
-            {message ? <div className="notice">{message}</div> : null}
-            <Button type="submit" isLoading={isSaving}>
-              {isRequiredFlow ? "Complete company profile" : "Save company"}
-            </Button>
-          </form>
-        </Card>
+              <label className="field">
+                <span>Company description</span>
+                <textarea
+                  value={description}
+                  maxLength={2000}
+                  required
+                  onChange={(event) => setDescription(event.target.value)}
+                />
+              </label>
+
+              {message ? <div className="notice notice-success">{message}</div> : null}
+              {error ? <div className="notice notice-error">{error}</div> : null}
+
+              <div className="company-profile-form-actions">
+                <Button type="submit" isLoading={isSaving}>
+                  {isRequiredFlow ? "Complete company profile" : "Save profile"}
+                </Button>
+              </div>
+            </form>
+          </section>
+        </>
       ) : null}
     </section>
   );
+}
+
+function BriefcaseStatusIcon() {
+  return <Building2 size={18} aria-hidden="true" />;
 }

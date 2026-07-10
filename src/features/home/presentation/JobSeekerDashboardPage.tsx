@@ -9,10 +9,10 @@ import {
   type Application,
 } from "../../applications/domain/applicationTypes";
 import { getMyApplicationsAsync } from "../../applications/infrastructure/applicationApi";
-import { getMyPortfolioAsync } from "../../portfolio/infrastructure/portfolioApi";
 import type { PortfolioItem } from "../../portfolio/domain/portfolioTypes";
-import { getMySkillsAsync } from "../../skills/infrastructure/skillApi";
+import { getMyPortfolioAsync } from "../../portfolio/infrastructure/portfolioApi";
 import type { Skill } from "../../skills/domain/skillTypes";
+import { getMySkillsAsync } from "../../skills/infrastructure/skillApi";
 
 export default function JobSeekerDashboardPage() {
   const [applications, setApplications] = useState<Application[]>([]);
@@ -59,18 +59,62 @@ export default function JobSeekerDashboardPage() {
     };
   }, []);
 
-  const activeApplications = useMemo(() => {
+  const applicationStats = useMemo(() => {
+    return {
+      pending: applications.filter(
+        (application) => application.status === ApplicationStatuses.Pending,
+      ).length,
+      accepted: applications.filter(
+        (application) => application.status === ApplicationStatuses.Accepted,
+      ).length,
+      rejected: applications.filter(
+        (application) => application.status === ApplicationStatuses.Rejected,
+      ).length,
+    };
+  }, [applications]);
+
+  const acceptedReadyApplications = useMemo(() => {
+    const portfolioProjectIds = new Set(
+      portfolioItems.map((item) => item.projectId),
+    );
+
     return applications.filter(
       (application) =>
-        application.status === ApplicationStatuses.Pending ||
-        application.status === ApplicationStatuses.Accepted,
+        application.status === ApplicationStatuses.Accepted &&
+        !portfolioProjectIds.has(application.projectId),
     );
-  }, [applications]);
+  }, [applications, portfolioItems]);
 
   const profileScore = Math.min(
     100,
-    skills.length * 12 + portfolioItems.length * 20 + applications.length * 8,
+    25 +
+      Math.min(skills.length, 5) * 7 +
+      Math.min(applications.length, 3) * 8 +
+      Math.min(portfolioItems.length, 2) * 8,
   );
+
+  const readinessSteps = [
+    {
+      label: "Profile completed",
+      done: true,
+      action: "/job-seeker/profile",
+    },
+    {
+      label: "Add at least 3 skills",
+      done: skills.length >= 3,
+      action: "/job-seeker/skills",
+    },
+    {
+      label: "Apply to an opportunity",
+      done: applications.length > 0,
+      action: "/job-seeker/opportunities",
+    },
+    {
+      label: "Add portfolio proof",
+      done: portfolioItems.length > 0,
+      action: "/job-seeker/portfolio",
+    },
+  ];
 
   const recentApplications = applications.slice(0, 4);
 
@@ -78,8 +122,8 @@ export default function JobSeekerDashboardPage() {
     <section className="page career-hub-page">
       <PageHeader
         eyebrow="Career hub"
-        title="Build proof while you apply."
-        description="Your job seeker portal focuses on opportunities, applications, skills, and portfolio evidence."
+        title="Your job seeker workspace"
+        description="Track applications, improve your profile proof, and move accepted work into a portfolio companies can trust."
         actions={
           <Button to="/job-seeker/opportunities" variant="primary">
             Browse opportunities
@@ -91,12 +135,27 @@ export default function JobSeekerDashboardPage() {
 
       <div className="career-progress-card">
         <div>
-          <span>Profile strength</span>
+          <span>Profile readiness</span>
           <strong>{isLoading ? "-" : `${profileScore}%`}</strong>
-          <p>Skills, applications, and portfolio items improve your visibility.</p>
+          <p>
+            Add skills, apply to work, and turn accepted projects into portfolio
+            proof.
+          </p>
         </div>
         <div className="career-progress-bar" aria-hidden="true">
           <span style={{ width: `${profileScore}%` }} />
+        </div>
+        <div className="career-checklist">
+          {readinessSteps.map((step) => (
+            <Button
+              key={step.label}
+              to={step.action}
+              variant={step.done ? "secondary" : "primary"}
+            >
+              {step.done ? "Done: " : "Next: "}
+              {step.label}
+            </Button>
+          ))}
         </div>
       </div>
 
@@ -106,8 +165,8 @@ export default function JobSeekerDashboardPage() {
           <strong>{isLoading ? "-" : applications.length}</strong>
         </article>
         <article>
-          <span>Active</span>
-          <strong>{isLoading ? "-" : activeApplications.length}</strong>
+          <span>Pending</span>
+          <strong>{isLoading ? "-" : applicationStats.pending}</strong>
         </article>
         <article>
           <span>Skills</span>
@@ -119,25 +178,40 @@ export default function JobSeekerDashboardPage() {
         </article>
       </div>
 
-      <div className="career-hub-grid">
+      <div className="career-action-grid">
         <Card
-          eyebrow="Next move"
-          title="Find your next opportunity"
-          description="Browse open internships, training, and paid projects that match your profile."
+          eyebrow="Applications"
+          title={`${applicationStats.pending} waiting, ${applicationStats.accepted} accepted`}
+          description="Keep watching company decisions and open the opportunity when you need the details."
           actions={
-            <Button to="/job-seeker/opportunities" variant="secondary">
-              Browse now
+            <Button to="/job-seeker/applications" variant="secondary">
+              View pipeline
             </Button>
           }
         />
 
         <Card
-          eyebrow="Proof"
-          title="Improve your evidence"
-          description="Add skills and portfolio work before companies review your application."
+          eyebrow="Skills"
+          title={skills.length > 0 ? `${skills.length} skills listed` : "Add your first skills"}
+          description="Skills help companies understand what you can actually do."
           actions={
-            <Button to="/job-seeker/portfolio" variant="ghost">
-              Update proof
+            <Button to="/job-seeker/skills" variant="secondary">
+              Manage skills
+            </Button>
+          }
+        />
+
+        <Card
+          eyebrow="Portfolio"
+          title={
+            acceptedReadyApplications.length > 0
+              ? `${acceptedReadyApplications.length} accepted project ready`
+              : "Build proof from accepted work"
+          }
+          description="When a company accepts you, turn that project into visible portfolio evidence."
+          actions={
+            <Button to="/job-seeker/portfolio" variant="secondary">
+              Update portfolio
             </Button>
           }
         />
@@ -145,16 +219,29 @@ export default function JobSeekerDashboardPage() {
 
       <Card title="Recent applications" className="career-applications-card">
         {recentApplications.length === 0 ? (
-          <p>No applications yet. Start by browsing opportunities.</p>
+          <div className="empty-inline">
+            <p>No applications yet. Start by browsing opportunities.</p>
+            <Button to="/job-seeker/opportunities" variant="secondary">
+              Browse opportunities
+            </Button>
+          </div>
         ) : (
           <div className="mini-list">
             {recentApplications.map((application) => (
               <div key={application.id}>
                 <strong>{application.projectTitle}</strong>
                 <span>{application.coverLetter ?? "No cover letter"}</span>
-                <StatusBadge>
-                  {getApplicationStatusLabel(application.status)}
-                </StatusBadge>
+                <div className="admin-row-actions">
+                  <StatusBadge>
+                    {getApplicationStatusLabel(application.status)}
+                  </StatusBadge>
+                  <Button
+                    to={`/job-seeker/opportunities/${application.projectId}`}
+                    variant="secondary"
+                  >
+                    View opportunity
+                  </Button>
+                </div>
               </div>
             ))}
           </div>

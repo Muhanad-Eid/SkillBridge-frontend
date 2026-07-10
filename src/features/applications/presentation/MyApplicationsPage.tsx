@@ -98,7 +98,7 @@ export default function MyApplicationsPage() {
       setMessage("Application withdrawn.");
       await loadApplications();
     } catch (caughtError) {
-      setMessage(
+      setError(
         caughtError instanceof Error
           ? caughtError.message
           : "Unable to withdraw application.",
@@ -180,20 +180,43 @@ export default function MyApplicationsPage() {
               </StatusBadge>
             }
           >
-            {application.status === ApplicationStatuses.Pending ? (
+            <div className="detail-list compact-detail-list">
+              <span>Application ID</span>
+              <strong>{application.id}</strong>
+              <span>Project ID</span>
+              <strong>{application.projectId}</strong>
+            </div>
+
+            <div className="actions-row">
               <Button
+                to={`/job-seeker/opportunities/${application.projectId}`}
                 variant="secondary"
-                onClick={() => handleWithdraw(application)}
               >
-                Withdraw
+                View opportunity
               </Button>
-            ) : (
+
+              {application.status === ApplicationStatuses.Pending ? (
+                <Button
+                  variant="secondary"
+                  onClick={() => handleWithdraw(application)}
+                >
+                  Withdraw
+                </Button>
+              ) : null}
+
+              {application.status === ApplicationStatuses.Accepted ? (
+                <Button to="/job-seeker/portfolio" variant="primary">
+                  Add proof
+                </Button>
+              ) : null}
+            </div>
+
+            {application.status === ApplicationStatuses.Accepted ? (
               <p>
-                {application.status === ApplicationStatuses.Accepted
-                  ? "Accepted applications can be added to your portfolio after work is complete."
-                  : "This application is no longer pending."}
+                This application was accepted. Add portfolio proof when the work
+                is ready.
               </p>
-            )}
+            ) : null}
           </Card>
         ))}
       </div>

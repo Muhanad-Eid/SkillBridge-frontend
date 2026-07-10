@@ -6,6 +6,7 @@ const API_BASE_URL =
   "http://localhost:8080";
 
 const AUTH_STORAGE_KEY = "skillbridge_auth";
+const AUTH_EXPIRED_EVENT = "skillbridge:auth-expired";
 
 type HttpOptions = RequestInit & {
   skipAuth?: boolean;
@@ -35,6 +36,10 @@ export async function httpClient<T>(
   const data = await readResponse(response);
 
   if (!response.ok) {
+    if (response.status === 401 && !options.skipAuth) {
+      handleUnauthorized();
+    }
+
     throw new Error(getErrorMessage(data, response.status));
   }
 
@@ -53,6 +58,19 @@ export function getStoredAuth(): AuthResponse | null {
 
 export function clearStoredAuth() {
   localStorage.removeItem(AUTH_STORAGE_KEY);
+}
+
+function handleUnauthorized() {
+  clearStoredAuth();
+  window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT));
+
+  const loginPath = window.location.pathname.startsWith("/admin")
+    ? "/admin/login"
+    : "/login";
+
+  if (window.location.pathname !== loginPath) {
+    window.location.assign(loginPath);
+  }
 }
 
 async function readResponse(response: Response) {
@@ -75,6 +93,10 @@ function getErrorMessage(data: unknown, status: number) {
   }
 
   if (!data || typeof data !== "object") {
+    if (status === 401) {
+      return "Your session expired. Please log in again.";
+    }
+
     return `Request failed (${status}).`;
   }
 

@@ -1,4 +1,16 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Bell,
+  BriefcaseBusiness,
+  Building2,
+  ClipboardList,
+  LayoutDashboard,
+  LogOut,
+  MessageSquare,
+  ShieldCheck,
+  UserRound,
+  type LucideIcon,
+} from "lucide-react";
 import {
   Link,
   Navigate,
@@ -9,20 +21,49 @@ import {
 } from "react-router-dom";
 import { useAuth } from "../../shared/auth/AuthContext";
 import Button from "../../shared/components/Button";
+import StatusBadge from "../../shared/components/StatusBadge";
 import {
   isCompanyProfileComplete,
   type CompanyProfile,
 } from "../../features/profiles/domain/profileTypes";
 import { getMyCompanyProfileAsync } from "../../features/profiles/infrastructure/profileApi";
+import { getMyMessagesAsync } from "../../features/messages/infrastructure/messageApi";
+import { getMyNotificationsAsync } from "../../features/notifications/infrastructure/notificationApi";
 
-const companyNavItems = [
-  { label: "Overview", to: "/company/dashboard" },
-  { label: "Opportunities", to: "/company/projects" },
-  { label: "Applications", to: "/company/applications" },
-  { label: "Messages", to: "/company/messages" },
-  { label: "Notifications", to: "/company/notifications" },
-  { label: "Profile", to: "/company/profile" },
+type CompanyNavItem = {
+  label: string;
+  to: string;
+  icon: LucideIcon;
+  badge?: "messages" | "notifications";
+};
+
+const companyNavItems: CompanyNavItem[] = [
+  { label: "Overview", to: "/company/dashboard", icon: LayoutDashboard },
+  { label: "Opportunities", to: "/company/projects", icon: BriefcaseBusiness },
+  { label: "Talent pipeline", to: "/company/applications", icon: ClipboardList },
+  {
+    label: "Messages",
+    to: "/company/messages",
+    icon: MessageSquare,
+    badge: "messages",
+  },
+  {
+    label: "Notifications",
+    to: "/company/notifications",
+    icon: Bell,
+    badge: "notifications",
+  },
+  { label: "Company profile", to: "/company/profile", icon: Building2 },
 ];
+
+const sectionTitles: Record<string, string> = {
+  "/company/dashboard": "Company overview",
+  "/company/projects": "Opportunities",
+  "/company/applications": "Talent pipeline",
+  "/company/messages": "Messages",
+  "/company/notifications": "Notifications",
+  "/company/profile": "Company profile",
+};
 
 export default function CompanyPortalLayout() {
   const { user, logout } = useAuth();
@@ -31,14 +72,15 @@ export default function CompanyPortalLayout() {
   const [profile, setProfile] = useState<CompanyProfile | null>(null);
   const [isCheckingProfile, setIsCheckingProfile] = useState(true);
   const [profileError, setProfileError] = useState("");
+  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   const refreshProfileCompletion = useCallback(async () => {
     setIsCheckingProfile(true);
     setProfileError("");
 
     try {
-      const data = await getMyCompanyProfileAsync();
-      setProfile(data);
+      setProfile(await getMyCompanyProfileAsync());
     } catch (caughtError) {
       setProfile(null);
       setProfileError(
@@ -51,15 +93,58 @@ export default function CompanyPortalLayout() {
     }
   }, []);
 
+  const refreshBadges = useCallback(async () => {
+    const [messageResult, notificationResult] = await Promise.allSettled([
+      getMyMessagesAsync(),
+      getMyNotificationsAsync(),
+    ]);
+
+    if (messageResult.status === "fulfilled") {
+      setUnreadMessages(
+        messageResult.value.filter(
+          (message) => !message.isRead && message.receiverId === user?.userId,
+        ).length,
+      );
+    }
+
+    if (notificationResult.status === "fulfilled") {
+      setUnreadNotifications(
+        notificationResult.value.filter((notification) => !notification.isRead)
+          .length,
+      );
+    }
+  }, [user?.userId]);
+
   useEffect(() => {
-    refreshProfileCompletion();
+    const timeoutId = window.setTimeout(refreshProfileCompletion, 0);
+    return () => window.clearTimeout(timeoutId);
   }, [refreshProfileCompletion]);
 
+  useEffect(() => {
+    const timeoutId = window.setTimeout(refreshBadges, 0);
+    const intervalId = window.setInterval(refreshBadges, 5000);
+    return () => {
+      window.clearTimeout(timeoutId);
+      window.clearInterval(intervalId);
+    };
+  }, [refreshBadges]);
+
   const profileIsComplete = isCompanyProfileComplete(profile);
+  const isCompanyVerified = Boolean(profile?.isVerified);
   const isProfileRoute = location.pathname === "/company/profile";
   const navItems = profileIsComplete
     ? companyNavItems
     : companyNavItems.filter((item) => item.to === "/company/profile");
+
+  const currentSection = useMemo(() => {
+    if (location.pathname.includes("/applications")) {
+      return location.pathname.startsWith("/company/projects/")
+        ? "Opportunity team"
+        : "Talent pipeline";
+    }
+
+    return sectionTitles[location.pathname] ?? "Company workspace";
+  }, [location.pathname]);
 
   function handleLogout() {
     logout();
@@ -77,76 +162,119 @@ export default function CompanyPortalLayout() {
   }
 
   return (
-    <div className="company-portal">
-      <header className="company-topbar">
+    <div className="company-portal company-portal-v2">
+      <aside className="company-sidebar">
         <Link
-          className="portal-brand"
+          className="company-brand"
           to={profileIsComplete ? "/company/dashboard" : "/company/profile"}
         >
           <span className="brand-mark">SB</span>
           <span>
             <strong>SkillBridge</strong>
-            <small>Company portal</small>
+            <small>Company workspace</small>
           </span>
         </Link>
 
-        <nav className="company-tabs" aria-label="Company navigation">
-          {navItems.map((item) => (
-            <NavLink key={item.to} to={item.to}>
-              {item.label}
-            </NavLink>
-          ))}
+        <div className="company-account-summary">
+          <span className="company-account-icon" aria-hidden="true">
+            <Building2 size={19} />
+          </span>
+          <div>
+            <strong>{profile?.companyName || user?.fullName || "Company"}</strong>
+            <small>
+              {isCompanyVerified ? "Verified company" : "Verification pending"}
+            </small>
+          </div>
+          {isCompanyVerified ? <ShieldCheck size={18} aria-label="Verified" /> : null}
+        </div>
+
+        <nav className="company-sidebar-nav" aria-label="Company navigation">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const badgeCount =
+              item.badge === "messages"
+                ? unreadMessages
+                : item.badge === "notifications"
+                  ? unreadNotifications
+                  : 0;
+
+            return (
+              <NavLink key={item.to} to={item.to}>
+                <Icon size={18} aria-hidden="true" />
+                <span>{item.label}</span>
+                {badgeCount > 0 ? (
+                  <strong className="company-nav-badge">{badgeCount}</strong>
+                ) : null}
+              </NavLink>
+            );
+          })}
         </nav>
 
-        <div className="company-user">
-          <span>{user?.fullName}</span>
-          <Button variant="secondary" onClick={handleLogout}>
-            Log out
+        <div className="company-sidebar-footer">
+          <div>
+            <UserRound size={17} aria-hidden="true" />
+            <span>
+              <strong>{user?.fullName}</strong>
+              <small>{user?.email}</small>
+            </span>
+          </div>
+          <Button
+            aria-label="Log out"
+            title="Log out"
+            type="button"
+            variant="ghost"
+            className="company-logout-button"
+            onClick={handleLogout}
+          >
+            <LogOut size={18} aria-hidden="true" />
           </Button>
         </div>
-      </header>
+      </aside>
 
-      <section className="company-hero-strip">
-        <div>
-          <span>
-            {profileIsComplete
-              ? "Hiring and training workspace"
-              : "Company profile required"}
-          </span>
-          <strong>
-            {profileIsComplete
-              ? "Post work. Review applicants. Build talent."
-              : "Complete your company profile before using the portal."}
-          </strong>
-        </div>
-        {profileIsComplete ? (
-          <Button to="/company/projects" variant="primary">
-            Manage opportunities
-          </Button>
-        ) : (
-          <Button to="/company/profile" variant="primary">
-            Complete profile
-          </Button>
-        )}
-      </section>
+      <div className="company-workspace">
+        <header className="company-workspace-header">
+          <div>
+            <span>Company portal</span>
+            <strong>{currentSection}</strong>
+          </div>
+          <StatusBadge tone={isCompanyVerified ? "green" : "amber"}>
+            {isCompanyVerified ? "Verified" : "Pending verification"}
+          </StatusBadge>
+        </header>
 
-      <main className="company-content">
-        <section className="portal-identity company-identity">
-          <span>Company Portal</span>
-          <strong>
-            {profileIsComplete
-              ? "Opportunities, applicants, and company operations"
-              : "Complete your company profile to continue"}
-          </strong>
-        </section>
-        {isCheckingProfile ? (
-          <div className="notice">Checking company profile...</div>
-        ) : profileError && !isProfileRoute ? (
-          <div className="notice notice-error">{profileError}</div>
-        ) : (
-          <Outlet context={{ refreshProfileCompletion, profileIsComplete }} />
-        )}
-      </main>
+        {!isCheckingProfile && profileIsComplete && !isCompanyVerified && !isProfileRoute ? (
+          <div className="company-verification-banner" role="status">
+            <ShieldCheck size={20} aria-hidden="true" />
+            <div>
+              <strong>Admin verification is required to publish.</strong>
+              <span>
+                You can review your workspace while your company profile is pending.
+              </span>
+            </div>
+            <Button to="/company/profile" variant="secondary">
+              Review profile
+            </Button>
+          </div>
+        ) : null}
+
+        <main className="company-content">
+          {isCheckingProfile ? (
+            <div className="notice">Checking company profile...</div>
+          ) : profileError && !isProfileRoute ? (
+            <div className="notice notice-error">{profileError}</div>
+          ) : (
+            <Outlet
+              context={{
+                profile,
+                profileIsComplete,
+                isCompanyVerified,
+                refreshProfileCompletion,
+                refreshBadges,
+              }}
+            />
+          )}
+        </main>
+      </div>
     </div>
   );
 }

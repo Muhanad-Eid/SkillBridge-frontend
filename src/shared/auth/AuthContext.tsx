@@ -1,4 +1,10 @@
-﻿import { createContext, useContext, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   normalizeAuthRole,
   type AuthResponse,
@@ -25,6 +31,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return storedAuth && role ? { ...storedAuth, role } : null;
   });
+
+  useEffect(() => {
+    function handleExpiredSession() {
+      setUser(null);
+    }
+
+    window.addEventListener("skillbridge:auth-expired", handleExpiredSession);
+
+    return () => {
+      window.removeEventListener(
+        "skillbridge:auth-expired",
+        handleExpiredSession,
+      );
+    };
+  }, []);
 
   function setAuth(nextUser: AuthResponse) {
     const role = normalizeAuthRole(nextUser.role);

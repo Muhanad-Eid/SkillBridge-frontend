@@ -76,7 +76,7 @@ export default function ProjectDetailsPage() {
 
   async function handleApply(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!project) return;
+    if (!project || project.status !== ProjectStatuses.Open) return;
 
     setIsApplying(true);
     setMessage("");
@@ -127,6 +127,12 @@ export default function ProjectDetailsPage() {
               <div className="detail-list">
                 <span>Company</span>
                 <strong>{project.companyName}</strong>
+                <span>Company status</span>
+                <strong>
+                  {companyProfile?.isVerified ? "Verified" : "Not verified yet"}
+                </strong>
+                <span>City</span>
+                <strong>{companyProfile?.city ?? "Not provided"}</strong>
                 <span>Budget</span>
                 <strong>{project.budget ? `$${project.budget}` : "Not listed"}</strong>
                 <span>Duration</span>
@@ -141,7 +147,10 @@ export default function ProjectDetailsPage() {
               ) : null}
             </Card>
 
-            <Card title="Apply">
+            <Card
+              title="Apply"
+              description="Send a focused cover letter that connects your skills to the work."
+            >
               {user?.role === "JobSeeker" ? (
                 <form className="stack" onSubmit={handleApply}>
                   <label className="field">
@@ -153,9 +162,20 @@ export default function ProjectDetailsPage() {
                     />
                   </label>
                   {message ? <div className="notice">{message}</div> : null}
-                  <Button type="submit" isLoading={isApplying}>
-                    Apply now
-                  </Button>
+                  <div className="actions-row">
+                    <Button
+                      type="submit"
+                      isLoading={isApplying}
+                      disabled={project.status !== ProjectStatuses.Open}
+                    >
+                      Apply now
+                    </Button>
+                    {message === "Application submitted." ? (
+                      <Button to="/job-seeker/applications" variant="secondary">
+                        View my applications
+                      </Button>
+                    ) : null}
+                  </div>
                 </form>
               ) : user ? (
                 <p>Only job seekers can apply to opportunities.</p>

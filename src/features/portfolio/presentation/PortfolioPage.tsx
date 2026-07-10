@@ -146,7 +146,7 @@ export default function PortfolioPage() {
       resetForm();
       await loadPortfolio();
     } catch (caughtError) {
-      setMessage(
+      setError(
         caughtError instanceof Error
           ? caughtError.message
           : "Unable to save portfolio item.",
@@ -178,7 +178,7 @@ export default function PortfolioPage() {
       setMessage("Portfolio item deleted.");
       await loadPortfolio();
     } catch (caughtError) {
-      setMessage(
+      setError(
         caughtError instanceof Error
           ? caughtError.message
           : "Unable to delete portfolio item.",
@@ -216,8 +216,22 @@ export default function PortfolioPage() {
         </article>
       </div>
 
+      {acceptedApplications.length === 0 && mode === "create" ? (
+        <div className="notice">
+          Portfolio proof starts after a company accepts your application. Keep
+          applying, then come back here to document the work.
+        </div>
+      ) : null}
+
       <div className="two-column">
-        <Card title={mode === "create" ? "Add portfolio item" : "Edit portfolio item"}>
+        <Card
+          title={mode === "create" ? "Add portfolio proof" : "Edit portfolio proof"}
+          description={
+            mode === "create"
+              ? "Choose an accepted project, explain what you built, and add a link if you have one."
+              : "Update the description or project link for this portfolio item."
+          }
+        >
           <form className="stack" onSubmit={handleSave}>
             <label className="field">
               <span>Accepted project</span>
@@ -262,10 +276,12 @@ export default function PortfolioPage() {
                     description: event.target.value,
                   }))
                 }
+                placeholder="What did you build, learn, fix, or deliver?"
               />
             </label>
             <Input
               label="Project URL"
+              placeholder="https://github.com/you/project or live demo link"
               value={form.projectUrl}
               onChange={(event) =>
                 setForm((current) => ({
@@ -320,13 +336,27 @@ export default function PortfolioPage() {
                 </div>
               }
             >
-              {item.projectUrl ? (
-                <a className="text-link" href={item.projectUrl}>
-                  Open project
-                </a>
-              ) : (
-                <p>Add a project link when you have one.</p>
-              )}
+              <div className="detail-list compact-detail-list">
+                <span>Portfolio ID</span>
+                <strong>{item.id}</strong>
+                <span>Project ID</span>
+                <strong>{item.projectId}</strong>
+              </div>
+              <div className="actions-row">
+                <Button
+                  to={`/job-seeker/opportunities/${item.projectId}`}
+                  variant="secondary"
+                >
+                  View opportunity
+                </Button>
+                {item.projectUrl ? (
+                  <a className="button button-primary" href={item.projectUrl}>
+                    Open project
+                  </a>
+                ) : (
+                  <p>Add a project link when you have one.</p>
+                )}
+              </div>
             </Card>
           ))}
         </div>
