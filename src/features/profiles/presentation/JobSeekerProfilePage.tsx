@@ -1,4 +1,5 @@
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { CheckCircle2, Code2, Link2, MapPin, UserRound } from "lucide-react";
 import {
   useLocation,
   useNavigate,
@@ -6,7 +7,6 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import Button from "../../../shared/components/Button";
-import Card from "../../../shared/components/Card";
 import DataState from "../../../shared/components/DataState";
 import Input from "../../../shared/components/Input";
 import PageHeader from "../../../shared/components/PageHeader";
@@ -45,27 +45,38 @@ export default function JobSeekerProfilePage() {
       ? stateFrom
       : "/job-seeker/dashboard";
 
+  function applyProfile(data: JobSeekerProfile) {
+    setProfile(data);
+    setBio(data.bio ?? "");
+    setCity(data.city ?? "");
+    setLinkedInUrl(data.linkedInUrl ?? "");
+    setGitHubUrl(data.gitHubUrl ?? "");
+  }
+
   useEffect(() => {
+    let isMounted = true;
+
     async function loadProfile() {
       try {
         const data = await getMyJobSeekerProfileAsync();
-        setProfile(data);
-        setBio(data.bio ?? "");
-        setCity(data.city ?? "");
-        setLinkedInUrl(data.linkedInUrl ?? "");
-        setGitHubUrl(data.gitHubUrl ?? "");
+        if (isMounted) applyProfile(data);
       } catch (caughtError) {
-        setError(
-          caughtError instanceof Error
-            ? caughtError.message
-            : "Unable to load profile.",
-        );
+        if (isMounted) {
+          setError(
+            caughtError instanceof Error
+              ? caughtError.message
+              : "Unable to load profile.",
+          );
+        }
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     }
 
     loadProfile();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -78,6 +89,20 @@ export default function JobSeekerProfilePage() {
       navigate(returnPath, { replace: true });
     }
   }, [isLoading, isRequiredFlow, navigate, profile, returnPath]);
+
+  const completionItems = useMemo(
+    () => [
+      { label: "Professional bio", done: Boolean(bio.trim()) },
+      { label: "Current city", done: Boolean(city.trim()) },
+      { label: "LinkedIn profile", done: Boolean(linkedInUrl.trim()) },
+      { label: "GitHub profile", done: Boolean(gitHubUrl.trim()) },
+    ],
+    [bio, city, linkedInUrl, gitHubUrl],
+  );
+
+  const completion = Math.round(
+    (completionItems.filter((item) => item.done).length / completionItems.length) * 100,
+  );
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -102,28 +127,19 @@ export default function JobSeekerProfilePage() {
         gitHubUrl: gitHubUrl.trim() || undefined,
       });
 
-      const nextProfile = profile
-        ? {
-            ...profile,
-            bio: trimmedBio,
-            city: trimmedCity,
-            linkedInUrl: linkedInUrl.trim() || null,
-            gitHubUrl: gitHubUrl.trim() || null,
-          }
-        : null;
-
-      setProfile(nextProfile);
+      const refreshedProfile = await getMyJobSeekerProfileAsync();
+      applyProfile(refreshedProfile);
       await portalContext.refreshProfileCompletion?.();
 
-      if (isRequiredFlow && isJobSeekerProfileComplete(nextProfile)) {
+      if (isRequiredFlow && isJobSeekerProfileComplete(refreshedProfile)) {
         navigate(returnPath, { replace: true });
         return;
       }
 
-      setMessage("Profile updated.");
+      setMessage("Profile updated successfully.");
     } catch (caughtError) {
       setError(
-        caughtError instanceof Error ? caughtError.message : "Unable to save.",
+        caughtError instanceof Error ? caughtError.message : "Unable to save profile.",
       );
     } finally {
       setIsSaving(false);
@@ -131,20 +147,20 @@ export default function JobSeekerProfilePage() {
   }
 
   return (
-    <section className="page">
+    <section className="page jobseeker-profile-page">
       <PageHeader
-        eyebrow="Profile"
-        title="Job seeker profile"
-        description={
-          isRequiredFlow
-            ? "Complete the required fields before using applications, skills, portfolio, and messages."
-            : "Keep your career profile useful for companies reviewing your applications."
-        }
+        eyebrow={isRequiredFlow ? "Required setup" : "Career profile"}
+        title={isRequiredFlow ? "Complete your profile to continue" : "Profile and public details"}
+        description="This is the first information a company sees when reviewing your application. Keep it specific and current."
       />
 
       {isRequiredFlow ? (
-        <div className="notice">
-          Complete your profile first. Bio and city are required.
+        <div className="jobseeker-required-banner" role="status">
+          <UserRound size={20} aria-hidden="true" />
+          <div>
+            <strong>Profile setup is required</strong>
+            <span>Add your professional bio and city to unlock the job seeker portal.</span>
+          </div>
         </div>
       ) : null}
 
@@ -157,38 +173,105 @@ export default function JobSeekerProfilePage() {
       />
 
       {profile ? (
-        <Card title={profile.fullName} description={`Profile ID ${profile.id}`}>
-          <form className="stack" onSubmit={handleSubmit}>
-            <label className="field">
-              <span>Bio</span>
-              <textarea
-                value={bio}
-                onChange={(event) => setBio(event.target.value)}
-                required
-              />
-            </label>
-            <Input
-              label="City"
-              value={city}
-              onChange={(event) => setCity(event.target.value)}
-              required
-            />
-            <Input
-              label="LinkedIn URL"
-              value={linkedInUrl}
-              onChange={(event) => setLinkedInUrl(event.target.value)}
-            />
-            <Input
-              label="GitHub URL"
-              value={gitHubUrl}
-              onChange={(event) => setGitHubUrl(event.target.value)}
-            />
-            {message ? <div className="notice">{message}</div> : null}
-            <Button type="submit" isLoading={isSaving}>
-              {isRequiredFlow ? "Complete profile" : "Save profile"}
-            </Button>
-          </form>
-        </Card>
+        <div className="jobseeker-profile-layout">
+          <aside className="jobseeker-profile-summary">
+            <div className="jobseeker-profile-avatar" aria-hidden="true">
+              {profile.fullName.trim().charAt(0).toUpperCase()}
+            </div>
+            <h2>{profile.fullName}</h2>
+            <span><MapPin size={15} aria-hidden="true" />{city || "City not added"}</span>
+            <p>{bio || "Add a short professional bio to introduce your experience and goals."}</p>
+
+            <div className="jobseeker-profile-strength">
+              <div><span>Profile details</span><strong>{completion}%</strong></div>
+              <div aria-hidden="true"><b style={{ width: `${completion}%` }} /></div>
+            </div>
+
+            <div className="jobseeker-profile-signals">
+              <div><strong>{profile.skills?.length ?? 0}</strong><span>Skills</span></div>
+              <div><strong>{profile.portfolioItemsCount ?? 0}</strong><span>Portfolio</span></div>
+              <div><strong>{profile.reviewsCount ?? 0}</strong><span>Reviews</span></div>
+            </div>
+
+            <div className="jobseeker-profile-checklist">
+              {completionItems.map((item) => (
+                <div key={item.label} className={item.done ? "done" : ""}>
+                  <CheckCircle2 size={17} aria-hidden="true" />
+                  <span>{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </aside>
+
+          <section className="jobseeker-profile-form-panel">
+            <header>
+              <div>
+                <span>Public profile</span>
+                <h2>Professional details</h2>
+              </div>
+              <small>Profile ID #{profile.id}</small>
+            </header>
+
+            <form className="stack" onSubmit={handleSubmit}>
+              <label className="field">
+                <span>Professional bio *</span>
+                <textarea
+                  value={bio}
+                  onChange={(event) => setBio(event.target.value)}
+                  placeholder="Describe your focus, strongest experience, and the work you want to do."
+                  maxLength={1500}
+                  required
+                />
+                <small>{bio.length}/1500 characters</small>
+              </label>
+
+              <div className="jobseeker-profile-form-grid">
+                <Input
+                  label="City *"
+                  placeholder="Amman"
+                  value={city}
+                  onChange={(event) => setCity(event.target.value)}
+                  required
+                />
+                <Input
+                  label="LinkedIn URL"
+                  type="url"
+                  placeholder="https://linkedin.com/in/your-name"
+                  value={linkedInUrl}
+                  onChange={(event) => setLinkedInUrl(event.target.value)}
+                />
+                <Input
+                  label="GitHub URL"
+                  type="url"
+                  placeholder="https://github.com/your-name"
+                  value={gitHubUrl}
+                  onChange={(event) => setGitHubUrl(event.target.value)}
+                />
+              </div>
+
+              <div className="jobseeker-profile-link-preview">
+                <Link2 size={18} aria-hidden="true" />
+                <span>{linkedInUrl || "LinkedIn profile not added"}</span>
+                <Code2 size={18} aria-hidden="true" />
+                <span>{gitHubUrl || "GitHub profile not added"}</span>
+              </div>
+
+              {error ? <div className="notice notice-error">{error}</div> : null}
+              {message ? <div className="notice">{message}</div> : null}
+
+              <div className="jobseeker-profile-actions">
+                <Button type="submit" isLoading={isSaving}>
+                  {isRequiredFlow ? "Complete profile" : "Save profile"}
+                </Button>
+                {!isRequiredFlow ? (
+                  <Button to="/job-seeker/skills" variant="secondary">
+                    Manage skills
+                  </Button>
+                ) : null}
+              </div>
+            </form>
+          </section>
+        </div>
       ) : null}
     </section>
   );

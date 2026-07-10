@@ -1,6 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
+import {
+  AlertTriangle,
+  ArrowRight,
+  BriefcaseBusiness,
+  Building2,
+  FileCheck2,
+  GraduationCap,
+  Plus,
+  ShieldCheck,
+  Star,
+  Users,
+} from "lucide-react";
 import Button from "../../../shared/components/Button";
-import Card from "../../../shared/components/Card";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
 import StatusBadge from "../../../shared/components/StatusBadge";
@@ -37,20 +48,11 @@ export default function AdminDashboard() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    async function loadDashboard() {
-      setIsLoading(true);
-      setError("");
+    let isMounted = true;
 
+    async function loadDashboard() {
       try {
-        const [
-          usersData,
-          companiesData,
-          jobSeekersData,
-          projectsData,
-          applicationsData,
-          reviewsData,
-          skillsData,
-        ] = await Promise.all([
+        const data = await Promise.all([
           getAdminUsersAsync(),
           getAdminCompaniesAsync(),
           getAdminJobSeekersAsync(),
@@ -60,80 +62,82 @@ export default function AdminDashboard() {
           getAdminSkillsAsync(),
         ]);
 
-        setUsers(usersData);
-        setCompanies(companiesData);
-        setJobSeekers(jobSeekersData);
-        setProjects(projectsData);
-        setApplications(applicationsData);
-        setReviews(reviewsData);
-        setSkills(skillsData);
+        if (isMounted) {
+          setUsers(data[0]);
+          setCompanies(data[1]);
+          setJobSeekers(data[2]);
+          setProjects(data[3]);
+          setApplications(data[4]);
+          setReviews(data[5]);
+          setSkills(data[6]);
+        }
       } catch (caughtError) {
-        setError(
-          caughtError instanceof Error
-            ? caughtError.message
-            : "Unable to load admin dashboard.",
-        );
+        if (isMounted) {
+          setError(
+            caughtError instanceof Error
+              ? caughtError.message
+              : "Unable to load admin control center.",
+          );
+        }
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     }
 
     loadDashboard();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const metrics = useMemo(() => {
-    const verifiedCompanies = companies.filter((company) => company.isVerified);
-    const openProjects = projects.filter(
-      (project) => project.status === ProjectStatuses.Open,
-    );
-    const missingProfiles = jobSeekers.filter((jobSeeker) => jobSeeker.id === 0);
+    const verified = companies.filter((company) => company.isVerified).length;
     const pendingApplications = applications.filter(
       (application) => application.status === ApplicationStatuses.Pending,
-    );
+    ).length;
+    const openProjects = projects.filter(
+      (project) => project.status === ProjectStatuses.Open,
+    ).length;
 
     return {
       users: users.length,
       companies: companies.length,
-      verifiedCompanies: verifiedCompanies.length,
+      verified,
       jobSeekers: jobSeekers.length,
-      missingProfiles: missingProfiles.length,
       projects: projects.length,
-      openProjects: openProjects.length,
+      openProjects,
       applications: applications.length,
-      pendingApplications: pendingApplications.length,
+      pendingApplications,
       reviews: reviews.length,
-      skills: skills.length,
+      lowReviews: reviews.filter((review) => review.rating <= 2).length,
     };
-  }, [applications, companies, jobSeekers, projects, reviews, skills, users]);
+  }, [applications, companies, jobSeekers.length, projects, reviews, users.length]);
 
   const unverifiedCompanies = companies.filter((company) => !company.isVerified);
-  const incompleteJobSeekers = jobSeekers.filter((jobSeeker) => jobSeeker.id === 0);
-  const busyProjects = [...projects]
-    .sort((first, second) => second.applicationsCount - first.applicationsCount)
-    .slice(0, 4);
-  const pendingApplications = applications
-    .filter((application) => application.status === ApplicationStatuses.Pending)
-    .slice(0, 4);
-  const lowReviews = reviews
-    .filter((review) => review.rating <= 2)
-    .slice(0, 4);
-  const unusedSkills = skills
-    .filter((skill) => skill.jobSeekersCount === 0 && skill.projectsCount === 0)
-    .slice(0, 4);
+  const incompleteProfiles = jobSeekers.filter(
+    (jobSeeker) => !jobSeeker.bio?.trim() || !jobSeeker.city?.trim(),
+  );
+  const unusedSkills = skills.filter(
+    (skill) => skill.jobSeekersCount === 0 && skill.projectsCount === 0,
+  );
+  const activeProjects = [...projects]
+    .sort((left, right) => right.applicationsCount - left.applicationsCount)
+    .slice(0, 5);
+  const recentApplications = applications.slice(0, 5);
 
   return (
-    <section className="page admin-dashboard-page">
+    <section className="page admin-dashboard-page admin-dashboard-v2">
       <PageHeader
-        eyebrow="Admin console"
-        title="Platform control center"
-        description="Watch accounts, trust, project activity, applications, reviews, and the skill catalog from one place."
+        eyebrow="Platform operations"
+        title="Control center"
+        description="Monitor trust, account health, marketplace activity, and moderation queues from one operational view."
         actions={
           <>
             <Button to="/admin/users?action=create" variant="secondary">
-              Add user
+              <Plus size={16} aria-hidden="true" />Add user
             </Button>
             <Button to="/admin/projects?action=create" variant="primary">
-              Add project
+              <Plus size={16} aria-hidden="true" />Add project
             </Button>
           </>
         }
@@ -143,230 +147,92 @@ export default function AdminDashboard() {
         isLoading={isLoading}
         error={error}
         empty={false}
-        emptyTitle="No admin data"
-        emptyDescription="Platform data will appear here."
+        emptyTitle="No platform data"
+        emptyDescription="Platform activity will appear here."
       />
 
       {!isLoading && !error ? (
         <>
-          <div className="admin-metric-grid">
-            <article>
-              <span>Total users</span>
-              <strong>{metrics.users}</strong>
+          <div className="admin-kpi-grid-v2">
+            <article><span><Users size={17} />Total users</span><strong>{metrics.users}</strong><small>All platform accounts</small></article>
+            <article><span><Building2 size={17} />Companies</span><strong>{metrics.companies}</strong><small>{metrics.verified} verified</small></article>
+            <article><span><GraduationCap size={17} />Job seekers</span><strong>{metrics.jobSeekers}</strong><small>{incompleteProfiles.length} incomplete profiles</small></article>
+            <article><span><BriefcaseBusiness size={17} />Projects</span><strong>{metrics.projects}</strong><small>{metrics.openProjects} open now</small></article>
+            <article><span><FileCheck2 size={17} />Applications</span><strong>{metrics.applications}</strong><small>{metrics.pendingApplications} pending</small></article>
+            <article><span><Star size={17} />Reviews</span><strong>{metrics.reviews}</strong><small>{metrics.lowReviews} low-rating alerts</small></article>
+          </div>
+
+          <div className="admin-attention-grid">
+            <article className={unverifiedCompanies.length > 0 ? "warning" : "healthy"}>
+              <span><ShieldCheck size={20} /></span>
+              <div><strong>{unverifiedCompanies.length} verification requests</strong><p>Company profiles waiting for an admin decision.</p></div>
+              <Button to="/admin/companies?status=unverified" variant="ghost" aria-label="Open company verification"><ArrowRight size={18} /></Button>
             </article>
-            <article>
-              <span>Companies</span>
-              <strong>{metrics.companies}</strong>
+            <article className={metrics.pendingApplications > 0 ? "warning" : "healthy"}>
+              <span><FileCheck2 size={20} /></span>
+              <div><strong>{metrics.pendingApplications} pending applications</strong><p>Applications still awaiting a company decision.</p></div>
+              <Button to="/admin/applications?status=pending" variant="ghost" aria-label="Open pending applications"><ArrowRight size={18} /></Button>
             </article>
-            <article>
-              <span>Job seekers</span>
-              <strong>{metrics.jobSeekers}</strong>
-            </article>
-            <article>
-              <span>Projects</span>
-              <strong>{metrics.projects}</strong>
-            </article>
-            <article>
-              <span>Applications</span>
-              <strong>{metrics.applications}</strong>
-            </article>
-            <article>
-              <span>Reviews</span>
-              <strong>{metrics.reviews}</strong>
-            </article>
-            <article>
-              <span>Skills</span>
-              <strong>{metrics.skills}</strong>
+            <article className={metrics.lowReviews > 0 ? "danger" : "healthy"}>
+              <span><AlertTriangle size={20} /></span>
+              <div><strong>{metrics.lowReviews} review alerts</strong><p>Ratings of two stars or lower for moderation.</p></div>
+              <Button to="/admin/reviews?rating=low" variant="ghost" aria-label="Open review alerts"><ArrowRight size={18} /></Button>
             </article>
           </div>
 
-          <div className="admin-dashboard-grid">
-            <Card
-              eyebrow="Trust queue"
-              title="Companies waiting for verification"
-              description={`${unverifiedCompanies.length} company profiles are not verified.`}
-              actions={
-                <Button to="/admin/companies" variant="secondary">
-                  Open companies
-                </Button>
-              }
-            >
-              <div className="admin-watch-list">
-                {unverifiedCompanies.slice(0, 4).map((company) => (
-                  <div key={company.id}>
-                    <strong>{company.companyName}</strong>
-                    <span>{company.city ?? "No city"}</span>
-                  </div>
+          <div className="admin-dashboard-columns">
+            <section className="admin-ops-panel">
+              <header><div><span>Trust queue</span><h2>Companies awaiting verification</h2></div><Button to="/admin/companies" variant="ghost">View all</Button></header>
+              <div className="admin-ops-list">
+                {unverifiedCompanies.slice(0, 5).map((company) => (
+                  <article key={company.id}>
+                    <span className="admin-entity-mark">{company.companyName.charAt(0).toUpperCase()}</span>
+                    <div><strong>{company.companyName}</strong><small>{company.city || "City missing"} / {company.projectsCount ?? 0} projects</small></div>
+                    <StatusBadge tone="amber">Pending</StatusBadge>
+                    <Button to="/admin/companies" variant="secondary">Review</Button>
+                  </article>
                 ))}
-                {unverifiedCompanies.length === 0 ? (
-                  <p>All listed companies are verified.</p>
-                ) : null}
+                {unverifiedCompanies.length === 0 ? <div className="admin-empty-ops"><ShieldCheck size={24} /><strong>Verification queue is clear</strong><span>All companies have been reviewed.</span></div> : null}
               </div>
-            </Card>
+            </section>
 
-            <Card
-              eyebrow="Profile health"
-              title="Job seekers missing profiles"
-              description={`${metrics.missingProfiles} job seeker accounts need profile data.`}
-              actions={
-                <Button to="/admin/job-seekers" variant="secondary">
-                  Fix profiles
-                </Button>
-              }
-            >
-              <div className="admin-watch-list">
-                {incompleteJobSeekers.slice(0, 4).map((jobSeeker) => (
-                  <div key={jobSeeker.userId}>
-                    <strong>{jobSeeker.fullName}</strong>
-                    <span>{jobSeeker.email}</span>
-                  </div>
+            <aside className="admin-health-panel">
+              <header><span>Platform health</span><h2>Operational signals</h2></header>
+              <div>
+                <article><span>Company verification</span><strong>{metrics.companies ? Math.round((metrics.verified / metrics.companies) * 100) : 100}%</strong><div><b style={{ width: `${metrics.companies ? (metrics.verified / metrics.companies) * 100 : 100}%` }} /></div></article>
+                <article><span>Job seeker profiles ready</span><strong>{metrics.jobSeekers ? Math.round(((metrics.jobSeekers - incompleteProfiles.length) / metrics.jobSeekers) * 100) : 100}%</strong><div><b style={{ width: `${metrics.jobSeekers ? ((metrics.jobSeekers - incompleteProfiles.length) / metrics.jobSeekers) * 100 : 100}%` }} /></div></article>
+                <article><span>Skills in active use</span><strong>{skills.length ? Math.round(((skills.length - unusedSkills.length) / skills.length) * 100) : 100}%</strong><div><b style={{ width: `${skills.length ? ((skills.length - unusedSkills.length) / skills.length) * 100 : 100}%` }} /></div></article>
+              </div>
+              <Button to="/admin/skills" variant="secondary">Review skill catalog</Button>
+            </aside>
+          </div>
+
+          <div className="admin-dashboard-columns lower">
+            <section className="admin-ops-panel">
+              <header><div><span>Marketplace</span><h2>Highest activity projects</h2></div><Button to="/admin/projects" variant="ghost">View all</Button></header>
+              <div className="admin-project-activity-list">
+                {activeProjects.map((project) => (
+                  <article key={project.id}>
+                    <div><strong>{project.title}</strong><span>{project.companyName}</span></div>
+                    <span>{project.applicationsCount} applications</span>
+                    <StatusBadge tone={project.status === ProjectStatuses.Open ? "green" : "neutral"}>{project.status === ProjectStatuses.Open ? "Open" : "Managed"}</StatusBadge>
+                  </article>
                 ))}
-                {incompleteJobSeekers.length === 0 ? (
-                  <p>All job seeker accounts have profile rows.</p>
-                ) : null}
               </div>
-            </Card>
+            </section>
 
-            <Card
-              eyebrow="Marketplace"
-              title="High activity projects"
-              description={`${metrics.openProjects} open opportunities are visible to job seekers.`}
-              actions={
-                <Button to="/admin/projects" variant="secondary">
-                  Open projects
-                </Button>
-              }
-            >
-              <div className="admin-watch-list">
-                {busyProjects.map((project) => (
-                  <div key={project.id}>
-                    <strong>{project.title}</strong>
-                    <span>
-                      {project.companyName} / {project.applicationsCount} applications
-                    </span>
-                  </div>
+            <section className="admin-ops-panel">
+              <header><div><span>Latest pipeline</span><h2>Application oversight</h2></div><Button to="/admin/applications" variant="ghost">View all</Button></header>
+              <div className="admin-project-activity-list">
+                {recentApplications.map((application) => (
+                  <article key={application.id}>
+                    <div><strong>{application.jobSeekerName}</strong><span>{application.projectTitle}</span></div>
+                    <span>{application.companyName}</span>
+                    <StatusBadge tone={application.status === ApplicationStatuses.Pending ? "amber" : "green"}>{application.status === ApplicationStatuses.Pending ? "Pending" : "Updated"}</StatusBadge>
+                  </article>
                 ))}
-                {busyProjects.length === 0 ? <p>No projects yet.</p> : null}
               </div>
-            </Card>
-
-            <Card
-              eyebrow="Application queue"
-              title="Pending applications"
-              description={`${metrics.pendingApplications} applications need a decision.`}
-              actions={
-                <Button to="/admin/applications" variant="secondary">
-                  Open applications
-                </Button>
-              }
-            >
-              <div className="admin-watch-list">
-                {pendingApplications.map((application) => (
-                  <div key={application.id}>
-                    <strong>{application.projectTitle}</strong>
-                    <span>
-                      {application.jobSeekerName} / {application.companyName}
-                    </span>
-                  </div>
-                ))}
-                {pendingApplications.length === 0 ? (
-                  <p>No pending applications.</p>
-                ) : null}
-              </div>
-            </Card>
-
-            <Card
-              eyebrow="Review quality"
-              title="Low rating reviews"
-              description={`${lowReviews.length} recent reviews have low ratings.`}
-              actions={
-                <Button to="/admin/reviews" variant="secondary">
-                  Open reviews
-                </Button>
-              }
-            >
-              <div className="admin-watch-list">
-                {lowReviews.map((review) => (
-                  <div key={review.id}>
-                    <strong>{review.projectTitle}</strong>
-                    <span>
-                      {review.rating}/5 / {review.companyName}
-                    </span>
-                  </div>
-                ))}
-                {lowReviews.length === 0 ? <p>No low rating reviews.</p> : null}
-              </div>
-            </Card>
-
-            <Card
-              eyebrow="Skill catalog"
-              title="Unused skills"
-              description={`${unusedSkills.length} skills are not attached to people or projects.`}
-              actions={
-                <Button to="/admin/skills" variant="secondary">
-                  Open skills
-                </Button>
-              }
-            >
-              <div className="admin-watch-list">
-                {unusedSkills.map((skill) => (
-                  <div key={skill.id}>
-                    <strong>{skill.name}</strong>
-                    <span>No usage yet</span>
-                  </div>
-                ))}
-                {unusedSkills.length === 0 ? <p>All skills are being used.</p> : null}
-              </div>
-            </Card>
-
-            <Card
-              eyebrow="Quick actions"
-              title="Admin management"
-              description="Jump straight into the list you need and edit, create, or delete records from there."
-            >
-              <div className="admin-quick-actions">
-                <Button to="/admin/users" variant="secondary">
-                  Users
-                </Button>
-                <Button to="/admin/users?action=create" variant="secondary">
-                  Add user
-                </Button>
-                <Button to="/admin/companies" variant="secondary">
-                  Companies
-                </Button>
-                <Button to="/admin/job-seekers" variant="secondary">
-                  Job seekers
-                </Button>
-                <Button to="/admin/projects" variant="secondary">
-                  Projects
-                </Button>
-                <Button to="/admin/projects?action=create" variant="secondary">
-                  Add project
-                </Button>
-                <Button to="/admin/applications" variant="secondary">
-                  Applications
-                </Button>
-                <Button to="/admin/reviews" variant="secondary">
-                  Reviews
-                </Button>
-                <Button to="/admin/skills" variant="secondary">
-                  Skills
-                </Button>
-              </div>
-              <div className="admin-status-summary">
-                <StatusBadge tone="green">
-                  {metrics.verifiedCompanies} verified companies
-                </StatusBadge>
-                <StatusBadge tone={metrics.missingProfiles > 0 ? "amber" : "green"}>
-                  {metrics.missingProfiles} missing profiles
-                </StatusBadge>
-                <StatusBadge
-                  tone={metrics.pendingApplications > 0 ? "amber" : "green"}
-                >
-                  {metrics.pendingApplications} pending applications
-                </StatusBadge>
-              </div>
-            </Card>
+            </section>
           </div>
         </>
       ) : null}

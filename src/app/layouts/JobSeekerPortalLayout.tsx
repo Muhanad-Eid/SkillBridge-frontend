@@ -1,4 +1,19 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Bell,
+  BriefcaseBusiness,
+  FileCheck2,
+  FolderKanban,
+  LayoutDashboard,
+  LogOut,
+  MessageSquare,
+  Search,
+  Sparkles,
+  Star,
+  UserRound,
+  Wrench,
+  type LucideIcon,
+} from "lucide-react";
 import {
   Link,
   Navigate,
@@ -7,24 +22,57 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
-import { useAuth } from "../../shared/auth/AuthContext";
-import Button from "../../shared/components/Button";
 import {
   isJobSeekerProfileComplete,
   type JobSeekerProfile,
 } from "../../features/profiles/domain/profileTypes";
 import { getMyJobSeekerProfileAsync } from "../../features/profiles/infrastructure/profileApi";
+import { getMyMessagesAsync } from "../../features/messages/infrastructure/messageApi";
+import { getMyNotificationsAsync } from "../../features/notifications/infrastructure/notificationApi";
+import { useAuth } from "../../shared/auth/AuthContext";
+import Button from "../../shared/components/Button";
+import StatusBadge from "../../shared/components/StatusBadge";
 
-const jobSeekerNavItems = [
-  { label: "Home", to: "/job-seeker/dashboard" },
-  { label: "Browse opportunities", to: "/job-seeker/opportunities" },
-  { label: "My applications", to: "/job-seeker/applications" },
-  { label: "Skills", to: "/job-seeker/skills" },
-  { label: "Portfolio", to: "/job-seeker/portfolio" },
-  { label: "Messages", to: "/job-seeker/messages" },
-  { label: "Notifications", to: "/job-seeker/notifications" },
-  { label: "Profile", to: "/job-seeker/profile" },
+type JobSeekerNavItem = {
+  label: string;
+  to: string;
+  icon: LucideIcon;
+  badge?: "messages" | "notifications";
+};
+
+const jobSeekerNavItems: JobSeekerNavItem[] = [
+  { label: "Overview", to: "/job-seeker/dashboard", icon: LayoutDashboard },
+  { label: "Discover", to: "/job-seeker/opportunities", icon: Search },
+  { label: "Applications", to: "/job-seeker/applications", icon: FileCheck2 },
+  { label: "Skills", to: "/job-seeker/skills", icon: Wrench },
+  { label: "Portfolio", to: "/job-seeker/portfolio", icon: FolderKanban },
+  { label: "Reviews", to: "/job-seeker/reviews", icon: Star },
+  {
+    label: "Messages",
+    to: "/job-seeker/messages",
+    icon: MessageSquare,
+    badge: "messages",
+  },
+  {
+    label: "Notifications",
+    to: "/job-seeker/notifications",
+    icon: Bell,
+    badge: "notifications",
+  },
+  { label: "Profile", to: "/job-seeker/profile", icon: UserRound },
 ];
+
+const sectionTitles: Record<string, string> = {
+  "/job-seeker/dashboard": "Career overview",
+  "/job-seeker/opportunities": "Discover opportunities",
+  "/job-seeker/applications": "Application tracker",
+  "/job-seeker/skills": "Skills profile",
+  "/job-seeker/portfolio": "Portfolio proof",
+  "/job-seeker/reviews": "Reviews received",
+  "/job-seeker/messages": "Messages",
+  "/job-seeker/notifications": "Notifications",
+  "/job-seeker/profile": "Career profile",
+};
 
 export default function JobSeekerPortalLayout() {
   const { user, logout } = useAuth();
@@ -33,35 +81,82 @@ export default function JobSeekerPortalLayout() {
   const [profile, setProfile] = useState<JobSeekerProfile | null>(null);
   const [isCheckingProfile, setIsCheckingProfile] = useState(true);
   const [profileError, setProfileError] = useState("");
+  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   const refreshProfileCompletion = useCallback(async () => {
     setIsCheckingProfile(true);
     setProfileError("");
 
     try {
-      const data = await getMyJobSeekerProfileAsync();
-      setProfile(data);
+      setProfile(await getMyJobSeekerProfileAsync());
     } catch (caughtError) {
       setProfile(null);
       setProfileError(
         caughtError instanceof Error
           ? caughtError.message
-          : "Unable to check your profile.",
+          : "Unable to check your job seeker profile.",
       );
     } finally {
       setIsCheckingProfile(false);
     }
   }, []);
 
+  const refreshBadges = useCallback(async () => {
+    const [messageResult, notificationResult] = await Promise.allSettled([
+      getMyMessagesAsync(),
+      getMyNotificationsAsync(),
+    ]);
+
+    if (messageResult.status === "fulfilled") {
+      setUnreadMessages(
+        messageResult.value.filter(
+          (message) => !message.isRead && message.receiverId === user?.userId,
+        ).length,
+      );
+    }
+
+    if (notificationResult.status === "fulfilled") {
+      setUnreadNotifications(
+        notificationResult.value.filter((notification) => !notification.isRead)
+          .length,
+      );
+    }
+  }, [user?.userId]);
+
   useEffect(() => {
-    refreshProfileCompletion();
+    const timeoutId = window.setTimeout(refreshProfileCompletion, 0);
+    return () => window.clearTimeout(timeoutId);
   }, [refreshProfileCompletion]);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(refreshBadges, 0);
+    const intervalId = window.setInterval(refreshBadges, 5000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+      window.clearInterval(intervalId);
+    };
+  }, [refreshBadges]);
 
   const profileIsComplete = isJobSeekerProfileComplete(profile);
   const isProfileRoute = location.pathname === "/job-seeker/profile";
   const navItems = profileIsComplete
     ? jobSeekerNavItems
     : jobSeekerNavItems.filter((item) => item.to === "/job-seeker/profile");
+
+  const currentSection = useMemo(() => {
+    if (location.pathname.startsWith("/job-seeker/opportunities/")) {
+      return "Opportunity details";
+    }
+
+    return sectionTitles[location.pathname] ?? "Career workspace";
+  }, [location.pathname]);
+
+  const profileInitial = (profile?.fullName || user?.fullName || "J")
+    .trim()
+    .charAt(0)
+    .toUpperCase();
 
   function handleLogout() {
     logout();
@@ -79,67 +174,98 @@ export default function JobSeekerPortalLayout() {
   }
 
   return (
-    <div className="jobseeker-portal">
-      <header className="jobseeker-topbar">
+    <div className="jobseeker-portal jobseeker-portal-v2">
+      <aside className="jobseeker-sidebar">
         <Link
-          className="portal-brand"
+          className="jobseeker-brand"
           to={profileIsComplete ? "/job-seeker/dashboard" : "/job-seeker/profile"}
         >
           <span className="brand-mark">SB</span>
           <span>
             <strong>SkillBridge</strong>
-            <small>Job seeker portal</small>
+            <small>Career workspace</small>
           </span>
         </Link>
 
-        <div className="jobseeker-actions">
-          {profileIsComplete ? (
-            <Button to="/job-seeker/opportunities" variant="primary">
-              Browse
-            </Button>
-          ) : null}
-          <Button variant="secondary" onClick={handleLogout}>
-            Log out
+        <div className="jobseeker-account-summary">
+          <span className="jobseeker-avatar" aria-hidden="true">
+            {profileInitial}
+          </span>
+          <div>
+            <strong>{profile?.fullName || user?.fullName || "Job seeker"}</strong>
+            <small>{profile?.city || "Complete your profile"}</small>
+          </div>
+          {profileIsComplete ? <Sparkles size={17} aria-label="Profile ready" /> : null}
+        </div>
+
+        <nav className="jobseeker-sidebar-nav" aria-label="Job seeker navigation">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const badgeCount =
+              item.badge === "messages"
+                ? unreadMessages
+                : item.badge === "notifications"
+                  ? unreadNotifications
+                  : 0;
+
+            return (
+              <NavLink key={item.to} to={item.to}>
+                <Icon size={18} aria-hidden="true" />
+                <span>{item.label}</span>
+                {badgeCount > 0 ? (
+                  <strong className="jobseeker-nav-badge">{badgeCount}</strong>
+                ) : null}
+              </NavLink>
+            );
+          })}
+        </nav>
+
+        <div className="jobseeker-sidebar-footer">
+          <div>
+            <BriefcaseBusiness size={17} aria-hidden="true" />
+            <span>
+              <strong>{user?.fullName}</strong>
+              <small>{user?.email}</small>
+            </span>
+          </div>
+          <Button
+            aria-label="Log out"
+            title="Log out"
+            type="button"
+            variant="ghost"
+            className="jobseeker-logout-button"
+            onClick={handleLogout}
+          >
+            <LogOut size={18} aria-hidden="true" />
           </Button>
         </div>
-      </header>
+      </aside>
 
-      <div className="jobseeker-layout">
-        <aside className="jobseeker-panel">
-          <div className="career-card">
-            <span>{profileIsComplete ? "Career profile" : "Profile required"}</span>
-            <strong>{user?.fullName}</strong>
-            <p>
-              {profileIsComplete
-                ? "Apply to opportunities and build portfolio proof from real work."
-                : "Complete your profile before using the job seeker portal."}
-            </p>
+      <div className="jobseeker-workspace">
+        <header className="jobseeker-workspace-header">
+          <div>
+            <span>Job seeker portal</span>
+            <strong>{currentSection}</strong>
           </div>
-
-          <nav className="jobseeker-nav" aria-label="Job seeker navigation">
-            {navItems.map((item) => (
-              <NavLink key={item.to} to={item.to}>
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
-        </aside>
+          <StatusBadge tone={profileIsComplete ? "green" : "amber"}>
+            {profileIsComplete ? "Profile active" : "Profile required"}
+          </StatusBadge>
+        </header>
 
         <main className="jobseeker-content">
-          <section className="portal-identity jobseeker-identity">
-            <span>Job Seeker Portal</span>
-            <strong>
-              {profileIsComplete
-                ? "Applications, skills, and portfolio proof"
-                : "Complete your profile to continue"}
-            </strong>
-          </section>
           {isCheckingProfile ? (
-            <div className="notice">Checking profile...</div>
+            <div className="notice">Checking job seeker profile...</div>
           ) : profileError && !isProfileRoute ? (
             <div className="notice notice-error">{profileError}</div>
           ) : (
-            <Outlet context={{ refreshProfileCompletion, profileIsComplete }} />
+            <Outlet
+              context={{
+                profile,
+                profileIsComplete,
+                refreshProfileCompletion,
+                refreshBadges,
+              }}
+            />
           )}
         </main>
       </div>

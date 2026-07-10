@@ -1,4 +1,6 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { Plus } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
@@ -16,9 +18,12 @@ import {
 } from "../infrastructure/adminApi";
 
 export default function CompaniesPage() {
+  const [searchParams] = useSearchParams();
   const [companies, setCompanies] = useState<AdminCompany[]>([]);
   const [search, setSearch] = useState("");
-  const [verificationFilter, setVerificationFilter] = useState("All");
+  const [verificationFilter, setVerificationFilter] = useState(
+    searchParams.get("status") === "unverified" ? "Unverified" : "All",
+  );
   const [editingCompany, setEditingCompany] = useState<AdminCompany | null>(
     null,
   );
@@ -51,7 +56,8 @@ export default function CompaniesPage() {
   }
 
   useEffect(() => {
-    loadCompanies();
+    const timeoutId = window.setTimeout(loadCompanies, 0);
+    return () => window.clearTimeout(timeoutId);
   }, []);
 
   const filteredCompanies = useMemo(() => {
@@ -167,9 +173,14 @@ export default function CompaniesPage() {
   return (
     <section className="page admin-list-page">
       <PageHeader
-        eyebrow="Admin"
-        title="Companies"
-        description="Review company profiles, edit details, verify trusted companies, or delete bad accounts."
+        eyebrow="Trust and access"
+        title="Company verification"
+        description="Review company identity, activity, and profile quality before granting marketplace publishing access."
+        actions={
+          <Button to="/admin/users?action=create&role=Company" variant="primary">
+            <Plus size={16} aria-hidden="true" />Add company
+          </Button>
+        }
       />
 
       <div className="toolbar admin-toolbar">
@@ -307,6 +318,9 @@ export default function CompaniesPage() {
                 {company.city ?? "No city"} - {company.website ?? "No website"}
               </span>
               <span>{company.description ?? "No company description"}</span>
+              <span>
+                {company.projectsCount ?? 0} projects / {company.applicationsCount ?? 0} applications
+              </span>
             </div>
             <StatusBadge tone={company.isVerified ? "green" : "amber"}>
               {company.isVerified ? "Verified" : "Not verified"}

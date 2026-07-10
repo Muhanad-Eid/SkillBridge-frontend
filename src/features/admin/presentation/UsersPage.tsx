@@ -63,7 +63,8 @@ export default function UsersPage() {
   }
 
   useEffect(() => {
-    loadUsers();
+    const timeoutId = window.setTimeout(loadUsers, 0);
+    return () => window.clearTimeout(timeoutId);
   }, []);
 
   useEffect(() => {
@@ -71,11 +72,23 @@ export default function UsersPage() {
       return;
     }
 
-    setMode("create");
-    setEditingUser(null);
-    setForm(emptyForm);
-    setError("");
-    setSearchParams({}, { replace: true });
+    const requestedRole = searchParams.get("role");
+    const role =
+      requestedRole === "Company"
+        ? AdminUserRoles.Company
+        : requestedRole === "Admin"
+          ? AdminUserRoles.Admin
+          : AdminUserRoles.JobSeeker;
+
+    const timeoutId = window.setTimeout(() => {
+      setMode("create");
+      setEditingUser(null);
+      setForm({ ...emptyForm, role });
+      setError("");
+      setSearchParams({}, { replace: true });
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, [searchParams, setSearchParams]);
 
   const filteredUsers = useMemo(() => {
@@ -206,9 +219,9 @@ export default function UsersPage() {
   return (
     <section className="page admin-list-page">
       <PageHeader
-        eyebrow="Admin"
-        title="Users"
-        description="Search platform accounts, create new users, edit identity details, and remove accounts."
+        eyebrow="Identity and access"
+        title="User accounts"
+        description="Create platform accounts, correct identity details, review role distribution, and remove access when required."
         actions={
           <Button type="button" onClick={startCreate}>
             Add user

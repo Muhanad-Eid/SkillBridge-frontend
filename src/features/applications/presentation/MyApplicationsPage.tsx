@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
+import { ArrowRight, FileCheck2, FolderKanban, Search, XCircle } from "lucide-react";
 import Button from "../../../shared/components/Button";
-import Card from "../../../shared/components/Card";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
 import StatusBadge from "../../../shared/components/StatusBadge";
+import type { Project } from "../../projects/domain/projectTypes";
+import { getProjectsAsync } from "../../projects/infrastructure/projectApi";
 import {
   ApplicationStatuses,
   getApplicationStatusLabel,
@@ -15,6 +17,14 @@ import {
   withdrawApplicationAsync,
 } from "../infrastructure/applicationApi";
 
+const statusTabs = [
+  { label: "All", value: "all" },
+  { label: "Pending", value: String(ApplicationStatuses.Pending) },
+  { label: "Accepted", value: String(ApplicationStatuses.Accepted) },
+  { label: "Rejected", value: String(ApplicationStatuses.Rejected) },
+  { label: "Withdrawn", value: String(ApplicationStatuses.Withdrawn) },
+];
+
 function getApplicationTone(status: ApplicationStatus) {
   if (status === ApplicationStatuses.Accepted) return "green";
   if (status === ApplicationStatuses.Rejected) return "red";
@@ -24,9 +34,11 @@ function getApplicationTone(status: ApplicationStatus) {
 
 export default function MyApplicationsPage() {
   const [applications, setApplications] = useState<Application[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
+  const [withdrawingId, setWithdrawingId] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
@@ -35,7 +47,12 @@ export default function MyApplicationsPage() {
     setError("");
 
     try {
-      setApplications(await getMyApplicationsAsync());
+      const [applicationData, projectData] = await Promise.all([
+        getMyApplicationsAsync(),
+        getProjectsAsync(),
+      ]);
+      setApplications(applicationData);
+      setProjects(projectData);
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -48,26 +65,34 @@ export default function MyApplicationsPage() {
   }
 
   useEffect(() => {
-    loadApplications();
+    const timeoutId = window.setTimeout(loadApplications, 0);
+    return () => window.clearTimeout(timeoutId);
   }, []);
+
+  const projectsById = useMemo(
+    () => new Map(projects.map((project) => [project.id, project])),
+    [projects],
+  );
 
   const filteredApplications = useMemo(() => {
     const value = search.trim().toLowerCase();
 
     return applications.filter((application) => {
+      const project = projectsById.get(application.projectId);
       const matchesStatus =
-        statusFilter === "All" || application.status === Number(statusFilter);
+        statusFilter === "all" || application.status === Number(statusFilter);
       const matchesSearch =
         !value ||
         application.projectTitle.toLowerCase().includes(value) ||
+        project?.companyName.toLowerCase().includes(value) ||
         (application.coverLetter ?? "").toLowerCase().includes(value);
 
       return matchesStatus && matchesSearch;
     });
-  }, [applications, search, statusFilter]);
+  }, [applications, projectsById, search, statusFilter]);
 
-  const applicationStats = useMemo(() => {
-    return {
+  const stats = useMemo(
+    () => ({
       total: applications.length,
       pending: applications.filter(
         (application) => application.status === ApplicationStatuses.Pending,
@@ -75,21 +100,21 @@ export default function MyApplicationsPage() {
       accepted: applications.filter(
         (application) => application.status === ApplicationStatuses.Accepted,
       ).length,
-      rejected: applications.filter(
-        (application) => application.status === ApplicationStatuses.Rejected,
+      closed: applications.filter(
+        (application) =>
+          application.status === ApplicationStatuses.Rejected ||
+          application.status === ApplicationStatuses.Withdrawn,
       ).length,
-    };
-  }, [applications]);
+    }),
+    [applications],
+  );
 
   async function handleWithdraw(application: Application) {
-    const confirmed = window.confirm(
-      `Withdraw your application for "${application.projectTitle}"?`,
-    );
-
-    if (!confirmed) {
+    if (!window.confirm(`Withdraw your application for "${application.projectTitle}"?`)) {
       return;
     }
 
+    setWithdrawingId(application.id);
     setMessage("");
     setError("");
 
@@ -103,59 +128,65 @@ export default function MyApplicationsPage() {
           ? caughtError.message
           : "Unable to withdraw application.",
       );
+    } finally {
+      setWithdrawingId(null);
     }
   }
 
   return (
     <section className="page jobseeker-applications-page">
       <PageHeader
-        eyebrow="Job seeker"
-        title="My applications"
-        description="Track decisions, filter your pipeline, and withdraw pending applications."
+        eyebrow="Pipeline"
+        title="Application tracker"
+        description="Follow every application, review company decisions, and continue accepted work into your portfolio."
         actions={
           <Button to="/job-seeker/opportunities" variant="primary">
-            Browse opportunities
+            <Search size={17} aria-hidden="true" />
+            Find opportunities
           </Button>
         }
       />
 
-      <div className="portal-list-stats jobseeker-list-stats">
-        <article>
-          <span>Total</span>
-          <strong>{applicationStats.total}</strong>
-        </article>
-        <article>
-          <span>Pending</span>
-          <strong>{applicationStats.pending}</strong>
-        </article>
-        <article>
-          <span>Accepted</span>
-          <strong>{applicationStats.accepted}</strong>
-        </article>
-        <article>
-          <span>Rejected</span>
-          <strong>{applicationStats.rejected}</strong>
-        </article>
+      <div className="jobseeker-application-stats">
+        <article><span>Total applications</span><strong>{stats.total}</strong></article>
+        <article><span>Awaiting decision</span><strong>{stats.pending}</strong></article>
+        <article><span>Accepted</span><strong>{stats.accepted}</strong></article>
+        <article><span>Closed</span><strong>{stats.closed}</strong></article>
       </div>
 
-      <div className="toolbar">
-        <input
-          aria-label="Search applications"
-          placeholder="Search by project or cover letter"
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-        />
-        <select
-          aria-label="Filter applications by status"
-          value={statusFilter}
-          onChange={(event) => setStatusFilter(event.target.value)}
-        >
-          <option value="All">All statuses</option>
-          <option value={ApplicationStatuses.Pending}>Pending</option>
-          <option value={ApplicationStatuses.Accepted}>Accepted</option>
-          <option value={ApplicationStatuses.Rejected}>Rejected</option>
-          <option value={ApplicationStatuses.Withdrawn}>Withdrawn</option>
-        </select>
+      <div className="jobseeker-application-controls">
+        <div className="jobseeker-status-tabs" role="tablist" aria-label="Application status">
+          {statusTabs.map((tab) => {
+            const count =
+              tab.value === "all"
+                ? applications.length
+                : applications.filter(
+                    (application) => application.status === Number(tab.value),
+                  ).length;
+
+            return (
+              <button
+                key={tab.value}
+                type="button"
+                role="tab"
+                aria-selected={statusFilter === tab.value}
+                className={statusFilter === tab.value ? "active" : ""}
+                onClick={() => setStatusFilter(tab.value)}
+              >
+                {tab.label}<span>{count}</span>
+              </button>
+            );
+          })}
+        </div>
+        <label className="jobseeker-search-field">
+          <Search size={17} aria-hidden="true" />
+          <input
+            aria-label="Search applications"
+            placeholder="Search project or company"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+          />
+        </label>
       </div>
 
       {message ? <div className="notice">{message}</div> : null}
@@ -164,62 +195,74 @@ export default function MyApplicationsPage() {
         isLoading={isLoading}
         error={error}
         empty={filteredApplications.length === 0}
-        emptyTitle="No applications yet"
-        emptyDescription="Browse opportunities and apply when you find a good match."
+        emptyTitle="No applications in this view"
+        emptyDescription="Change the filter or browse open opportunities to start a new application."
       />
 
-      <div className="card-grid">
-        {filteredApplications.map((application) => (
-          <Card
-            key={application.id}
-            title={application.projectTitle}
-            description={application.coverLetter ?? "No cover letter"}
-            actions={
-              <StatusBadge tone={getApplicationTone(application.status)}>
-                {getApplicationStatusLabel(application.status)}
-              </StatusBadge>
-            }
-          >
-            <div className="detail-list compact-detail-list">
-              <span>Application ID</span>
-              <strong>{application.id}</strong>
-              <span>Project ID</span>
-              <strong>{application.projectId}</strong>
-            </div>
+      {filteredApplications.length > 0 ? (
+        <div className="jobseeker-application-table">
+          <div className="jobseeker-application-table-head" aria-hidden="true">
+            <span>Opportunity</span>
+            <span>Application</span>
+            <span>Status</span>
+            <span>Next action</span>
+          </div>
+          {filteredApplications.map((application) => {
+            const project = projectsById.get(application.projectId);
 
-            <div className="actions-row">
-              <Button
-                to={`/job-seeker/opportunities/${application.projectId}`}
-                variant="secondary"
-              >
-                View opportunity
-              </Button>
-
-              {application.status === ApplicationStatuses.Pending ? (
-                <Button
-                  variant="secondary"
-                  onClick={() => handleWithdraw(application)}
-                >
-                  Withdraw
-                </Button>
-              ) : null}
-
-              {application.status === ApplicationStatuses.Accepted ? (
-                <Button to="/job-seeker/portfolio" variant="primary">
-                  Add proof
-                </Button>
-              ) : null}
-            </div>
-
-            {application.status === ApplicationStatuses.Accepted ? (
-              <p>
-                This application was accepted. Add portfolio proof when the work
-                is ready.
-              </p>
-            ) : null}
-          </Card>
-        ))}
-      </div>
+            return (
+              <article key={application.id}>
+                <div className="jobseeker-application-project">
+                  <span><FileCheck2 size={18} aria-hidden="true" /></span>
+                  <div>
+                    <strong>{application.projectTitle}</strong>
+                    <small>{project?.companyName ?? `Project #${application.projectId}`}</small>
+                  </div>
+                </div>
+                <div className="jobseeker-application-reference">
+                  <strong>#{application.id}</strong>
+                  <small>{project ? `${project.durationWeeks} weeks` : "Submitted"}</small>
+                </div>
+                <StatusBadge tone={getApplicationTone(application.status)}>
+                  {getApplicationStatusLabel(application.status)}
+                </StatusBadge>
+                <div className="jobseeker-application-actions">
+                  <Button
+                    to={`/job-seeker/opportunities/${application.projectId}`}
+                    variant="secondary"
+                  >
+                    View
+                    <ArrowRight size={15} aria-hidden="true" />
+                  </Button>
+                  {application.status === ApplicationStatuses.Pending ? (
+                    <Button
+                      variant="ghost"
+                      title="Withdraw application"
+                      aria-label={`Withdraw application for ${application.projectTitle}`}
+                      isLoading={withdrawingId === application.id}
+                      onClick={() => handleWithdraw(application)}
+                    >
+                      <XCircle size={17} aria-hidden="true" />
+                    </Button>
+                  ) : null}
+                  {application.status === ApplicationStatuses.Accepted ? (
+                    <Button to="/job-seeker/portfolio" variant="primary">
+                      <FolderKanban size={16} aria-hidden="true" />
+                      Add proof
+                    </Button>
+                  ) : null}
+                </div>
+                {application.coverLetter ? (
+                  <details className="jobseeker-cover-letter">
+                    <summary>Cover letter</summary>
+                    <p>{application.coverLetter}</p>
+                  </details>
+                ) : null}
+              </article>
+            );
+          })}
+        </div>
+      ) : null}
     </section>
   );
 }

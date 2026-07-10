@@ -26,6 +26,7 @@ import NotificationsPage from "../features/notifications/presentation/Notificati
 import PortfolioPage from "../features/portfolio/presentation/PortfolioPage";
 import CompanyProfilePage from "../features/profiles/presentation/CompanyProfilePage";
 import JobSeekerProfilePage from "../features/profiles/presentation/JobSeekerProfilePage";
+import JobSeekerReviewsPage from "../features/reviews/presentation/JobSeekerReviewsPage";
 import CompanyProjectsPage from "../features/projects/presentation/CompanyProjectsPage";
 import ProjectDetailsPage from "../features/projects/presentation/ProjectDetailsPage";
 import ProjectsPage from "../features/projects/presentation/ProjectsPage";
@@ -86,6 +87,7 @@ export const router = createBrowserRouter([
       { path: "profile", element: <JobSeekerProfilePage /> },
       { path: "skills", element: <SkillsPage /> },
       { path: "portfolio", element: <PortfolioPage /> },
+      { path: "reviews", element: <JobSeekerReviewsPage /> },
       { path: "messages", element: <MessagesPage /> },
       { path: "notifications", element: <NotificationsPage /> },
     ],

@@ -14,6 +14,7 @@ import type {
   UpdateAdminApplicationStatusRequest,
   UpdateAdminJobSeekerRequest,
   UpdateAdminProjectRequest,
+  UpdateAdminReviewRequest,
   UpdateAdminSkillRequest,
   UpdateAdminUserRequest,
 } from "../domain/adminTypes";
@@ -122,6 +123,16 @@ export function updateAdminSkillAsync(
   request: UpdateAdminSkillRequest,
 ) {
   return httpClient<void>(`/api/admin/skills/${skillId}`, {
+    method: "PUT",
+    body: JSON.stringify(request),
+  });
+}
+
+export function updateAdminReviewAsync(
+  reviewId: number,
+  request: UpdateAdminReviewRequest,
+) {
+  return httpClient<void>(`/api/admin/reviews/${reviewId}`, {
     method: "PUT",
     body: JSON.stringify(request),
   });

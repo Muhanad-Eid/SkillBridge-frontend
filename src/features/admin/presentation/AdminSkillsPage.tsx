@@ -38,7 +38,8 @@ export default function AdminSkillsPage() {
   }
 
   useEffect(() => {
-    loadSkills();
+    const timeoutId = window.setTimeout(loadSkills, 0);
+    return () => window.clearTimeout(timeoutId);
   }, []);
 
   const filteredSkills = useMemo(() => {
@@ -127,9 +128,9 @@ export default function AdminSkillsPage() {
   return (
     <section className="page admin-list-page">
       <PageHeader
-        eyebrow="Admin"
-        title="Skills"
-        description="Manage the skill catalog used by job seekers and project requirements."
+        eyebrow="Taxonomy"
+        title="Skills catalog"
+        description="Maintain the shared skill vocabulary used across job seeker profiles and project requirements."
         actions={
           <Button type="button" onClick={startCreate}>
             Add skill

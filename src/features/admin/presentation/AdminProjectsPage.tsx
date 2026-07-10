@@ -82,7 +82,8 @@ export default function AdminProjectsPage() {
   }
 
   useEffect(() => {
-    loadProjects();
+    const timeoutId = window.setTimeout(loadProjects, 0);
+    return () => window.clearTimeout(timeoutId);
   }, []);
 
   useEffect(() => {
@@ -90,14 +91,18 @@ export default function AdminProjectsPage() {
       return;
     }
 
-    setMode("create");
-    setEditingProject(null);
-    setForm({
-      ...emptyProjectForm,
-      companyId: companies[0]?.id.toString() ?? "",
-    });
-    setError("");
-    setSearchParams({}, { replace: true });
+    const timeoutId = window.setTimeout(() => {
+      setMode("create");
+      setEditingProject(null);
+      setForm({
+        ...emptyProjectForm,
+        companyId: companies[0]?.id.toString() ?? "",
+      });
+      setError("");
+      setSearchParams({}, { replace: true });
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, [companies, searchParams, setSearchParams]);
 
   useEffect(() => {
@@ -105,10 +110,14 @@ export default function AdminProjectsPage() {
       return;
     }
 
-    setForm((current) => ({
-      ...current,
-      companyId: companies[0].id.toString(),
-    }));
+    const timeoutId = window.setTimeout(() => {
+      setForm((current) => ({
+        ...current,
+        companyId: companies[0].id.toString(),
+      }));
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, [companies, form.companyId, mode]);
 
   const filteredProjects = useMemo(() => {
@@ -234,9 +243,9 @@ export default function AdminProjectsPage() {
   return (
     <section className="page admin-list-page">
       <PageHeader
-        eyebrow="Admin"
-        title="Projects"
-        description="Search every opportunity, create projects for companies, edit bad listings, change status, or delete projects."
+        eyebrow="Marketplace governance"
+        title="Project oversight"
+        description="Create and maintain company opportunities, correct listing details, manage lifecycle status, and remove invalid work."
         actions={
           <Button type="button" onClick={startCreate}>
             Add project

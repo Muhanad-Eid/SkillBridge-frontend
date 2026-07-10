@@ -1,15 +1,29 @@
-import { useEffect, useMemo, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { Edit3, Search, Star, Trash2 } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
+import StatusBadge from "../../../shared/components/StatusBadge";
 import type { AdminReview } from "../domain/adminTypes";
-import { deleteReviewAsync, getAdminReviewsAsync } from "../infrastructure/adminApi";
+import {
+  deleteReviewAsync,
+  getAdminReviewsAsync,
+  updateAdminReviewAsync,
+} from "../infrastructure/adminApi";
 
 export default function AdminReviewsPage() {
+  const [searchParams] = useSearchParams();
   const [reviews, setReviews] = useState<AdminReview[]>([]);
   const [search, setSearch] = useState("");
-  const [ratingFilter, setRatingFilter] = useState("All");
+  const [ratingFilter, setRatingFilter] = useState(
+    searchParams.get("rating") === "low" ? "Low" : "All",
+  );
+  const [editingReview, setEditingReview] = useState<AdminReview | null>(null);
+  const [rating, setRating] = useState("5");
+  const [comment, setComment] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
 
   async function loadReviews() {
@@ -28,7 +42,8 @@ export default function AdminReviewsPage() {
   }
 
   useEffect(() => {
-    loadReviews();
+    const timeoutId = window.setTimeout(loadReviews, 0);
+    return () => window.clearTimeout(timeoutId);
   }, []);
 
   const filteredReviews = useMemo(() => {
@@ -36,7 +51,9 @@ export default function AdminReviewsPage() {
 
     return reviews.filter((review) => {
       const matchesRating =
-        ratingFilter === "All" || review.rating === Number(ratingFilter);
+        ratingFilter === "All" ||
+        (ratingFilter === "Low" && review.rating <= 2) ||
+        review.rating === Number(ratingFilter);
       const matchesSearch =
         !value ||
         review.companyName.toLowerCase().includes(value) ||
@@ -48,28 +65,52 @@ export default function AdminReviewsPage() {
     });
   }, [ratingFilter, reviews, search]);
 
-  const reviewStats = useMemo(() => {
+  const stats = useMemo(() => {
     const ratingTotal = reviews.reduce((total, review) => total + review.rating, 0);
-
     return {
       total: reviews.length,
-      average: reviews.length === 0 ? "0.0" : (ratingTotal / reviews.length).toFixed(1),
+      average: reviews.length ? (ratingTotal / reviews.length).toFixed(1) : "0.0",
       fiveStar: reviews.filter((review) => review.rating === 5).length,
       low: reviews.filter((review) => review.rating <= 2).length,
     };
   }, [reviews]);
 
-  async function handleDelete(review: AdminReview) {
-    const confirmed = window.confirm(
-      `Delete review for "${review.projectTitle}" by ${review.companyName}?`,
-    );
+  function startEdit(review: AdminReview) {
+    setEditingReview(review);
+    setRating(String(review.rating));
+    setComment(review.comment ?? "");
+    setError("");
+  }
 
-    if (!confirmed) {
+  async function handleSave(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!editingReview) return;
+
+    setIsSaving(true);
+    setError("");
+
+    try {
+      await updateAdminReviewAsync(editingReview.id, {
+        rating: Number(rating),
+        comment: comment.trim() || null,
+      });
+      setEditingReview(null);
+      await loadReviews();
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error ? caughtError.message : "Unable to update review.",
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleDelete(review: AdminReview) {
+    if (!window.confirm(`Delete review for "${review.projectTitle}" by ${review.companyName}?`)) {
       return;
     }
 
     setError("");
-
     try {
       await deleteReviewAsync(review.id);
       await loadReviews();
@@ -81,26 +122,25 @@ export default function AdminReviewsPage() {
   }
 
   return (
-    <section className="page admin-list-page">
+    <section className="page admin-list-page admin-reviews-v2">
       <PageHeader
-        eyebrow="Admin"
-        title="Reviews"
-        description="Audit company feedback, ratings, and remove reviews that should not stay on the platform."
+        eyebrow="Trust and safety"
+        title="Review moderation"
+        description="Audit company feedback, correct inappropriate content, and remove reviews that should not remain public."
       />
 
-      <div className="toolbar admin-toolbar">
-        <input
-          aria-label="Search reviews"
-          placeholder="Search by company, job seeker, project, or comment"
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-        />
-        <select
-          aria-label="Filter reviews by rating"
-          value={ratingFilter}
-          onChange={(event) => setRatingFilter(event.target.value)}
-        >
+      <div className="admin-list-stats">
+        <article><span>Total reviews</span><strong>{stats.total}</strong></article>
+        <article><span>Average rating</span><strong>{stats.average}</strong></article>
+        <article><span>Five star</span><strong>{stats.fiveStar}</strong></article>
+        <article className={stats.low > 0 ? "needs-attention" : ""}><span>Needs review</span><strong>{stats.low}</strong></article>
+      </div>
+
+      <div className="admin-toolbar-v2">
+        <label><Search size={17} /><input aria-label="Search reviews" placeholder="Search company, job seeker, project, or comment" value={search} onChange={(event) => setSearch(event.target.value)} /></label>
+        <select aria-label="Filter reviews by rating" value={ratingFilter} onChange={(event) => setRatingFilter(event.target.value)}>
           <option value="All">All ratings</option>
+          <option value="Low">Needs review (1-2)</option>
           <option value="5">5 stars</option>
           <option value="4">4 stars</option>
           <option value="3">3 stars</option>
@@ -109,57 +149,30 @@ export default function AdminReviewsPage() {
         </select>
       </div>
 
-      <div className="admin-list-stats">
-        <article>
-          <span>Total reviews</span>
-          <strong>{reviewStats.total}</strong>
-        </article>
-        <article>
-          <span>Average rating</span>
-          <strong>{reviewStats.average}</strong>
-        </article>
-        <article>
-          <span>5 star</span>
-          <strong>{reviewStats.fiveStar}</strong>
-        </article>
-        <article>
-          <span>Low ratings</span>
-          <strong>{reviewStats.low}</strong>
-        </article>
-      </div>
-
-      <DataState
-        isLoading={isLoading}
-        error={error}
-        empty={filteredReviews.length === 0}
-        emptyTitle="No reviews"
-        emptyDescription="Company reviews for completed project work will appear here."
-      />
-
-      <div className="table-card admin-table-card">
-        {filteredReviews.map((review) => (
-          <div className="table-row" key={review.id}>
-            <div>
-              <strong>{review.projectTitle}</strong>
-              <span>
-                {review.companyName} reviewed {review.jobSeekerName}
-              </span>
-              <span>{review.comment ?? "No comment"}</span>
-            </div>
-            <div className="admin-status-stack">
-              <strong>{review.rating}/5</strong>
-              <span>{new Date(review.createdAt).toLocaleDateString()}</span>
-            </div>
-            <div className="admin-row-actions">
-              <Button
-                variant="secondary"
-                className="button-danger"
-                onClick={() => handleDelete(review)}
-              >
-                Delete
-              </Button>
-            </div>
+      {editingReview ? (
+        <form className="admin-edit-card admin-moderation-form" onSubmit={handleSave}>
+          <div><span>Edit review #{editingReview.id}</span><strong>{editingReview.projectTitle}</strong><small>{editingReview.companyName} reviewed {editingReview.jobSeekerName}</small></div>
+          <div className="form-grid">
+            <label className="field"><span>Rating</span><select value={rating} onChange={(event) => setRating(event.target.value)}>{[5, 4, 3, 2, 1].map((value) => <option key={value} value={value}>{value} stars</option>)}</select></label>
           </div>
+          <label className="field"><span>Comment</span><textarea value={comment} onChange={(event) => setComment(event.target.value)} maxLength={1500} /></label>
+          {error ? <div className="notice notice-error">{error}</div> : null}
+          <div className="admin-edit-actions"><Button type="submit" isLoading={isSaving}>Save review</Button><Button type="button" variant="secondary" onClick={() => setEditingReview(null)}>Cancel</Button></div>
+        </form>
+      ) : null}
+
+      <DataState isLoading={isLoading} error={!editingReview ? error : ""} empty={filteredReviews.length === 0} emptyTitle="No reviews" emptyDescription="Company reviews will appear here." />
+
+      <div className="admin-review-table-v2">
+        <div className="admin-review-head"><span>Review</span><span>Parties</span><span>Rating</span><span>Date</span><span>Actions</span></div>
+        {filteredReviews.map((review) => (
+          <article key={review.id}>
+            <div><strong>{review.projectTitle}</strong><p>{review.comment ?? "No written comment"}</p><small>Review #{review.id} / Project #{review.projectId}</small></div>
+            <div><strong>{review.companyName}</strong><span>for {review.jobSeekerName}</span></div>
+            <StatusBadge tone={review.rating <= 2 ? "red" : review.rating === 5 ? "green" : "amber"}><Star size={13} fill="currentColor" />{review.rating}/5</StatusBadge>
+            <time dateTime={review.createdAt}>{new Date(review.createdAt).toLocaleDateString()}</time>
+            <div className="admin-icon-actions"><Button variant="secondary" title="Edit review" aria-label={`Edit review ${review.id}`} onClick={() => startEdit(review)}><Edit3 size={16} /></Button><Button variant="secondary" className="button-danger" title="Delete review" aria-label={`Delete review ${review.id}`} onClick={() => handleDelete(review)}><Trash2 size={16} /></Button></div>
+          </article>
         ))}
       </div>
     </section>

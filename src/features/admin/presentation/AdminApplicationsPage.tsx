@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
@@ -23,9 +24,14 @@ function getApplicationTone(status: ApplicationStatus) {
 }
 
 export default function AdminApplicationsPage() {
+  const [searchParams] = useSearchParams();
   const [applications, setApplications] = useState<AdminApplication[]>([]);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState(
+    searchParams.get("status") === "pending"
+      ? String(ApplicationStatuses.Pending)
+      : "All",
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -47,7 +53,8 @@ export default function AdminApplicationsPage() {
   }
 
   useEffect(() => {
-    loadApplications();
+    const timeoutId = window.setTimeout(loadApplications, 0);
+    return () => window.clearTimeout(timeoutId);
   }, []);
 
   const filteredApplications = useMemo(() => {
@@ -126,9 +133,9 @@ export default function AdminApplicationsPage() {
   return (
     <section className="page admin-list-page">
       <PageHeader
-        eyebrow="Admin"
-        title="Applications"
-        description="Review every application, change status, and remove invalid application records."
+        eyebrow="Pipeline governance"
+        title="Application oversight"
+        description="Audit application records across every company, correct status when necessary, and remove invalid submissions."
       />
 
       <div className="toolbar admin-toolbar">
@@ -197,6 +204,7 @@ export default function AdminApplicationsPage() {
             <div className="admin-row-actions">
               <Button
                 variant="secondary"
+                disabled={application.status === ApplicationStatuses.Accepted}
                 onClick={() =>
                   updateStatus(application, ApplicationStatuses.Accepted)
                 }
@@ -205,6 +213,7 @@ export default function AdminApplicationsPage() {
               </Button>
               <Button
                 variant="secondary"
+                disabled={application.status === ApplicationStatuses.Rejected}
                 onClick={() =>
                   updateStatus(application, ApplicationStatuses.Rejected)
                 }

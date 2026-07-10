@@ -1,4 +1,5 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { Plus } from "lucide-react";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
@@ -47,7 +48,8 @@ export default function JobSeekersPage() {
   }
 
   useEffect(() => {
-    loadJobSeekers();
+    const timeoutId = window.setTimeout(loadJobSeekers, 0);
+    return () => window.clearTimeout(timeoutId);
   }, []);
 
   const filteredJobSeekers = useMemo(() => {
@@ -150,9 +152,14 @@ export default function JobSeekersPage() {
   return (
     <section className="page admin-list-page">
       <PageHeader
-        eyebrow="Admin"
-        title="Job seekers"
-        description="Search learner accounts, fix incomplete profiles, review activity, or remove accounts."
+        eyebrow="Account health"
+        title="Job seeker oversight"
+        description="Review profile readiness, participation, portfolio proof, and company reputation across learner accounts."
+        actions={
+          <Button to="/admin/users?action=create&role=JobSeeker" variant="primary">
+            <Plus size={16} aria-hidden="true" />Add job seeker
+          </Button>
+        }
       />
 
       <div className="toolbar admin-toolbar">
@@ -288,7 +295,12 @@ export default function JobSeekersPage() {
               </StatusBadge>
               <span>
                 {jobSeeker.skillsCount} skills / {jobSeeker.applicationsCount}{" "}
-                apps / {jobSeeker.portfolioItemsCount} portfolio
+                apps / {jobSeeker.portfolioItemsCount} portfolio / {jobSeeker.reviewsCount ?? 0} reviews
+              </span>
+              <span>
+                {jobSeeker.averageRating == null
+                  ? "No rating yet"
+                  : `${jobSeeker.averageRating.toFixed(1)}/5 average rating`}
               </span>
             </div>
             <div className="admin-row-actions">

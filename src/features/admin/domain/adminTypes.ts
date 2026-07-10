@@ -21,6 +21,8 @@ export type AdminCompany = {
   city: string | null;
   website: string | null;
   isVerified: boolean;
+  projectsCount: number;
+  applicationsCount: number;
 };
 
 export type AdminJobSeeker = {
@@ -35,6 +37,8 @@ export type AdminJobSeeker = {
   skillsCount: number;
   applicationsCount: number;
   portfolioItemsCount: number;
+  reviewsCount: number;
+  averageRating: number | null;
 };
 
 export type AdminProject = {
@@ -146,6 +150,11 @@ export type UpdateAdminProjectRequest = {
 
 export type UpdateAdminApplicationStatusRequest = {
   status: ApplicationStatus;
+};
+
+export type UpdateAdminReviewRequest = {
+  rating: number;
+  comment?: string | null;
 };
 
 export type UpdateAdminSkillRequest = {

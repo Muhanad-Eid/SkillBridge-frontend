@@ -5,6 +5,12 @@ export function getMyCompanyReviewsAsync() {
   return httpClient<Review[]>("/api/reviews/my-company");
 }
 
+export function getJobSeekerReviewsAsync(jobSeekerId: number) {
+  return httpClient<Review[]>(`/api/reviews/job-seekers/${jobSeekerId}`, {
+    skipAuth: true,
+  });
+}
+
 export function createReviewAsync(request: CreateReviewRequest) {
   return httpClient<Review>("/api/reviews", {
     method: "POST",
