@@ -31,7 +31,7 @@ import {
 } from "../../projects/domain/projectTypes";
 import {
   getMyCompanyProjectsAsync,
-  updateProjectAsync,
+  updateProjectStatusAsync,
 } from "../../projects/infrastructure/projectApi";
 import type { Review } from "../../reviews/domain/reviewTypes";
 import {
@@ -232,14 +232,7 @@ export default function CompanyProjectApplicationsPage() {
     setMessage("");
 
     try {
-      await updateProjectAsync(project.id, {
-        title: project.title,
-        description: project.description,
-        budget: project.budget,
-        durationWeeks: project.durationWeeks,
-        type: project.type,
-        status,
-      });
+      await updateProjectStatusAsync(project.id, status);
       setMessage(`Opportunity moved to ${getProjectStatusLabel(status)}.`);
       await loadWorkspace();
     } catch (caughtError) {

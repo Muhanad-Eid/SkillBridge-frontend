@@ -1,9 +1,12 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
-import { Plus } from "lucide-react";
+import { BriefcaseBusiness, Plus, X } from "lucide-react";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
 import StatusBadge from "../../../shared/components/StatusBadge";
+import type { PortfolioItem } from "../../portfolio/domain/portfolioTypes";
+import { getPublicPortfolioAsync } from "../../portfolio/infrastructure/portfolioApi";
+import PortfolioGallery from "../../portfolio/presentation/PortfolioGallery";
 import type {
   AdminJobSeeker,
   UpdateAdminJobSeekerRequest,
@@ -20,6 +23,11 @@ export default function JobSeekersPage() {
   const [profileFilter, setProfileFilter] = useState("All");
   const [editingJobSeeker, setEditingJobSeeker] =
     useState<AdminJobSeeker | null>(null);
+  const [portfolioJobSeeker, setPortfolioJobSeeker] =
+    useState<AdminJobSeeker | null>(null);
+  const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
+  const [isPortfolioLoading, setIsPortfolioLoading] = useState(false);
+  const [portfolioError, setPortfolioError] = useState("");
   const [form, setForm] = useState<UpdateAdminJobSeekerRequest>({
     city: "",
     bio: "",
@@ -146,6 +154,27 @@ export default function JobSeekersPage() {
           ? caughtError.message
           : "Unable to delete job seeker.",
       );
+    }
+  }
+
+  async function openPortfolio(jobSeeker: AdminJobSeeker) {
+    if (jobSeeker.id === 0) return;
+
+    setPortfolioJobSeeker(jobSeeker);
+    setPortfolioItems([]);
+    setPortfolioError("");
+    setIsPortfolioLoading(true);
+
+    try {
+      setPortfolioItems(await getPublicPortfolioAsync(jobSeeker.id));
+    } catch (caughtError) {
+      setPortfolioError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Unable to load portfolio evidence.",
+      );
+    } finally {
+      setIsPortfolioLoading(false);
     }
   }
 
@@ -304,6 +333,14 @@ export default function JobSeekersPage() {
               </span>
             </div>
             <div className="admin-row-actions">
+              <Button
+                variant="secondary"
+                disabled={jobSeeker.id === 0}
+                onClick={() => openPortfolio(jobSeeker)}
+              >
+                <BriefcaseBusiness size={15} aria-hidden="true" />
+                Portfolio
+              </Button>
               <Button variant="secondary" onClick={() => startEdit(jobSeeker)}>
                 Edit
               </Button>
@@ -318,6 +355,50 @@ export default function JobSeekersPage() {
           </div>
         ))}
       </div>
+
+      {portfolioJobSeeker ? (
+        <div className="portfolio-viewer-backdrop" role="presentation">
+          <aside
+            className="portfolio-viewer-drawer"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="admin-portfolio-title"
+          >
+            <header>
+              <div>
+                <span>Verified work evidence</span>
+                <h2 id="admin-portfolio-title">
+                  {portfolioJobSeeker.fullName}'s portfolio
+                </h2>
+                <p>{portfolioJobSeeker.email}</p>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                aria-label="Close portfolio"
+                title="Close"
+                onClick={() => setPortfolioJobSeeker(null)}
+              >
+                <X size={19} aria-hidden="true" />
+              </Button>
+            </header>
+            <div className="portfolio-viewer-content">
+              {isPortfolioLoading ? (
+                <div className="notice">Loading portfolio...</div>
+              ) : null}
+              {portfolioError ? (
+                <div className="notice notice-error">{portfolioError}</div>
+              ) : null}
+              {!isPortfolioLoading && !portfolioError ? (
+                <PortfolioGallery
+                  items={portfolioItems}
+                  emptyDescription="This job seeker has not added completed SkillBridge work yet."
+                />
+              ) : null}
+            </div>
+          </aside>
+        </div>
+      ) : null}
     </section>
   );
 }

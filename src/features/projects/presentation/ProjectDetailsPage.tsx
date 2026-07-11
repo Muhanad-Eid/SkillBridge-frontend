@@ -2,11 +2,14 @@ import { type FormEvent, useEffect, useState } from "react";
 import {
   ArrowLeft,
   BriefcaseBusiness,
+  CalendarDays,
   CheckCircle2,
   Clock3,
   MapPin,
   MessageSquare,
   ShieldCheck,
+  UsersRound,
+  Wrench,
 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { useAuth } from "../../../shared/auth/AuthContext";
@@ -23,8 +26,13 @@ import {
 } from "../../applications/infrastructure/applicationApi";
 import type { CompanyProfile } from "../../profiles/domain/profileTypes";
 import { getPublicCompanyProfileAsync } from "../../profiles/infrastructure/profileApi";
+import type { Skill } from "../../skills/domain/skillTypes";
+import { getMySkillsAsync } from "../../skills/infrastructure/skillApi";
 import {
+  calculateProjectMatch,
+  getExperienceLevelLabel,
   getOpportunityTypeLabel,
+  getWorkModeLabel,
   ProjectStatuses,
   type Project,
 } from "../domain/projectTypes";
@@ -35,6 +43,7 @@ export default function ProjectDetailsPage() {
   const { user } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
   const [companyProfile, setCompanyProfile] = useState<CompanyProfile | null>(null);
+  const [mySkills, setMySkills] = useState<Skill[]>([]);
   const [existingApplication, setExistingApplication] = useState<Application | null>(null);
   const [coverLetter, setCoverLetter] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -49,14 +58,16 @@ export default function ProjectDetailsPage() {
     async function loadProject() {
       try {
         const projectData = await getProjectAsync(Number(projectId));
-        const [companyData, applicationData] = await Promise.all([
+        const [companyData, applicationData, skillData] = await Promise.all([
           getPublicCompanyProfileAsync(projectData.companyProfileId),
           isJobSeeker ? getMyApplicationsAsync() : Promise.resolve([]),
+          isJobSeeker ? getMySkillsAsync() : Promise.resolve([]),
         ]);
 
         if (isMounted) {
           setProject(projectData);
           setCompanyProfile(companyData);
+          setMySkills(skillData);
           setExistingApplication(
             applicationData.find((application) => application.projectId === projectData.id) ?? null,
           );
@@ -90,6 +101,9 @@ export default function ProjectDetailsPage() {
           projectTitle: project.title,
         })}`
       : "";
+  const projectMatch = project && isJobSeeker && project.skills.length > 0
+    ? calculateProjectMatch(project, mySkills.map((skill) => skill.id))
+    : null;
 
   async function handleApply(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -159,12 +173,39 @@ export default function ProjectDetailsPage() {
               </section>
 
               <section>
+                <h2>Requirements and outcomes</h2>
+                <p>{project.requirements}</p>
+                <div className="project-requirement-groups">
+                  <div>
+                    <strong>Required skills</strong>
+                    <div className="project-skill-tags">
+                      {project.skills.filter((skill) => skill.isRequired).map((skill) => (
+                        <span className="required" key={skill.id}>{skill.name}</span>
+                      ))}
+                    </div>
+                  </div>
+                  {project.skills.some((skill) => !skill.isRequired) ? (
+                    <div>
+                      <strong>Preferred skills</strong>
+                      <div className="project-skill-tags">
+                        {project.skills.filter((skill) => !skill.isRequired).map((skill) => (
+                          <span className="preferred" key={skill.id}>{skill.name}</span>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              </section>
+
+              <section>
                 <h2>Commitment and details</h2>
                 <div className="jobseeker-opportunity-facts">
                   <article><Clock3 size={19} /><span>Duration</span><strong>{project.durationWeeks} weeks</strong></article>
                   <article><BriefcaseBusiness size={19} /><span>Budget</span><strong>{project.budget ? `$${project.budget}` : "Unpaid training"}</strong></article>
-                  <article><MapPin size={19} /><span>Company location</span><strong>{companyProfile?.city ?? "Not provided"}</strong></article>
-                  <article><ShieldCheck size={19} /><span>Company status</span><strong>{companyProfile?.isVerified ? "Verified" : "Pending"}</strong></article>
+                  <article><MapPin size={19} /><span>Work mode</span><strong>{getWorkModeLabel(project.workMode)}{project.location ? ` - ${project.location}` : ""}</strong></article>
+                  <article><Wrench size={19} /><span>Experience</span><strong>{getExperienceLevelLabel(project.experienceLevel)}</strong></article>
+                  <article><UsersRound size={19} /><span>Open positions</span><strong>{project.positionsAvailable}</strong></article>
+                  <article><CalendarDays size={19} /><span>Apply by</span><strong>{project.applicationDeadline ?? "Open until filled"}</strong></article>
                 </div>
               </section>
 
@@ -185,6 +226,22 @@ export default function ProjectDetailsPage() {
             </main>
 
             <aside className="jobseeker-apply-panel">
+              {projectMatch ? (
+                <div className="jobseeker-match-summary">
+                  <span>Skill match</span>
+                  <strong>{projectMatch.score}%</strong>
+                  <p>
+                    {projectMatch.matchedRequired}/{projectMatch.totalRequired} required skills matched
+                  </p>
+                  {projectMatch.missingRequiredSkills.length > 0 ? (
+                    <small>
+                      Skills to develop: {projectMatch.missingRequiredSkills.map((skill) => skill.name).join(", ")}
+                    </small>
+                  ) : (
+                    <small>You match every required skill.</small>
+                  )}
+                </div>
+              ) : null}
               {existingApplication ? (
                 <div className="jobseeker-applied-state">
                   <CheckCircle2 size={30} aria-hidden="true" />

@@ -1,6 +1,7 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { getRoleHomePath, useAuth } from "../../shared/auth/AuthContext";
 import Button from "../../shared/components/Button";
+import BrandIcon from "../../shared/components/BrandIcon";
 
 export default function PublicLayout() {
   const { user } = useAuth();
@@ -9,7 +10,7 @@ export default function PublicLayout() {
     <div className="app-shell public-shell">
       <header className="site-header">
         <Link className="brand" to="/">
-          <span className="brand-mark">SB</span>
+          <BrandIcon />
           <span>
             <strong>SkillBridge</strong>
             <small>Internships, training, projects</small>
@@ -34,9 +35,12 @@ export default function PublicLayout() {
       </main>
 
       <footer className="site-footer">
-        <div>
-          <strong>SkillBridge</strong>
-          <small>Real opportunities, cleaner applicant proof.</small>
+        <div className="site-footer-brand">
+          <BrandIcon />
+          <span>
+            <strong>SkillBridge</strong>
+            <small>Real opportunities, cleaner applicant proof.</small>
+          </span>
         </div>
         <small>2026 SkillBridge</small>
       </footer>

@@ -6,9 +6,11 @@ import {
   ClipboardList,
   LayoutDashboard,
   LogOut,
+  Menu,
   MessageSquare,
   ShieldCheck,
   UserRound,
+  X,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -21,6 +23,7 @@ import {
 } from "react-router-dom";
 import { useAuth } from "../../shared/auth/AuthContext";
 import Button from "../../shared/components/Button";
+import BrandIcon from "../../shared/components/BrandIcon";
 import StatusBadge from "../../shared/components/StatusBadge";
 import {
   isCompanyProfileComplete,
@@ -74,6 +77,7 @@ export default function CompanyPortalLayout() {
   const [profileError, setProfileError] = useState("");
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const refreshProfileCompletion = useCallback(async () => {
     setIsCheckingProfile(true);
@@ -129,6 +133,17 @@ export default function CompanyPortalLayout() {
     };
   }, [refreshBadges]);
 
+  useEffect(() => {
+    if (!isSidebarOpen) return;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setIsSidebarOpen(false);
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isSidebarOpen]);
+
   const profileIsComplete = isCompanyProfileComplete(profile);
   const isCompanyVerified = Boolean(profile?.isVerified);
   const isProfileRoute = location.pathname === "/company/profile";
@@ -163,12 +178,24 @@ export default function CompanyPortalLayout() {
 
   return (
     <div className="company-portal company-portal-v2">
-      <aside className="company-sidebar">
+      <aside
+        className={`company-sidebar ${isSidebarOpen ? "is-mobile-open" : ""}`}
+        id="company-sidebar"
+      >
+        <button
+          className="portal-sidebar-close"
+          type="button"
+          aria-label="Close navigation"
+          onClick={() => setIsSidebarOpen(false)}
+        >
+          <X size={20} aria-hidden="true" />
+        </button>
         <Link
           className="company-brand"
           to={profileIsComplete ? "/company/dashboard" : "/company/profile"}
+          onClick={() => setIsSidebarOpen(false)}
         >
-          <span className="brand-mark">SB</span>
+          <BrandIcon />
           <span>
             <strong>SkillBridge</strong>
             <small>Company workspace</small>
@@ -199,7 +226,7 @@ export default function CompanyPortalLayout() {
                   : 0;
 
             return (
-              <NavLink key={item.to} to={item.to}>
+              <NavLink key={item.to} to={item.to} onClick={() => setIsSidebarOpen(false)}>
                 <Icon size={18} aria-hidden="true" />
                 <span>{item.label}</span>
                 {badgeCount > 0 ? (
@@ -231,9 +258,28 @@ export default function CompanyPortalLayout() {
         </div>
       </aside>
 
+      {isSidebarOpen ? (
+        <button
+          className="portal-sidebar-backdrop"
+          type="button"
+          aria-label="Close navigation"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      ) : null}
+
       <div className="company-workspace">
         <header className="company-workspace-header">
-          <div>
+          <div className="portal-header-title">
+            <button
+              className="portal-mobile-menu-button"
+              type="button"
+              aria-label="Open navigation"
+              aria-controls="company-sidebar"
+              aria-expanded={isSidebarOpen}
+              onClick={() => setIsSidebarOpen(true)}
+            >
+              <Menu size={21} aria-hidden="true" />
+            </button>
             <span>Company portal</span>
             <strong>{currentSection}</strong>
           </div>

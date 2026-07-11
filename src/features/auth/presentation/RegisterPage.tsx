@@ -2,6 +2,7 @@ import { type FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getRoleHomePath, useAuth } from "../../../shared/auth/AuthContext";
 import Button from "../../../shared/components/Button";
+import BrandIcon from "../../../shared/components/BrandIcon";
 import Input from "../../../shared/components/Input";
 import { RegisterRoles, type RegisterRole } from "../domain/authTypes";
 import { registerAsync } from "../infrastructure/authApi";
@@ -63,6 +64,13 @@ export default function RegisterPage() {
   return (
     <section className="auth-page auth-simple">
       <form className="auth-card" onSubmit={handleSubmit}>
+        <Link className="portal-brand auth-register-brand" to="/">
+          <BrandIcon />
+          <span>
+            <strong>SkillBridge</strong>
+            <small>Create your account</small>
+          </span>
+        </Link>
         <div>
           <h2>Register</h2>
           <p>Choose your account type first.</p>

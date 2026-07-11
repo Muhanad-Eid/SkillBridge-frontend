@@ -34,7 +34,8 @@ export default function ReviewsPage() {
   }
 
   useEffect(() => {
-    loadReviews();
+    const timeoutId = window.setTimeout(loadReviews, 0);
+    return () => window.clearTimeout(timeoutId);
   }, []);
 
   async function handleCreate(event: FormEvent<HTMLFormElement>) {

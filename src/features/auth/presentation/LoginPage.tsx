@@ -2,6 +2,7 @@ import { type FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getRoleHomePath, useAuth } from "../../../shared/auth/AuthContext";
 import Button from "../../../shared/components/Button";
+import BrandIcon from "../../../shared/components/BrandIcon";
 import Input from "../../../shared/components/Input";
 import { loginAsync } from "../infrastructure/authApi";
 
@@ -44,7 +45,7 @@ export default function LoginPage() {
       <section className="user-login-panel">
         <div className="user-login-copy">
           <Link className="portal-brand" to="/">
-            <span className="brand-mark">SB</span>
+            <BrandIcon />
             <span>
               <strong>SkillBridge</strong>
               <small>User portal</small>

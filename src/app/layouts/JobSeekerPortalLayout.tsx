@@ -6,12 +6,14 @@ import {
   FolderKanban,
   LayoutDashboard,
   LogOut,
+  Menu,
   MessageSquare,
   Search,
   Sparkles,
   Star,
   UserRound,
   Wrench,
+  X,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -31,6 +33,7 @@ import { getMyMessagesAsync } from "../../features/messages/infrastructure/messa
 import { getMyNotificationsAsync } from "../../features/notifications/infrastructure/notificationApi";
 import { useAuth } from "../../shared/auth/AuthContext";
 import Button from "../../shared/components/Button";
+import BrandIcon from "../../shared/components/BrandIcon";
 import StatusBadge from "../../shared/components/StatusBadge";
 
 type JobSeekerNavItem = {
@@ -83,6 +86,7 @@ export default function JobSeekerPortalLayout() {
   const [profileError, setProfileError] = useState("");
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const refreshProfileCompletion = useCallback(async () => {
     setIsCheckingProfile(true);
@@ -139,6 +143,17 @@ export default function JobSeekerPortalLayout() {
     };
   }, [refreshBadges]);
 
+  useEffect(() => {
+    if (!isSidebarOpen) return;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setIsSidebarOpen(false);
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isSidebarOpen]);
+
   const profileIsComplete = isJobSeekerProfileComplete(profile);
   const isProfileRoute = location.pathname === "/job-seeker/profile";
   const navItems = profileIsComplete
@@ -175,12 +190,24 @@ export default function JobSeekerPortalLayout() {
 
   return (
     <div className="jobseeker-portal jobseeker-portal-v2">
-      <aside className="jobseeker-sidebar">
+      <aside
+        className={`jobseeker-sidebar ${isSidebarOpen ? "is-mobile-open" : ""}`}
+        id="jobseeker-sidebar"
+      >
+        <button
+          className="portal-sidebar-close"
+          type="button"
+          aria-label="Close navigation"
+          onClick={() => setIsSidebarOpen(false)}
+        >
+          <X size={20} aria-hidden="true" />
+        </button>
         <Link
           className="jobseeker-brand"
           to={profileIsComplete ? "/job-seeker/dashboard" : "/job-seeker/profile"}
+          onClick={() => setIsSidebarOpen(false)}
         >
-          <span className="brand-mark">SB</span>
+          <BrandIcon />
           <span>
             <strong>SkillBridge</strong>
             <small>Career workspace</small>
@@ -209,7 +236,7 @@ export default function JobSeekerPortalLayout() {
                   : 0;
 
             return (
-              <NavLink key={item.to} to={item.to}>
+              <NavLink key={item.to} to={item.to} onClick={() => setIsSidebarOpen(false)}>
                 <Icon size={18} aria-hidden="true" />
                 <span>{item.label}</span>
                 {badgeCount > 0 ? (
@@ -241,9 +268,28 @@ export default function JobSeekerPortalLayout() {
         </div>
       </aside>
 
+      {isSidebarOpen ? (
+        <button
+          className="portal-sidebar-backdrop"
+          type="button"
+          aria-label="Close navigation"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      ) : null}
+
       <div className="jobseeker-workspace">
         <header className="jobseeker-workspace-header">
-          <div>
+          <div className="portal-header-title">
+            <button
+              className="portal-mobile-menu-button"
+              type="button"
+              aria-label="Open navigation"
+              aria-controls="jobseeker-sidebar"
+              aria-expanded={isSidebarOpen}
+              onClick={() => setIsSidebarOpen(true)}
+            >
+              <Menu size={21} aria-hidden="true" />
+            </button>
             <span>Job seeker portal</span>
             <strong>{currentSection}</strong>
           </div>

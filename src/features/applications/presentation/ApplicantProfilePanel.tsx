@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import {
   BriefcaseBusiness,
   ExternalLink,
@@ -10,6 +10,9 @@ import {
 import Button from "../../../shared/components/Button";
 import StatusBadge from "../../../shared/components/StatusBadge";
 import type { JobSeekerProfile } from "../../profiles/domain/profileTypes";
+import type { PortfolioItem } from "../../portfolio/domain/portfolioTypes";
+import { getPublicPortfolioAsync } from "../../portfolio/infrastructure/portfolioApi";
+import PortfolioGallery from "../../portfolio/presentation/PortfolioGallery";
 import {
   getApplicationStatusLabel,
   type Application,
@@ -46,6 +49,40 @@ export default function ApplicantProfilePanel({
   profile,
   actions,
 }: ApplicantProfilePanelProps) {
+  const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
+  const [portfolioError, setPortfolioError] = useState("");
+  const [isPortfolioLoading, setIsPortfolioLoading] = useState(false);
+
+  useEffect(() => {
+    if (!profile) return;
+
+    let cancelled = false;
+    const timeoutId = window.setTimeout(async () => {
+      setIsPortfolioLoading(true);
+      setPortfolioError("");
+
+      try {
+        const items = await getPublicPortfolioAsync(profile.id);
+        if (!cancelled) setPortfolio(items);
+      } catch (caughtError) {
+        if (!cancelled) {
+          setPortfolioError(
+            caughtError instanceof Error
+              ? caughtError.message
+              : "Unable to load portfolio evidence.",
+          );
+        }
+      } finally {
+        if (!cancelled) setIsPortfolioLoading(false);
+      }
+    }, 0);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, [profile]);
+
   return (
     <div className="company-applicant-backdrop" role="presentation">
       <aside
@@ -133,6 +170,25 @@ export default function ApplicantProfilePanel({
             <section>
               <h3>Cover letter</h3>
               <p>{application.coverLetter ?? "No cover letter provided."}</p>
+            </section>
+
+            <section className="company-applicant-portfolio">
+              <div className="company-applicant-section-heading">
+                <h3>Verified portfolio work</h3>
+                <span>{portfolio.length} items</span>
+              </div>
+              {isPortfolioLoading ? (
+                <div className="notice">Loading portfolio...</div>
+              ) : null}
+              {portfolioError ? (
+                <div className="notice notice-error">{portfolioError}</div>
+              ) : null}
+              {!isPortfolioLoading && !portfolioError ? (
+                <PortfolioGallery
+                  items={portfolio}
+                  emptyDescription="This applicant has not added completed SkillBridge work yet."
+                />
+              ) : null}
             </section>
 
             <section>

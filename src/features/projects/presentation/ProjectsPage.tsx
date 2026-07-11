@@ -1,5 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, BriefcaseBusiness, Clock3, Search, ShieldCheck } from "lucide-react";
+import {
+  ArrowRight,
+  BriefcaseBusiness,
+  Clock3,
+  MapPin,
+  Search,
+  ShieldCheck,
+  Wrench,
+} from "lucide-react";
 import { useAuth } from "../../../shared/auth/AuthContext";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
@@ -10,10 +18,17 @@ import {
   type Application,
 } from "../../applications/domain/applicationTypes";
 import { getMyApplicationsAsync } from "../../applications/infrastructure/applicationApi";
+import type { Skill } from "../../skills/domain/skillTypes";
+import { getMySkillsAsync } from "../../skills/infrastructure/skillApi";
 import {
+  calculateProjectMatch,
+  ExperienceLevels,
+  getExperienceLevelLabel,
   getOpportunityTypeLabel,
+  getWorkModeLabel,
   OpportunityTypes,
   ProjectStatuses,
+  WorkModes,
   type Project,
 } from "../domain/projectTypes";
 import { getProjectsAsync } from "../infrastructure/projectApi";
@@ -22,10 +37,15 @@ export default function ProjectsPage() {
   const { user } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
+  const [mySkills, setMySkills] = useState<Skill[]>([]);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [durationFilter, setDurationFilter] = useState("all");
   const [applicationFilter, setApplicationFilter] = useState("all");
+  const [workModeFilter, setWorkModeFilter] = useState("all");
+  const [experienceFilter, setExperienceFilter] = useState("all");
+  const [skillFilter, setSkillFilter] = useState("all");
+  const [matchFilter, setMatchFilter] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const isJobSeeker = user?.role === "JobSeeker";
@@ -35,14 +55,16 @@ export default function ProjectsPage() {
 
     async function loadProjects() {
       try {
-        const [projectData, applicationData] = await Promise.all([
+        const [projectData, applicationData, skillData] = await Promise.all([
           getProjectsAsync(),
           isJobSeeker ? getMyApplicationsAsync() : Promise.resolve([]),
+          isJobSeeker ? getMySkillsAsync() : Promise.resolve([]),
         ]);
 
         if (isMounted) {
           setProjects(projectData);
           setApplications(applicationData);
+          setMySkills(skillData);
         }
       } catch (caughtError) {
         if (isMounted) {
@@ -69,6 +91,21 @@ export default function ProjectsPage() {
     [applications],
   );
 
+  const matchByProject = useMemo(() => {
+    const skillIds = mySkills.map((skill) => skill.id);
+    return new Map(
+      projects.map((project) => [project.id, calculateProjectMatch(project, skillIds)]),
+    );
+  }, [mySkills, projects]);
+
+  const availableProjectSkills = useMemo(() => {
+    const skills = new Map<number, string>();
+    projects.forEach((project) => {
+      project.skills.forEach((skill) => skills.set(skill.id, skill.name));
+    });
+    return [...skills.entries()].sort((left, right) => left[1].localeCompare(right[1]));
+  }, [projects]);
+
   const filteredProjects = useMemo(() => {
     const searchValue = search.trim().toLowerCase();
 
@@ -77,7 +114,9 @@ export default function ProjectsPage() {
         !searchValue ||
         project.title.toLowerCase().includes(searchValue) ||
         project.companyName.toLowerCase().includes(searchValue) ||
-        project.description.toLowerCase().includes(searchValue);
+        project.description.toLowerCase().includes(searchValue) ||
+        project.requirements.toLowerCase().includes(searchValue) ||
+        project.skills.some((skill) => skill.name.toLowerCase().includes(searchValue));
       const matchesType =
         typeFilter === "all" || project.type === Number(typeFilter);
       const matchesDuration =
@@ -88,20 +127,45 @@ export default function ProjectsPage() {
           project.durationWeeks <= 8) ||
         (durationFilter === "long" && project.durationWeeks > 8);
       const hasApplied = applicationByProject.has(project.id);
+      const match = matchByProject.get(project.id);
       const matchesApplication =
         applicationFilter === "all" ||
         (applicationFilter === "new" && !hasApplied) ||
         (applicationFilter === "applied" && hasApplied);
+      const matchesWorkMode =
+        workModeFilter === "all" || project.workMode === Number(workModeFilter);
+      const matchesExperience =
+        experienceFilter === "all" ||
+        project.experienceLevel === Number(experienceFilter);
+      const matchesSkill =
+        skillFilter === "all" ||
+        project.skills.some((skill) => skill.id === Number(skillFilter));
+      const matchesFit =
+        matchFilter === "all" ||
+        (matchFilter === "strong" && (match?.score ?? 0) >= 70) ||
+        (matchFilter === "complete" && match?.missingRequiredSkills.length === 0);
 
-      return matchesSearch && matchesType && matchesDuration && matchesApplication;
-    });
+      return matchesSearch && matchesType && matchesDuration && matchesApplication &&
+        matchesWorkMode && matchesExperience && matchesSkill && matchesFit;
+    }).sort((left, right) =>
+      isJobSeeker
+        ? (matchByProject.get(right.id)?.score ?? 0) -
+          (matchByProject.get(left.id)?.score ?? 0)
+        : 0,
+    );
   }, [
     applicationByProject,
     applicationFilter,
     durationFilter,
+    experienceFilter,
+    isJobSeeker,
+    matchByProject,
+    matchFilter,
     projects,
     search,
+    skillFilter,
     typeFilter,
+    workModeFilter,
   ]);
 
   const detailsBasePath = isJobSeeker
@@ -169,6 +233,36 @@ export default function ProjectsPage() {
           <option value={OpportunityTypes.Training}>Training</option>
         </select>
         <select
+          aria-label="Filter by work mode"
+          value={workModeFilter}
+          onChange={(event) => setWorkModeFilter(event.target.value)}
+        >
+          <option value="all">Any work mode</option>
+          <option value={WorkModes.Remote}>Remote</option>
+          <option value={WorkModes.Hybrid}>Hybrid</option>
+          <option value={WorkModes.OnSite}>On-site</option>
+        </select>
+        <select
+          aria-label="Filter by experience level"
+          value={experienceFilter}
+          onChange={(event) => setExperienceFilter(event.target.value)}
+        >
+          <option value="all">Any experience level</option>
+          <option value={ExperienceLevels.Beginner}>Beginner</option>
+          <option value={ExperienceLevels.Intermediate}>Intermediate</option>
+          <option value={ExperienceLevels.Advanced}>Advanced</option>
+        </select>
+        <select
+          aria-label="Filter by skill"
+          value={skillFilter}
+          onChange={(event) => setSkillFilter(event.target.value)}
+        >
+          <option value="all">Any skill</option>
+          {availableProjectSkills.map(([id, name]) => (
+            <option key={id} value={id}>{name}</option>
+          ))}
+        </select>
+        <select
           aria-label="Filter by duration"
           value={durationFilter}
           onChange={(event) => setDurationFilter(event.target.value)}
@@ -179,15 +273,26 @@ export default function ProjectsPage() {
           <option value="long">More than 8 weeks</option>
         </select>
         {isJobSeeker ? (
-          <select
-            aria-label="Filter by application status"
-            value={applicationFilter}
-            onChange={(event) => setApplicationFilter(event.target.value)}
-          >
-            <option value="all">All listings</option>
-            <option value="new">Not applied</option>
-            <option value="applied">Already applied</option>
-          </select>
+          <>
+            <select
+              aria-label="Filter by skill match"
+              value={matchFilter}
+              onChange={(event) => setMatchFilter(event.target.value)}
+            >
+              <option value="all">Any match score</option>
+              <option value="strong">70% match or better</option>
+              <option value="complete">All required skills</option>
+            </select>
+            <select
+              aria-label="Filter by application status"
+              value={applicationFilter}
+              onChange={(event) => setApplicationFilter(event.target.value)}
+            >
+              <option value="all">All listings</option>
+              <option value="new">Not applied</option>
+              <option value="applied">Already applied</option>
+            </select>
+          </>
         ) : null}
       </div>
 
@@ -196,7 +301,9 @@ export default function ProjectsPage() {
           <strong>{filteredProjects.length} result{filteredProjects.length === 1 ? "" : "s"}</strong>
           <span>Only opportunities from verified companies are listed.</span>
         </div>
-        {search || typeFilter !== "all" || durationFilter !== "all" || applicationFilter !== "all" ? (
+        {search || typeFilter !== "all" || durationFilter !== "all" ||
+        applicationFilter !== "all" || workModeFilter !== "all" ||
+        experienceFilter !== "all" || skillFilter !== "all" || matchFilter !== "all" ? (
           <Button
             type="button"
             variant="ghost"
@@ -205,6 +312,10 @@ export default function ProjectsPage() {
               setTypeFilter("all");
               setDurationFilter("all");
               setApplicationFilter("all");
+              setWorkModeFilter("all");
+              setExperienceFilter("all");
+              setSkillFilter("all");
+              setMatchFilter("all");
             }}
           >
             Clear filters
@@ -223,6 +334,7 @@ export default function ProjectsPage() {
       <div className="jobseeker-opportunity-list">
         {filteredProjects.map((project) => {
           const application = applicationByProject.get(project.id);
+          const match = matchByProject.get(project.id);
 
           return (
             <article key={project.id}>
@@ -239,6 +351,11 @@ export default function ProjectsPage() {
                       {getApplicationStatusLabel(application.status)}
                     </StatusBadge>
                   ) : null}
+                  {isJobSeeker && match ? (
+                    <StatusBadge tone={match.score >= 70 ? "green" : "neutral"}>
+                      {match.score}% skill match
+                    </StatusBadge>
+                  ) : null}
                 </div>
                 <h2>{project.title}</h2>
                 <strong>{project.companyName}</strong>
@@ -246,7 +363,16 @@ export default function ProjectsPage() {
                 <div className="jobseeker-opportunity-meta">
                   <span><Clock3 size={15} />{project.durationWeeks} weeks</span>
                   <span><BriefcaseBusiness size={15} />{project.budget ? `$${project.budget}` : "Unpaid training"}</span>
+                  <span><MapPin size={15} />{getWorkModeLabel(project.workMode)}{project.location ? ` - ${project.location}` : ""}</span>
+                  <span><Wrench size={15} />{getExperienceLevelLabel(project.experienceLevel)}</span>
                   <span><ShieldCheck size={15} />Verified company</span>
+                </div>
+                <div className="project-skill-tags">
+                  {project.skills.map((skill) => (
+                    <span className={skill.isRequired ? "required" : "preferred"} key={skill.id}>
+                      {skill.name}
+                    </span>
+                  ))}
                 </div>
               </div>
               <div className="jobseeker-opportunity-action">

@@ -24,6 +24,7 @@ import { getMyPortfolioAsync } from "../../portfolio/infrastructure/portfolioApi
 import type { JobSeekerProfile } from "../../profiles/domain/profileTypes";
 import { getMyJobSeekerProfileAsync } from "../../profiles/infrastructure/profileApi";
 import {
+  calculateProjectMatch,
   ProjectStatuses,
   type Project,
 } from "../../projects/domain/projectTypes";
@@ -148,6 +149,11 @@ export default function JobSeekerDashboardPage() {
     .filter(
       (project) =>
         project.status === ProjectStatuses.Open && !appliedProjectIds.has(project.id),
+    )
+    .sort(
+      (left, right) =>
+        calculateProjectMatch(right, skills.map((skill) => skill.id)).score -
+        calculateProjectMatch(left, skills.map((skill) => skill.id)).score,
     )
     .slice(0, 3);
 
@@ -288,6 +294,12 @@ export default function JobSeekerDashboardPage() {
                       <strong>{project.title}</strong>
                       <span>{project.companyName}</span>
                     </div>
+                    <span>
+                      {calculateProjectMatch(
+                        project,
+                        skills.map((skill) => skill.id),
+                      ).score}% match
+                    </span>
                     <span>{project.durationWeeks} weeks</span>
                     <strong>{project.budget ? `$${project.budget}` : "Training"}</strong>
                     <Button

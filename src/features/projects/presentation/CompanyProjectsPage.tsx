@@ -1,13 +1,22 @@
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import {
+  type FormEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   BriefcaseBusiness,
+  CalendarDays,
   CircleDollarSign,
   Clock3,
   Edit3,
+  MapPin,
   Plus,
   Search,
   Trash2,
   UsersRound,
+  Wrench,
   X,
 } from "lucide-react";
 import { useOutletContext, useSearchParams } from "react-router-dom";
@@ -17,21 +26,29 @@ import Input from "../../../shared/components/Input";
 import PageHeader from "../../../shared/components/PageHeader";
 import StatusBadge from "../../../shared/components/StatusBadge";
 import type { CompanyProfile } from "../../profiles/domain/profileTypes";
+import type { Skill } from "../../skills/domain/skillTypes";
+import { getSkillsAsync } from "../../skills/infrastructure/skillApi";
 import {
+  ExperienceLevels,
+  getExperienceLevelLabel,
   getOpportunityTypeLabel,
   getProjectStatusLabel,
+  getWorkModeLabel,
   OpportunityTypes,
   ProjectStatuses,
+  WorkModes,
+  type ExperienceLevel,
   type OpportunityType,
   type Project,
   type ProjectStatus,
-  type UpdateProjectRequest,
+  type WorkMode,
 } from "../domain/projectTypes";
 import {
   createProjectAsync,
   deleteProjectAsync,
   getMyCompanyProjectsAsync,
   updateProjectAsync,
+  updateProjectStatusAsync,
 } from "../infrastructure/projectApi";
 
 type FormMode = "create" | "edit";
@@ -39,9 +56,17 @@ type FormMode = "create" | "edit";
 type ProjectForm = {
   title: string;
   description: string;
+  requirements: string;
+  location: string;
+  workMode: WorkMode;
+  experienceLevel: ExperienceLevel;
+  positionsAvailable: string;
+  applicationDeadline: string;
   budget: string;
   durationWeeks: string;
   type: OpportunityType;
+  requiredSkillNames: string[];
+  preferredSkillNames: string[];
 };
 
 type CompanyPortalContext = {
@@ -52,10 +77,32 @@ type CompanyPortalContext = {
 const emptyProjectForm: ProjectForm = {
   title: "",
   description: "",
+  requirements: "",
+  location: "",
+  workMode: WorkModes.Remote,
+  experienceLevel: ExperienceLevels.Beginner,
+  positionsAvailable: "1",
+  applicationDeadline: "",
   budget: "",
   durationWeeks: "6",
   type: OpportunityTypes.PaidProject,
+  requiredSkillNames: [],
+  preferredSkillNames: [],
 };
+
+function mergeSkillNames(...groups: string[][]) {
+  const names = new Map<string, string>();
+
+  groups.flat().forEach((rawName) => {
+    rawName
+      .split(",")
+      .map((name) => name.trim())
+      .filter(Boolean)
+      .forEach((name) => names.set(name.toLowerCase(), name));
+  });
+
+  return [...names.values()];
+}
 
 function getStatusTone(status: ProjectStatus) {
   if (status === ProjectStatuses.Open) return "green";
@@ -64,25 +111,14 @@ function getStatusTone(status: ProjectStatus) {
   return "neutral";
 }
 
-function toUpdateRequest(
-  project: Project,
-  status = project.status,
-): UpdateProjectRequest {
-  return {
-    title: project.title,
-    description: project.description,
-    budget: project.budget,
-    durationWeeks: project.durationWeeks,
-    type: project.type,
-    status,
-  };
-}
-
 export default function CompanyProjectsPage() {
   const { profile, isCompanyVerified } = useOutletContext<CompanyPortalContext>();
   const [searchParams, setSearchParams] = useSearchParams();
   const createRequested = searchParams.get("create") === "1";
   const [projects, setProjects] = useState<Project[]>([]);
+  const [availableSkills, setAvailableSkills] = useState<Skill[]>([]);
+  const [requiredSkillInput, setRequiredSkillInput] = useState("");
+  const [preferredSkillInput, setPreferredSkillInput] = useState("");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [typeFilter, setTypeFilter] = useState("All");
@@ -107,7 +143,12 @@ export default function CompanyProjectsPage() {
     setError("");
 
     try {
-      setProjects(await getMyCompanyProjectsAsync());
+      const [projectData, skillData] = await Promise.all([
+        getMyCompanyProjectsAsync(),
+        getSkillsAsync(),
+      ]);
+      setProjects(projectData);
+      setAvailableSkills(skillData);
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -134,7 +175,9 @@ export default function CompanyProjectsPage() {
       const matchesSearch =
         !value ||
         project.title.toLowerCase().includes(value) ||
-        project.description.toLowerCase().includes(value);
+        project.description.toLowerCase().includes(value) ||
+        project.requirements.toLowerCase().includes(value) ||
+        project.skills.some((skill) => skill.name.toLowerCase().includes(value));
 
       return matchesStatus && matchesType && matchesSearch;
     });
@@ -168,6 +211,8 @@ export default function CompanyProjectsPage() {
     setMode("create");
     setEditingProject(null);
     setForm(emptyProjectForm);
+    setRequiredSkillInput("");
+    setPreferredSkillInput("");
     setIsFormOpen(true);
   }
 
@@ -177,10 +222,24 @@ export default function CompanyProjectsPage() {
     setForm({
       title: project.title,
       description: project.description,
+      requirements: project.requirements,
+      location: project.location ?? "",
+      workMode: project.workMode,
+      experienceLevel: project.experienceLevel,
+      positionsAvailable: project.positionsAvailable.toString(),
+      applicationDeadline: project.applicationDeadline ?? "",
       budget: project.budget?.toString() ?? "",
       durationWeeks: project.durationWeeks.toString(),
       type: project.type,
+      requiredSkillNames: project.skills
+        .filter((skill) => skill.isRequired)
+        .map((skill) => skill.name),
+      preferredSkillNames: project.skills
+        .filter((skill) => !skill.isRequired)
+        .map((skill) => skill.name),
     });
+    setRequiredSkillInput("");
+    setPreferredSkillInput("");
     setMessage("");
     setError("");
     setIsFormOpen(true);
@@ -191,6 +250,8 @@ export default function CompanyProjectsPage() {
     setMode("create");
     setEditingProject(null);
     setForm(emptyProjectForm);
+    setRequiredSkillInput("");
+    setPreferredSkillInput("");
 
     if (searchParams.has("create")) {
       setSearchParams({}, { replace: true });
@@ -203,10 +264,37 @@ export default function CompanyProjectsPage() {
     setError("");
 
     const durationWeeks = Number(form.durationWeeks);
+    const positionsAvailable = Number(form.positionsAvailable);
     const budget = form.budget.trim() ? Number(form.budget) : null;
+    const requiredSkillNames = mergeSkillNames(
+      form.requiredSkillNames,
+      [requiredSkillInput],
+    );
+    const requiredNames = new Set(
+      requiredSkillNames.map((name) => name.toLowerCase()),
+    );
+    const preferredSkillNames = mergeSkillNames(
+      form.preferredSkillNames,
+      [preferredSkillInput],
+    ).filter((name) => !requiredNames.has(name.toLowerCase()));
 
-    if (!form.title.trim() || !form.description.trim()) {
-      setError("Title and description are required.");
+    if (!form.title.trim() || !form.description.trim() || !form.requirements.trim()) {
+      setError("Title, description, and requirements are required.");
+      return;
+    }
+
+    if (!Number.isInteger(positionsAvailable) || positionsAvailable < 1) {
+      setError("At least one position must be available.");
+      return;
+    }
+
+    if (form.workMode !== WorkModes.Remote && !form.location.trim()) {
+      setError("Location is required for hybrid and on-site opportunities.");
+      return;
+    }
+
+    if (requiredSkillNames.length === 0) {
+      setError("Add at least one required skill.");
       return;
     }
 
@@ -227,18 +315,34 @@ export default function CompanyProjectsPage() {
         await createProjectAsync({
           title: form.title.trim(),
           description: form.description.trim(),
+          requirements: form.requirements.trim(),
+          location: form.location.trim() || null,
+          workMode: form.workMode,
+          experienceLevel: form.experienceLevel,
+          positionsAvailable,
+          applicationDeadline: form.applicationDeadline || null,
           budget,
           durationWeeks,
           type: form.type,
+          requiredSkillNames,
+          preferredSkillNames,
         });
         setMessage("Opportunity published.");
       } else if (editingProject) {
         await updateProjectAsync(editingProject.id, {
           title: form.title.trim(),
           description: form.description.trim(),
+          requirements: form.requirements.trim(),
+          location: form.location.trim() || null,
+          workMode: form.workMode,
+          experienceLevel: form.experienceLevel,
+          positionsAvailable,
+          applicationDeadline: form.applicationDeadline || null,
           budget,
           durationWeeks,
           type: form.type,
+          requiredSkillNames,
+          preferredSkillNames,
           status: editingProject.status,
         });
         setMessage("Opportunity details updated.");
@@ -270,7 +374,7 @@ export default function CompanyProjectsPage() {
     setError("");
 
     try {
-      await updateProjectAsync(project.id, toUpdateRequest(project, status));
+      await updateProjectStatusAsync(project.id, status);
       setMessage(`"${project.title}" is now ${getProjectStatusLabel(status)}.`);
       await loadProjects();
     } catch (caughtError) {
@@ -306,6 +410,57 @@ export default function CompanyProjectsPage() {
     } finally {
       setBusyProjectId(null);
     }
+  }
+
+  function addSkillNames(
+    level: "required" | "preferred",
+    value: string,
+  ) {
+    const targetKey = level === "required"
+      ? "requiredSkillNames"
+      : "preferredSkillNames";
+    const otherKey = level === "required"
+      ? "preferredSkillNames"
+      : "requiredSkillNames";
+    const names = mergeSkillNames([value]);
+
+    if (names.length === 0) return;
+
+    const normalizedNames = new Set(names.map((name) => name.toLowerCase()));
+
+    setForm((current) => ({
+      ...current,
+      [targetKey]: mergeSkillNames(current[targetKey], names),
+      [otherKey]: current[otherKey].filter(
+        (name) => !normalizedNames.has(name.toLowerCase()),
+      ),
+    }));
+
+    if (level === "required") setRequiredSkillInput("");
+    else setPreferredSkillInput("");
+  }
+
+  function removeSkillName(level: "required" | "preferred", name: string) {
+    const targetKey = level === "required"
+      ? "requiredSkillNames"
+      : "preferredSkillNames";
+
+    setForm((current) => ({
+      ...current,
+      [targetKey]: current[targetKey].filter(
+        (skillName) => skillName.toLowerCase() !== name.toLowerCase(),
+      ),
+    }));
+  }
+
+  function handleSkillKeyDown(
+    event: ReactKeyboardEvent<HTMLInputElement>,
+    level: "required" | "preferred",
+  ) {
+    if (event.key !== "Enter" && event.key !== ",") return;
+
+    event.preventDefault();
+    addSkillNames(level, event.currentTarget.value);
   }
 
   return (
@@ -422,10 +577,22 @@ export default function CompanyProjectsPage() {
                 <div className="company-opportunity-facts">
                   <span><UsersRound size={16} /> {project.applicationsCount} applications</span>
                   <span><Clock3 size={16} /> {project.durationWeeks} weeks</span>
+                  <span><MapPin size={16} /> {getWorkModeLabel(project.workMode)}</span>
+                  <span><Wrench size={16} /> {getExperienceLevelLabel(project.experienceLevel)}</span>
+                  {project.applicationDeadline ? (
+                    <span><CalendarDays size={16} /> Apply by {project.applicationDeadline}</span>
+                  ) : null}
                   <span>
                     <CircleDollarSign size={16} />
                     {project.budget !== null ? `$${project.budget}` : "No budget"}
                   </span>
+                </div>
+                <div className="project-skill-tags">
+                  {project.skills.slice(0, 6).map((skill) => (
+                    <span className={skill.isRequired ? "required" : "preferred"} key={skill.id}>
+                      {skill.name}
+                    </span>
+                  ))}
                 </div>
               </div>
 
@@ -570,6 +737,18 @@ export default function CompanyProjectsPage() {
                 />
               </label>
               <label className="field">
+                <span>Requirements and expected outcomes</span>
+                <textarea
+                  value={form.requirements}
+                  maxLength={3000}
+                  required
+                  placeholder="Required experience, responsibilities, and what successful completion looks like"
+                  onChange={(event) =>
+                    setForm({ ...form, requirements: event.target.value })
+                  }
+                />
+              </label>
+              <label className="field">
                 <span>Opportunity type</span>
                 <select
                   value={form.type}
@@ -581,6 +760,48 @@ export default function CompanyProjectsPage() {
                   <option value={OpportunityTypes.Training}>Training</option>
                 </select>
               </label>
+              <div className="company-form-grid">
+                <label className="field">
+                  <span>Work mode</span>
+                  <select
+                    value={form.workMode}
+                    onChange={(event) =>
+                      setForm({
+                        ...form,
+                        workMode: Number(event.target.value) as WorkMode,
+                      })
+                    }
+                  >
+                    <option value={WorkModes.Remote}>Remote</option>
+                    <option value={WorkModes.Hybrid}>Hybrid</option>
+                    <option value={WorkModes.OnSite}>On-site</option>
+                  </select>
+                </label>
+                <label className="field">
+                  <span>Experience level</span>
+                  <select
+                    value={form.experienceLevel}
+                    onChange={(event) =>
+                      setForm({
+                        ...form,
+                        experienceLevel: Number(event.target.value) as ExperienceLevel,
+                      })
+                    }
+                  >
+                    <option value={ExperienceLevels.Beginner}>Beginner</option>
+                    <option value={ExperienceLevels.Intermediate}>Intermediate</option>
+                    <option value={ExperienceLevels.Advanced}>Advanced</option>
+                  </select>
+                </label>
+              </div>
+              <Input
+                label={form.workMode === WorkModes.Remote ? "Location (optional)" : "Location"}
+                value={form.location}
+                maxLength={150}
+                required={form.workMode !== WorkModes.Remote}
+                placeholder="City, country, or office location"
+                onChange={(event) => setForm({ ...form, location: event.target.value })}
+              />
               <div className="company-form-grid">
                 <Input
                   label="Duration in weeks"
@@ -602,6 +823,113 @@ export default function CompanyProjectsPage() {
                   onChange={(event) => setForm({ ...form, budget: event.target.value })}
                 />
               </div>
+              <div className="company-form-grid">
+                <Input
+                  label="Positions available"
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={form.positionsAvailable}
+                  required
+                  onChange={(event) =>
+                    setForm({ ...form, positionsAvailable: event.target.value })
+                  }
+                />
+                <Input
+                  label="Application deadline (optional)"
+                  type="date"
+                  value={form.applicationDeadline}
+                  min={new Date().toISOString().slice(0, 10)}
+                  onChange={(event) =>
+                    setForm({ ...form, applicationDeadline: event.target.value })
+                  }
+                />
+              </div>
+              <fieldset className="project-skill-picker">
+                <legend><Wrench size={16} /> Skills</legend>
+                <p>Type a skill and press Enter or comma. Existing skills are suggested, but you can add any skill the opportunity needs.</p>
+                <datalist id="company-skill-suggestions">
+                  {availableSkills.map((skill) => (
+                    <option key={skill.id} value={skill.name} />
+                  ))}
+                </datalist>
+
+                <div className="project-skill-entry">
+                  <label htmlFor="required-skill-input">Required skills</label>
+                  <div>
+                    <input
+                      id="required-skill-input"
+                      list="company-skill-suggestions"
+                      value={requiredSkillInput}
+                      maxLength={100}
+                      placeholder="React, SQL, communication..."
+                      onChange={(event) => setRequiredSkillInput(event.target.value)}
+                      onKeyDown={(event) => handleSkillKeyDown(event, "required")}
+                    />
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      disabled={!requiredSkillInput.trim()}
+                      onClick={() => addSkillNames("required", requiredSkillInput)}
+                    >
+                      <Plus size={16} aria-hidden="true" />
+                      Add
+                    </Button>
+                  </div>
+                  <div className="project-skill-tags editable">
+                    {form.requiredSkillNames.map((name) => (
+                      <span className="required" key={name.toLowerCase()}>
+                        {name}
+                        <button
+                          type="button"
+                          aria-label={`Remove ${name}`}
+                          onClick={() => removeSkillName("required", name)}
+                        >
+                          <X size={13} aria-hidden="true" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="project-skill-entry">
+                  <label htmlFor="preferred-skill-input">Preferred skills</label>
+                  <div>
+                    <input
+                      id="preferred-skill-input"
+                      list="company-skill-suggestions"
+                      value={preferredSkillInput}
+                      maxLength={100}
+                      placeholder="Testing, Figma, documentation..."
+                      onChange={(event) => setPreferredSkillInput(event.target.value)}
+                      onKeyDown={(event) => handleSkillKeyDown(event, "preferred")}
+                    />
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      disabled={!preferredSkillInput.trim()}
+                      onClick={() => addSkillNames("preferred", preferredSkillInput)}
+                    >
+                      <Plus size={16} aria-hidden="true" />
+                      Add
+                    </Button>
+                  </div>
+                  <div className="project-skill-tags editable">
+                    {form.preferredSkillNames.map((name) => (
+                      <span className="preferred" key={name.toLowerCase()}>
+                        {name}
+                        <button
+                          type="button"
+                          aria-label={`Remove ${name}`}
+                          onClick={() => removeSkillName("preferred", name)}
+                        >
+                          <X size={13} aria-hidden="true" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </fieldset>
               <div className="company-drawer-actions">
                 <Button type="button" variant="secondary" onClick={closeForm}>
                   Cancel

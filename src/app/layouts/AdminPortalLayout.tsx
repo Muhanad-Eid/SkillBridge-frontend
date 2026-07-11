@@ -7,10 +7,12 @@ import {
   Gauge,
   GraduationCap,
   LogOut,
+  Menu,
   ShieldCheck,
   Star,
   Tags,
   UserCog,
+  X,
   type LucideIcon,
 } from "lucide-react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -22,6 +24,7 @@ import {
 } from "../../features/admin/infrastructure/adminApi";
 import { useAuth } from "../../shared/auth/AuthContext";
 import Button from "../../shared/components/Button";
+import BrandIcon from "../../shared/components/BrandIcon";
 import StatusBadge from "../../shared/components/StatusBadge";
 
 type AdminNavItem = {
@@ -60,6 +63,7 @@ export default function AdminPortalLayout() {
   const [pendingCompanies, setPendingCompanies] = useState(0);
   const [pendingApplications, setPendingApplications] = useState(0);
   const [flaggedReviews, setFlaggedReviews] = useState(0);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const refreshQueues = useCallback(async () => {
     const [companyResult, applicationResult, reviewResult] = await Promise.allSettled([
@@ -95,6 +99,17 @@ export default function AdminPortalLayout() {
     };
   }, [refreshQueues]);
 
+  useEffect(() => {
+    if (!isSidebarOpen) return;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setIsSidebarOpen(false);
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isSidebarOpen]);
+
   const currentSection = useMemo(
     () => sectionTitles[location.pathname] ?? "Administration",
     [location.pathname],
@@ -107,9 +122,20 @@ export default function AdminPortalLayout() {
 
   return (
     <div className="admin-portal admin-portal-v2">
-      <aside className="admin-sidebar-v2">
-        <Link className="admin-brand-v2" to="/admin/dashboard">
-          <span className="brand-mark">SB</span>
+      <aside
+        className={`admin-sidebar-v2 ${isSidebarOpen ? "is-mobile-open" : ""}`}
+        id="admin-sidebar"
+      >
+        <button
+          className="portal-sidebar-close"
+          type="button"
+          aria-label="Close navigation"
+          onClick={() => setIsSidebarOpen(false)}
+        >
+          <X size={20} aria-hidden="true" />
+        </button>
+        <Link className="admin-brand-v2" to="/admin/dashboard" onClick={() => setIsSidebarOpen(false)}>
+          <BrandIcon />
           <span>
             <strong>SkillBridge</strong>
             <small>Administration</small>
@@ -138,7 +164,7 @@ export default function AdminPortalLayout() {
                     : 0;
 
             return (
-              <NavLink key={item.to} to={item.to}>
+              <NavLink key={item.to} to={item.to} onClick={() => setIsSidebarOpen(false)}>
                 <Icon size={18} aria-hidden="true" />
                 <span>{item.label}</span>
                 {badgeCount > 0 ? <strong className="admin-nav-badge">{badgeCount}</strong> : null}
@@ -168,9 +194,28 @@ export default function AdminPortalLayout() {
         </div>
       </aside>
 
+      {isSidebarOpen ? (
+        <button
+          className="portal-sidebar-backdrop"
+          type="button"
+          aria-label="Close navigation"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      ) : null}
+
       <div className="admin-workspace-v2">
         <header className="admin-workspace-header-v2">
-          <div>
+          <div className="portal-header-title">
+            <button
+              className="portal-mobile-menu-button"
+              type="button"
+              aria-label="Open navigation"
+              aria-controls="admin-sidebar"
+              aria-expanded={isSidebarOpen}
+              onClick={() => setIsSidebarOpen(true)}
+            >
+              <Menu size={21} aria-hidden="true" />
+            </button>
             <span>Admin portal</span>
             <strong>{currentSection}</strong>
           </div>

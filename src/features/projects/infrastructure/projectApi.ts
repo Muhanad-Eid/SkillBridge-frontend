@@ -2,6 +2,7 @@ import { httpClient } from "../../../shared/api/httpClient";
 import type {
   CreateProjectRequest,
   Project,
+  ProjectStatus,
   UpdateProjectRequest,
 } from "../domain/projectTypes";
 
@@ -33,6 +34,16 @@ export function updateProjectAsync(
   return httpClient<void>(`/api/projects/${projectId}`, {
     method: "PUT",
     body: JSON.stringify(request),
+  });
+}
+
+export function updateProjectStatusAsync(
+  projectId: number,
+  status: ProjectStatus,
+) {
+  return httpClient<void>(`/api/projects/${projectId}/status`, {
+    method: "PUT",
+    body: JSON.stringify({ status }),
   });
 }
 

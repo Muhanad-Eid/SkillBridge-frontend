@@ -1,4 +1,11 @@
-import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import {
+  type FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../../../shared/auth/AuthContext";
 import Button from "../../../shared/components/Button";
@@ -58,7 +65,7 @@ export default function MessagesPage() {
 
   const currentUserId = user?.userId.toLowerCase();
 
-  async function loadMessages(options: { silent?: boolean } = {}) {
+  const loadMessages = useCallback(async (options: { silent?: boolean } = {}) => {
     if (!options.silent) {
       setIsLoading(true);
     }
@@ -78,12 +85,12 @@ export default function MessagesPage() {
         setIsLoading(false);
       }
     }
-  }
+  }, []);
 
-  async function loadConversation(
+  const loadConversation = useCallback(async (
     conversation: ActiveConversation,
     options: { silent?: boolean } = {},
-  ) {
+  ) => {
     if (!options.silent) {
       setIsConversationLoading(true);
     }
@@ -127,11 +134,12 @@ export default function MessagesPage() {
         setIsConversationLoading(false);
       }
     }
-  }
+  }, [currentUserId, loadMessages]);
 
   useEffect(() => {
-    loadMessages();
-  }, []);
+    const timeoutId = window.setTimeout(() => void loadMessages(), 0);
+    return () => window.clearTimeout(timeoutId);
+  }, [loadMessages]);
 
   useEffect(() => {
     const receiverId = searchParams.get("receiverId");
@@ -141,26 +149,30 @@ export default function MessagesPage() {
       return;
     }
 
-    setActiveConversation({
-      receiverId,
-      receiverName: searchParams.get("receiverName") || "Selected person",
-      projectId: projectIdValue,
-      projectTitle: searchParams.get("projectTitle") || undefined,
-    });
+    const timeoutId = window.setTimeout(() => {
+      setActiveConversation({
+        receiverId,
+        receiverName: searchParams.get("receiverName") || "Selected person",
+        projectId: projectIdValue,
+        projectTitle: searchParams.get("projectTitle") || undefined,
+      });
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, [searchParams]);
 
   useEffect(() => {
     if (!activeConversation) {
-      setConversationMessages([]);
       return;
     }
 
-    loadConversation(activeConversation);
-  }, [
-    activeConversation?.receiverId,
-    activeConversation?.projectId,
-    currentUserId,
-  ]);
+    const timeoutId = window.setTimeout(
+      () => void loadConversation(activeConversation),
+      0,
+    );
+
+    return () => window.clearTimeout(timeoutId);
+  }, [activeConversation, loadConversation]);
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {
@@ -168,7 +180,7 @@ export default function MessagesPage() {
     }, liveRefreshMs);
 
     return () => window.clearInterval(intervalId);
-  }, []);
+  }, [loadMessages]);
 
   useEffect(() => {
     if (!activeConversation) {
@@ -180,11 +192,7 @@ export default function MessagesPage() {
     }, liveRefreshMs);
 
     return () => window.clearInterval(intervalId);
-  }, [
-    activeConversation?.receiverId,
-    activeConversation?.projectId,
-    currentUserId,
-  ]);
+  }, [activeConversation, loadConversation]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({
@@ -273,36 +281,44 @@ export default function MessagesPage() {
     ];
   }, [activeConversation, currentUserId, messages]);
 
+  const selectConversation = useCallback(
+    (conversation: ActiveConversation, updateUrl = true) => {
+      setActiveConversation(conversation);
+      setConversationMessages([]);
+      setContent("");
+      setSendError("");
+
+      if (!updateUrl) {
+        return;
+      }
+
+      const nextParams = new URLSearchParams({
+        receiverId: conversation.receiverId,
+        receiverName: conversation.receiverName,
+        projectId: String(conversation.projectId),
+      });
+
+      if (conversation.projectTitle) {
+        nextParams.set("projectTitle", conversation.projectTitle);
+      }
+
+      setSearchParams(nextParams);
+    },
+    [setSearchParams],
+  );
+
   useEffect(() => {
-    if (!activeConversation && conversations.length > 0) {
-      selectConversation(conversations[0], false);
-    }
-  }, [activeConversation, conversations]);
-
-  function selectConversation(
-    conversation: ActiveConversation,
-    updateUrl = true,
-  ) {
-    setActiveConversation(conversation);
-    setContent("");
-    setSendError("");
-
-    if (!updateUrl) {
+    if (activeConversation || conversations.length === 0) {
       return;
     }
 
-    const nextParams = new URLSearchParams({
-      receiverId: conversation.receiverId,
-      receiverName: conversation.receiverName,
-      projectId: String(conversation.projectId),
-    });
+    const timeoutId = window.setTimeout(
+      () => selectConversation(conversations[0], false),
+      0,
+    );
 
-    if (conversation.projectTitle) {
-      nextParams.set("projectTitle", conversation.projectTitle);
-    }
-
-    setSearchParams(nextParams);
-  }
+    return () => window.clearTimeout(timeoutId);
+  }, [activeConversation, conversations, selectConversation]);
 
   async function handleSend(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

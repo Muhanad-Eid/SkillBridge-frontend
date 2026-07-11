@@ -1,12 +1,25 @@
 import { httpClient } from "../../../shared/api/httpClient";
 import type {
   CreatePortfolioItemRequest,
+  EligiblePortfolioProject,
   PortfolioItem,
   UpdatePortfolioItemRequest,
 } from "../domain/portfolioTypes";
 
 export function getMyPortfolioAsync() {
   return httpClient<PortfolioItem[]>("/api/portfolio/my");
+}
+
+export function getEligiblePortfolioProjectsAsync() {
+  return httpClient<EligiblePortfolioProject[]>(
+    "/api/portfolio/eligible-projects",
+  );
+}
+
+export function getPublicPortfolioAsync(jobSeekerId: number) {
+  return httpClient<PortfolioItem[]>(
+    `/api/portfolio/job-seekers/${jobSeekerId}`,
+  );
 }
 
 export function createPortfolioItemAsync(request: CreatePortfolioItemRequest) {
