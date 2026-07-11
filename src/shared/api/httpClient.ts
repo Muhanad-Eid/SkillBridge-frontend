@@ -1,9 +1,12 @@
 import type { AuthResponse } from "../../features/auth/domain/authTypes";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ??
-  import.meta.env.VITE_API_BASE_URL ??
-  "http://localhost:8080";
+const CONFIGURED_API_URL =
+  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL;
+
+const API_BASE_URL = import.meta.env.DEV
+  ? ""
+  : CONFIGURED_API_URL?.trim() ||
+    `${window.location.protocol}//${window.location.hostname}:8080`;
 
 const AUTH_STORAGE_KEY = "skillbridge_auth";
 const AUTH_EXPIRED_EVENT = "skillbridge:auth-expired";
