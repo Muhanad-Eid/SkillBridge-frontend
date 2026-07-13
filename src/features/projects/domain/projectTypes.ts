@@ -53,7 +53,7 @@ export type Project = {
   skills: ProjectSkill[];
 };
 
-export type ProjectSkill = {
+type ProjectSkill = {
   id: number;
   name: string;
   isRequired: boolean;
@@ -104,7 +104,7 @@ export function getProjectStatusLabel(status: ProjectStatus) {
   return "Open";
 }
 
-export type ProjectMatch = {
+type ProjectMatch = {
   score: number;
   matchedRequired: number;
   totalRequired: number;

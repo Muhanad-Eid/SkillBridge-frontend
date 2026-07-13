@@ -1,6 +1,6 @@
 import type { OpportunityType } from "../../projects/domain/projectTypes";
 
-export type PortfolioSkill = {
+type PortfolioSkill = {
   id: number;
   name: string;
 };
