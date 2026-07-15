@@ -41,79 +41,55 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="user-login-shell">
-      <section className="user-login-panel">
-        <div className="user-login-copy">
-          <Link className="portal-brand" to="/">
-            <BrandIcon />
-            <span>
-              <strong>SkillBridge</strong>
-              <small>User portal</small>
-            </span>
-          </Link>
+    <section className="auth-page auth-simple">
+      <form className="auth-card" onSubmit={handleSubmit}>
+        <Link className="portal-brand auth-register-brand" to="/">
+          <BrandIcon />
+          <span>
+            <strong>SkillBridge</strong>
+            <small>Company and job seeker login</small>
+          </span>
+        </Link>
 
-          <div>
-            <p className="eyebrow">Company and job seeker access</p>
-            <h1>Enter your SkillBridge workspace.</h1>
-            <p>
-              Companies manage opportunities and applicants. Job seekers browse
-              openings, track applications, and build portfolio proof.
-            </p>
-          </div>
-
-          <div className="user-login-options">
-            <article>
-              <strong>Company portal</strong>
-              <span>Post work, review applicants, and manage profile trust.</span>
-            </article>
-            <article>
-              <strong>Job seeker portal</strong>
-              <span>Apply to opportunities and build visible skill proof.</span>
-            </article>
-          </div>
+        <div>
+          <h2>Log in</h2>
+          <p>Enter your email and password.</p>
         </div>
 
-        <form className="user-login-card" onSubmit={handleSubmit}>
-          <div>
-            <h2>User login</h2>
-            <p>Use a company or job seeker account.</p>
-          </div>
+        {error ? <div className="auth-error">{error}</div> : null}
 
-          {error ? <div className="auth-error">{error}</div> : null}
+        <Input
+          label="Email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          required
+        />
 
-          <Input
-            label="Email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            required
-          />
+        <Input
+          label="Password"
+          name="password"
+          type="password"
+          autoComplete="current-password"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          required
+        />
 
-          <Input
-            label="Password"
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            required
-          />
+        <Button type="submit" fullWidth isLoading={isSubmitting}>
+          Log in
+        </Button>
 
-          <Button type="submit" fullWidth isLoading={isSubmitting}>
-            Enter user portal
-          </Button>
+        <p className="auth-switch">
+          New to SkillBridge? <Link to="/register">Create account</Link>
+        </p>
 
-          <Button to="/admin/login" variant="ghost" fullWidth>
-            Login as admin
-          </Button>
-
-          <p className="auth-switch">
-            New to SkillBridge? <Link to="/register">Create account</Link>
-          </p>
-        </form>
-      </section>
-    </main>
+        <p className="auth-switch">
+          Administrator? <Link to="/admin/login">Log in here</Link>
+        </p>
+      </form>
+    </section>
   );
 }
