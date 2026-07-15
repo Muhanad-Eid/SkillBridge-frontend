@@ -45,10 +45,10 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <main className="admin-login-shell">
-      <section className="admin-login-panel">
-        <div className="admin-login-copy">
-          <Link className="portal-brand admin-brand" to="/">
+    <main className="user-login-shell">
+      <section className="user-login-panel">
+        <div className="user-login-copy">
+          <Link className="portal-brand" to="/">
             <BrandIcon />
             <span>
               <strong>SkillBridge</strong>
@@ -66,7 +66,7 @@ export default function AdminLoginPage() {
           </div>
         </div>
 
-        <form className="admin-login-card" onSubmit={handleSubmit}>
+        <form className="user-login-card" onSubmit={handleSubmit}>
           <div>
             <h2>Admin login</h2>
             <p>Only accounts with the Admin role can enter this portal.</p>
