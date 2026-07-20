@@ -7,9 +7,10 @@ const API_BASE_URL = import.meta.env.DEV
   ? ""
   : CONFIGURED_API_URL?.trim() ||
     `${window.location.protocol}//${window.location.hostname}:8080`;
+const SESSION_LOST_STATUSES = new Set([401, 502, 503, 504]);
 
-const AUTH_STORAGE_KEY = "skillbridge_auth";
-const AUTH_EXPIRED_EVENT = "skillbridge:auth-expired";
+export const AUTH_STORAGE_KEY = "skillbridge_auth";
+export const AUTH_EXPIRED_EVENT = "skillbridge:auth-expired";
 
 type HttpOptions = RequestInit & {
   skipAuth?: boolean;
@@ -31,16 +32,37 @@ export async function httpClient<T>(
     }
   }
 
-  const response = await fetch(`${API_BASE_URL.replace(/\/$/, "")}${endpoint}`, {
-    ...options,
-    headers,
-  });
+  let response: Response;
+
+  try {
+    response = await fetch(
+      `${API_BASE_URL.replace(/\/$/, "")}${endpoint}`,
+      {
+        ...options,
+        headers,
+      },
+    );
+  } catch (caughtError) {
+    if (!options.skipAuth && getStoredAuth()?.token) {
+      expireAuthSession();
+    }
+
+    throw new Error(
+      caughtError instanceof Error
+        ? "The API is unavailable. Please log in again when it is running."
+        : "Unable to reach the API.",
+      { cause: caughtError },
+    );
+  }
 
   const data = await readResponse(response);
 
   if (!response.ok) {
-    if (response.status === 401 && !options.skipAuth) {
-      handleUnauthorized();
+    if (
+      SESSION_LOST_STATUSES.has(response.status) &&
+      !options.skipAuth
+    ) {
+      expireAuthSession();
     }
 
     throw new Error(getErrorMessage(data, response.status));
@@ -56,14 +78,58 @@ export function saveAuth(auth: AuthResponse) {
 export function getStoredAuth(): AuthResponse | null {
   const raw = localStorage.getItem(AUTH_STORAGE_KEY);
 
-  return raw ? JSON.parse(raw) : null;
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    const auth = JSON.parse(raw) as Partial<AuthResponse>;
+
+    if (!auth || typeof auth !== "object" || typeof auth.token !== "string") {
+      clearStoredAuth();
+      return null;
+    }
+
+    return auth as AuthResponse;
+  } catch {
+    clearStoredAuth();
+    return null;
+  }
 }
 
 export function clearStoredAuth() {
   localStorage.removeItem(AUTH_STORAGE_KEY);
 }
 
-function handleUnauthorized() {
+export function getTokenExpiresAt(token: string): number | null {
+  const payload = token.split(".")[1];
+
+  if (!payload) {
+    return null;
+  }
+
+  try {
+    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized.padEnd(
+      normalized.length + ((4 - (normalized.length % 4)) % 4),
+      "=",
+    );
+    const decoded = JSON.parse(atob(padded)) as { exp?: unknown };
+
+    return typeof decoded.exp === "number" && Number.isFinite(decoded.exp)
+      ? decoded.exp * 1000
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+export function isTokenExpired(token: string, now = Date.now()) {
+  const expiresAt = getTokenExpiresAt(token);
+  return expiresAt !== null && expiresAt <= now;
+}
+
+export function expireAuthSession() {
   clearStoredAuth();
   window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT));
 
@@ -72,7 +138,7 @@ function handleUnauthorized() {
     : "/login";
 
   if (window.location.pathname !== loginPath) {
-    window.location.assign(loginPath);
+    window.location.replace(loginPath);
   }
 }
 

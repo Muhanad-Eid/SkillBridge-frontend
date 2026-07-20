@@ -12,7 +12,7 @@ type RequireRoleProps = {
 export default function RequireRole({
   allowedRoles,
   children,
-  loginPath = "/portal/login",
+  loginPath = "/login",
 }: RequireRoleProps) {
   const { isAuthenticated, user } = useAuth();
   const location = useLocation();
