@@ -16,6 +16,7 @@ export type Application = {
   jobSeekerName: string;
   coverLetter: string | null;
   status: ApplicationStatus;
+  
 };
 
 export type CreateApplicationRequest = {
