@@ -1,4 +1,10 @@
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import {
+  type FormEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { CheckCircle2, Plus, X } from "lucide-react";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
@@ -30,6 +36,9 @@ const emptyForm: PortfolioForm = {
 };
 
 export default function PortfolioPage() {
+  const requestedProjectIdRef = useRef(
+    new URLSearchParams(window.location.search).get("projectId"),
+  );
   const [items, setItems] = useState<PortfolioItem[]>([]);
   const [eligibleProjects, setEligibleProjects] = useState<
     EligiblePortfolioProject[]
@@ -54,6 +63,22 @@ export default function PortfolioPage() {
 
       setItems(portfolioItems);
       setEligibleProjects(projects);
+
+      const requestedProjectId = Number(requestedProjectIdRef.current);
+      const requestedProject = projects.find(
+        (project) => project.projectId === requestedProjectId,
+      );
+
+      if (requestedProject) {
+        setEditingItem(null);
+        setForm({
+          ...emptyForm,
+          projectId: requestedProject.projectId.toString(),
+        });
+        setIsEditorOpen(true);
+      }
+
+      requestedProjectIdRef.current = null;
     } catch (caughtError) {
       setError(
         caughtError instanceof Error

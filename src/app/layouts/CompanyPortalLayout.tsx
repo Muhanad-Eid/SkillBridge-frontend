@@ -152,6 +152,13 @@ export default function CompanyPortalLayout() {
     : companyNavItems.filter((item) => item.to === "/company/profile");
 
   const currentSection = useMemo(() => {
+    if (
+      location.pathname.startsWith("/company/projects/") &&
+      location.pathname.endsWith("/work")
+    ) {
+      return "Work hub";
+    }
+
     if (location.pathname.includes("/applications")) {
       return location.pathname.startsWith("/company/projects/")
         ? "Opportunity team"

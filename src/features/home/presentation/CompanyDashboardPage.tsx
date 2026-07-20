@@ -343,10 +343,18 @@ export default function CompanyDashboardPage() {
                     <strong>{project.applicationsCount}</strong>
                     <span>{project.durationWeeks} weeks</span>
                     <Button
-                      to={`/company/projects/${project.id}/applications`}
+                      to={
+                        project.status === ProjectStatuses.Open
+                          ? `/company/projects/${project.id}/applications`
+                          : `/company/projects/${project.id}/work`
+                      }
                       variant="ghost"
                       aria-label={`Open ${project.title}`}
-                      title="Open opportunity"
+                      title={
+                        project.status === ProjectStatuses.Open
+                          ? "Open applicants"
+                          : "Open work hub"
+                      }
                       className="company-row-icon-button"
                     >
                       <ArrowRight size={18} aria-hidden="true" />

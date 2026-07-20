@@ -246,9 +246,12 @@ export default function MyApplicationsPage() {
                     </Button>
                   ) : null}
                   {application.status === ApplicationStatuses.Accepted ? (
-                    <Button to="/job-seeker/portfolio" variant="primary">
+                    <Button
+                      to={`/job-seeker/work/${application.projectId}`}
+                      variant="primary"
+                    >
                       <FolderKanban size={16} aria-hidden="true" />
-                      Add proof
+                      Open work
                     </Button>
                   ) : null}
                 </div>

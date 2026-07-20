@@ -161,6 +161,10 @@ export default function JobSeekerPortalLayout() {
     : jobSeekerNavItems.filter((item) => item.to === "/job-seeker/profile");
 
   const currentSection = useMemo(() => {
+    if (location.pathname.startsWith("/job-seeker/work/")) {
+      return "Work hub";
+    }
+
     if (location.pathname.startsWith("/job-seeker/opportunities/")) {
       return "Opportunity details";
     }

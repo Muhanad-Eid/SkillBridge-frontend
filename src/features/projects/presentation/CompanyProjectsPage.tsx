@@ -11,6 +11,7 @@ import {
   CircleDollarSign,
   Clock3,
   Edit3,
+  FolderKanban,
   MapPin,
   Plus,
   Search,
@@ -597,9 +598,27 @@ export default function CompanyProjectsPage() {
               </div>
 
               <div className="company-opportunity-controls">
+                {project.status !== ProjectStatuses.Cancelled ? (
+                  <Button
+                    to={`/company/projects/${project.id}/work`}
+                    variant={
+                      project.status === ProjectStatuses.Open
+                        ? "secondary"
+                        : "primary"
+                    }
+                    className="button-with-icon"
+                  >
+                    <FolderKanban size={17} aria-hidden="true" />
+                    Work hub
+                  </Button>
+                ) : null}
                 <Button
                   to={`/company/projects/${project.id}/applications`}
-                  variant="primary"
+                  variant={
+                    project.status === ProjectStatuses.Open
+                      ? "primary"
+                      : "secondary"
+                  }
                   className="button-with-icon"
                 >
                   <UsersRound size={17} aria-hidden="true" />

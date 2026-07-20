@@ -31,6 +31,7 @@ import CompanyProjectsPage from "../features/projects/presentation/CompanyProjec
 import ProjectDetailsPage from "../features/projects/presentation/ProjectDetailsPage";
 import ProjectsPage from "../features/projects/presentation/ProjectsPage";
 import SkillsPage from "../features/skills/presentation/SkillsPage";
+import WorkHubPage from "../features/work/presentation/WorkHubPage";
 
 export const router = createBrowserRouter([
   {
@@ -64,6 +65,7 @@ export const router = createBrowserRouter([
         path: "projects/:projectId/applications",
         element: <CompanyProjectApplicationsPage />,
       },
+      { path: "projects/:projectId/work", element: <WorkHubPage /> },
       { path: "applications", element: <CompanyApplicationsPage /> },
       { path: "profile", element: <CompanyProfilePage /> },
       { path: "messages", element: <MessagesPage /> },
@@ -84,6 +86,7 @@ export const router = createBrowserRouter([
       { path: "opportunities", element: <ProjectsPage /> },
       { path: "opportunities/:projectId", element: <ProjectDetailsPage /> },
       { path: "applications", element: <MyApplicationsPage /> },
+      { path: "work/:projectId", element: <WorkHubPage /> },
       { path: "profile", element: <JobSeekerProfilePage /> },
       { path: "skills", element: <SkillsPage /> },
       { path: "portfolio", element: <PortfolioPage /> },

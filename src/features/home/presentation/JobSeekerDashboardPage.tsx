@@ -260,10 +260,18 @@ export default function JobSeekerDashboardPage() {
                       {getApplicationStatusLabel(application.status)}
                     </StatusBadge>
                     <Button
-                      to={`/job-seeker/opportunities/${application.projectId}`}
+                      to={
+                        application.status === ApplicationStatuses.Accepted
+                          ? `/job-seeker/work/${application.projectId}`
+                          : `/job-seeker/opportunities/${application.projectId}`
+                      }
                       variant="ghost"
                       aria-label={`View ${application.projectTitle}`}
-                      title="View opportunity"
+                      title={
+                        application.status === ApplicationStatuses.Accepted
+                          ? "Open work hub"
+                          : "View opportunity"
+                      }
                     >
                       <ArrowRight size={17} aria-hidden="true" />
                     </Button>
