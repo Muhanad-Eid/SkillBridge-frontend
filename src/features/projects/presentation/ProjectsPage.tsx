@@ -178,13 +178,7 @@ export default function ProjectsPage() {
   return (
     <section className={`page marketplace-page ${isJobSeeker ? "jobseeker-discovery-page" : ""}`}>
       <PageHeader
-        eyebrow={isJobSeeker ? "Discover" : "Opportunity marketplace"}
-        title={isJobSeeker ? "Find your next opportunity" : "Find work-based learning that builds proof"}
-        description={
-          isJobSeeker
-            ? "Search verified company projects, internships, and training. Compare the commitment before you apply."
-            : "Browse internships, guided training, and real projects from verified companies."
-        }
+        title={isJobSeeker ? "Opportunities" : "Opportunity marketplace"}
         actions={
           isJobSeeker ? (
             <Button to="/job-seeker/applications" variant="secondary">

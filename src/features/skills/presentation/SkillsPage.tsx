@@ -130,9 +130,7 @@ export default function SkillsPage() {
   return (
     <section className="page jobseeker-skills-page">
       <PageHeader
-        eyebrow="Profile proof"
         title="Skills profile"
-        description="Add the tools, technologies, and capabilities you can confidently use. Companies see these when they review you."
       />
 
       <DataState

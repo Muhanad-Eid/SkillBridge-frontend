@@ -243,9 +243,7 @@ export default function AdminProjectsPage() {
   return (
     <section className="page admin-list-page">
       <PageHeader
-        eyebrow="Marketplace governance"
         title="Project oversight"
-        description="Create and maintain company opportunities, correct listing details, manage lifecycle status, and remove invalid work."
         actions={
           <Button type="button" onClick={startCreate}>
             Add project

@@ -9,7 +9,6 @@ import {
   Star,
   Wrench,
 } from "lucide-react";
-import { useAuth } from "../../../shared/auth/AuthContext";
 import Button from "../../../shared/components/Button";
 import PageHeader from "../../../shared/components/PageHeader";
 import StatusBadge from "../../../shared/components/StatusBadge";
@@ -35,7 +34,6 @@ import type { Skill } from "../../skills/domain/skillTypes";
 import { getMySkillsAsync } from "../../skills/infrastructure/skillApi";
 
 export default function JobSeekerDashboardPage() {
-  const { user } = useAuth();
   const [profile, setProfile] = useState<JobSeekerProfile | null>(null);
   const [applications, setApplications] = useState<Application[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
@@ -159,14 +157,10 @@ export default function JobSeekerDashboardPage() {
 
   const nextStep = readinessSteps.find((step) => !step.done);
   const recentApplications = applications.slice(0, 4);
-  const firstName = (profile?.fullName || user?.fullName || "there").split(" ")[0];
-
   return (
     <section className="page jobseeker-dashboard-page">
       <PageHeader
-        eyebrow="Career overview"
-        title={`Welcome back, ${firstName}`}
-        description="Keep your profile ready, find the right work, and follow every application from submission to portfolio proof."
+        title="Overview"
         actions={
           <Button to="/job-seeker/opportunities" variant="primary">
             <Search size={17} aria-hidden="true" />

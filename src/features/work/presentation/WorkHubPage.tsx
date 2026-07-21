@@ -389,9 +389,7 @@ export default function WorkHubPage() {
       </Button>
 
       <PageHeader
-        eyebrow={project ? `Work hub · Opportunity #${project.id}` : "Work hub"}
         title={project?.title ?? "Opportunity work"}
-        description="Follow the accepted work from the first handoff through completion, feedback, and portfolio proof."
         actions={
           project ? (
             <StatusBadge tone={getProjectTone(project.status)}>

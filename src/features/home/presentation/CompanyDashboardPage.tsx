@@ -13,7 +13,6 @@ import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
 import StatusBadge from "../../../shared/components/StatusBadge";
-import type { CompanyProfile } from "../../profiles/domain/profileTypes";
 import {
   ApplicationStatuses,
   getApplicationStatusLabel,
@@ -29,7 +28,6 @@ import {
 import { getMyCompanyProjectsAsync } from "../../projects/infrastructure/projectApi";
 
 type CompanyPortalContext = {
-  profile: CompanyProfile | null;
   isCompanyVerified: boolean;
 };
 
@@ -41,7 +39,7 @@ function getStatusTone(status: ProjectStatus) {
 }
 
 export default function CompanyDashboardPage() {
-  const { profile, isCompanyVerified } = useOutletContext<CompanyPortalContext>();
+  const { isCompanyVerified } = useOutletContext<CompanyPortalContext>();
   const [projects, setProjects] = useState<Project[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
   const [error, setError] = useState("");
@@ -114,9 +112,7 @@ export default function CompanyDashboardPage() {
   return (
     <section className="page company-overview-page">
       <PageHeader
-        eyebrow={profile?.companyName ?? "Company"}
-        title="Hiring and training overview"
-        description="Track published opportunities, review applicants, and manage active workers from one place."
+        title="Overview"
         actions={
           isCompanyVerified ? (
             <Button

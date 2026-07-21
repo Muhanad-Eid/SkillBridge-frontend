@@ -227,9 +227,7 @@ export default function CompanyApplicationsPage() {
   return (
     <section className="page company-pipeline-page">
       <PageHeader
-        eyebrow="Company"
         title="Talent pipeline"
-        description="Review applicant profiles, make one clear decision, and continue accepted conversations in messages."
       />
 
       {actionMessage ? <div className="notice notice-success">{actionMessage}</div> : null}

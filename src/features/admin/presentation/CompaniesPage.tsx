@@ -173,9 +173,7 @@ export default function CompaniesPage() {
   return (
     <section className="page admin-list-page">
       <PageHeader
-        eyebrow="Trust and access"
         title="Company verification"
-        description="Review company identity, activity, and profile quality before granting marketplace publishing access."
         actions={
           <Button to="/admin/users?action=create&role=Company" variant="primary">
             <Plus size={16} aria-hidden="true" />Add company

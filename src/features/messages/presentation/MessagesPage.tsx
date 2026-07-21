@@ -361,9 +361,7 @@ export default function MessagesPage() {
   return (
     <section className="page messages-page">
       <PageHeader
-        eyebrow="Messages"
         title="Conversations"
-        description="Start a chat from a profile, then continue the project conversation here."
       />
 
       <div className="messages-layout">

@@ -309,9 +309,7 @@ export default function CompanyProjectApplicationsPage() {
       </Button>
 
       <PageHeader
-        eyebrow={project ? `Opportunity #${project.id}` : "Opportunity"}
         title={project?.title ?? "Opportunity team"}
-        description="Review applicants, manage accepted workers, and submit reviews after completed work."
         actions={
           project ? (
             <div className="company-project-header-actions">

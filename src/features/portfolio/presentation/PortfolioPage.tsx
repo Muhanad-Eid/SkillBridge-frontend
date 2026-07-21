@@ -204,9 +204,7 @@ export default function PortfolioPage() {
   return (
     <section className="page portfolio-page portfolio-page-v2">
       <PageHeader
-        eyebrow="Professional proof"
         title="Portfolio"
-        description="Show companies what you delivered, the skills you used, and the feedback you earned from completed SkillBridge work."
         actions={
           <Button
             type="button"

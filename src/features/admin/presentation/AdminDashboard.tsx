@@ -128,9 +128,7 @@ export default function AdminDashboard() {
   return (
     <section className="page admin-dashboard-page admin-dashboard-v2">
       <PageHeader
-        eyebrow="Platform operations"
         title="Control center"
-        description="Monitor trust, account health, marketplace activity, and moderation queues from one operational view."
         actions={
           <>
             <Button to="/admin/users?action=create" variant="secondary">

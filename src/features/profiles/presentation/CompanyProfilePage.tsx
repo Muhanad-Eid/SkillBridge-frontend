@@ -143,9 +143,7 @@ export default function CompanyProfilePage() {
   return (
     <section className="page company-profile-page-v2">
       <PageHeader
-        eyebrow="Company settings"
         title="Company profile"
-        description="Maintain the company identity job seekers see on every opportunity."
         actions={
           profile?.website ? (
             <a

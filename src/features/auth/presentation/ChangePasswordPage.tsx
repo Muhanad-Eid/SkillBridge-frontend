@@ -56,9 +56,7 @@ export default function ChangePasswordPage() {
   return (
     <section className="page account-security-page">
       <PageHeader
-        eyebrow="Account"
         title="Password and security"
-        description="Update the password used to sign in to your SkillBridge account."
       />
 
       <div className="account-security-layout">

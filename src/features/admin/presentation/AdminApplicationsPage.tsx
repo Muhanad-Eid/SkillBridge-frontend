@@ -133,9 +133,7 @@ export default function AdminApplicationsPage() {
   return (
     <section className="page admin-list-page">
       <PageHeader
-        eyebrow="Pipeline governance"
         title="Application oversight"
-        description="Audit application records across every company, correct status when necessary, and remove invalid submissions."
       />
 
       <div className="toolbar admin-toolbar">

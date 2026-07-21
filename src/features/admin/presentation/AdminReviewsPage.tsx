@@ -124,9 +124,7 @@ export default function AdminReviewsPage() {
   return (
     <section className="page admin-list-page admin-reviews-v2">
       <PageHeader
-        eyebrow="Trust and safety"
         title="Review moderation"
-        description="Audit company feedback, correct inappropriate content, and remove reviews that should not remain public."
       />
 
       <div className="admin-list-stats">

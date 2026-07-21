@@ -219,9 +219,7 @@ export default function UsersPage() {
   return (
     <section className="page admin-list-page">
       <PageHeader
-        eyebrow="Identity and access"
         title="User accounts"
-        description="Create platform accounts, correct identity details, review role distribution, and remove access when required."
         actions={
           <Button type="button" onClick={startCreate}>
             Add user

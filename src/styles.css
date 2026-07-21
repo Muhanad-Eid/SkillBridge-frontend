@@ -819,14 +819,6 @@
   line-height: 1.08;
 }
 
-.jobseeker-portal-v2 .page-header p {
-  max-width: 760px;
-  margin-top: 8px;
-  font-size: 14px;
-  line-height: 1.55;
-}
-
-.jobseeker-portal-v2 .eyebrow,
 .jobseeker-portal-v2 .card-eyebrow {
   color: #0f766e !important;
   font-size: 11px;
@@ -2721,14 +2713,6 @@ input {
   padding: clamp(34px, 6vw, 84px) clamp(20px, 6vw, 88px);
 }
 
-.eyebrow {
-  margin: 0 0 14px;
-  color: var(--blue);
-  font-size: 13px;
-  font-weight: 950;
-  text-transform: uppercase;
-}
-
 .auth-card {
   width: min(100%, 540px);
   justify-self: end;
@@ -3210,14 +3194,6 @@ input {
   color: var(--text);
   font-size: clamp(34px, 4vw, 56px);
   line-height: 1;
-}
-
-.page-header p {
-  max-width: 720px;
-  margin: 12px 0 0;
-  color: var(--muted);
-  font-size: 17px;
-  line-height: 1.6;
 }
 
 .page-actions {
@@ -4093,18 +4069,6 @@ input {
 .company-portal-v2 .page-header h1 {
   font-size: clamp(30px, 3vw, 40px);
   line-height: 1.08;
-}
-
-.company-portal-v2 .page-header p {
-  max-width: 760px;
-  margin-top: 8px;
-  font-size: 14px;
-  line-height: 1.55;
-}
-
-.company-portal-v2 .eyebrow {
-  color: #2563eb;
-  font-size: 11px;
 }
 
 .company-portal-v2 .button {
@@ -5843,14 +5807,6 @@ input {
   line-height: 1.08;
 }
 
-.admin-portal-v2 .page-header p {
-  max-width: 780px;
-  margin-top: 8px;
-  font-size: 14px;
-  line-height: 1.55;
-}
-
-.admin-portal-v2 .eyebrow,
 .admin-portal-v2 .card-eyebrow {
   color: #b42318 !important;
   font-size: 11px;
@@ -6813,11 +6769,6 @@ input {
 .work-hub-page .page-header h1 {
   font-size: 34px;
   line-height: 1.12;
-}
-
-.work-hub-page .page-header p {
-  max-width: 760px;
-  font-size: 14px;
 }
 
 .work-hub-access-state {

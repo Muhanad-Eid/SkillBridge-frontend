@@ -129,9 +129,7 @@ export default function NotificationsPage() {
   return (
     <section className="page portal-notifications-page">
       <PageHeader
-        eyebrow="Inbox"
         title="Notifications"
-        description="Application decisions, opportunity updates, messages, reviews, and account status."
         actions={
           <Button
             type="button"

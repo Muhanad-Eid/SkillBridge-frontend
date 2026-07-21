@@ -149,9 +149,7 @@ export default function JobSeekerProfilePage() {
   return (
     <section className="page jobseeker-profile-page">
       <PageHeader
-        eyebrow={isRequiredFlow ? "Required setup" : "Career profile"}
         title={isRequiredFlow ? "Complete your profile to continue" : "Profile and public details"}
-        description="This is the first information a company sees when reviewing your application. Keep it specific and current."
       />
 
       {isRequiredFlow ? (

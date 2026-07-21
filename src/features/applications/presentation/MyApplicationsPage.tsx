@@ -136,9 +136,7 @@ export default function MyApplicationsPage() {
   return (
     <section className="page jobseeker-applications-page">
       <PageHeader
-        eyebrow="Pipeline"
         title="Application tracker"
-        description="Follow every application, review company decisions, and continue accepted work into your portfolio."
         actions={
           <Button to="/job-seeker/opportunities" variant="primary">
             <Search size={17} aria-hidden="true" />

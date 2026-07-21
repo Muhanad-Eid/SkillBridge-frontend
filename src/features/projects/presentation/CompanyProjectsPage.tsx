@@ -26,7 +26,6 @@ import DataState from "../../../shared/components/DataState";
 import Input from "../../../shared/components/Input";
 import PageHeader from "../../../shared/components/PageHeader";
 import StatusBadge from "../../../shared/components/StatusBadge";
-import type { CompanyProfile } from "../../profiles/domain/profileTypes";
 import type { Skill } from "../../skills/domain/skillTypes";
 import { getSkillsAsync } from "../../skills/infrastructure/skillApi";
 import {
@@ -71,7 +70,6 @@ type ProjectForm = {
 };
 
 type CompanyPortalContext = {
-  profile: CompanyProfile | null;
   isCompanyVerified: boolean;
 };
 
@@ -113,7 +111,7 @@ function getStatusTone(status: ProjectStatus) {
 }
 
 export default function CompanyProjectsPage() {
-  const { profile, isCompanyVerified } = useOutletContext<CompanyPortalContext>();
+  const { isCompanyVerified } = useOutletContext<CompanyPortalContext>();
   const [searchParams, setSearchParams] = useSearchParams();
   const createRequested = searchParams.get("create") === "1";
   const [projects, setProjects] = useState<Project[]>([]);
@@ -467,9 +465,7 @@ export default function CompanyProjectsPage() {
   return (
     <section className="page company-opportunities-page">
       <PageHeader
-        eyebrow={profile?.companyName ?? "Company"}
         title="Opportunities"
-        description="Publish work, manage its lifecycle, and open the applicant or worker list for each opportunity."
         actions={
           <Button
             type="button"

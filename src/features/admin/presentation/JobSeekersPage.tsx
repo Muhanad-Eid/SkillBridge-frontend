@@ -181,9 +181,7 @@ export default function JobSeekersPage() {
   return (
     <section className="page admin-list-page">
       <PageHeader
-        eyebrow="Account health"
         title="Job seeker oversight"
-        description="Review profile readiness, participation, portfolio proof, and company reputation across learner accounts."
         actions={
           <Button to="/admin/users?action=create&role=JobSeeker" variant="primary">
             <Plus size={16} aria-hidden="true" />Add job seeker
