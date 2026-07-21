@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Bell,
   BriefcaseBusiness,
   Building2,
   ClipboardList,
+  KeyRound,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -24,7 +25,6 @@ import {
 import { useAuth } from "../../shared/auth/AuthContext";
 import Button from "../../shared/components/Button";
 import BrandIcon from "../../shared/components/BrandIcon";
-import StatusBadge from "../../shared/components/StatusBadge";
 import {
   isCompanyProfileComplete,
   type CompanyProfile,
@@ -57,16 +57,8 @@ const companyNavItems: CompanyNavItem[] = [
     badge: "notifications",
   },
   { label: "Company profile", to: "/company/profile", icon: Building2 },
+  { label: "Security", to: "/company/security", icon: KeyRound },
 ];
-
-const sectionTitles: Record<string, string> = {
-  "/company/dashboard": "Company overview",
-  "/company/projects": "Opportunities",
-  "/company/applications": "Talent pipeline",
-  "/company/messages": "Messages",
-  "/company/notifications": "Notifications",
-  "/company/profile": "Company profile",
-};
 
 export default function CompanyPortalLayout() {
   const { user, logout } = useAuth();
@@ -147,33 +139,20 @@ export default function CompanyPortalLayout() {
   const profileIsComplete = isCompanyProfileComplete(profile);
   const isCompanyVerified = Boolean(profile?.isVerified);
   const isProfileRoute = location.pathname === "/company/profile";
+  const isSecurityRoute = location.pathname === "/company/security";
+  const isAccountSetupRoute = isProfileRoute || isSecurityRoute;
   const navItems = profileIsComplete
     ? companyNavItems
-    : companyNavItems.filter((item) => item.to === "/company/profile");
-
-  const currentSection = useMemo(() => {
-    if (
-      location.pathname.startsWith("/company/projects/") &&
-      location.pathname.endsWith("/work")
-    ) {
-      return "Work hub";
-    }
-
-    if (location.pathname.includes("/applications")) {
-      return location.pathname.startsWith("/company/projects/")
-        ? "Opportunity team"
-        : "Talent pipeline";
-    }
-
-    return sectionTitles[location.pathname] ?? "Company workspace";
-  }, [location.pathname]);
+    : companyNavItems.filter(
+        (item) => item.to === "/company/profile" || item.to === "/company/security",
+      );
 
   function handleLogout() {
     logout();
     navigate("/login", { replace: true });
   }
 
-  if (!isCheckingProfile && !profileIsComplete && !isProfileRoute) {
+  if (!isCheckingProfile && !profileIsComplete && !isAccountSetupRoute) {
     return (
       <Navigate
         to="/company/profile?required=1"
@@ -275,27 +254,10 @@ export default function CompanyPortalLayout() {
       ) : null}
 
       <div className="company-workspace">
-        <header className="company-workspace-header">
-          <div className="portal-header-title">
-            <button
-              className="portal-mobile-menu-button"
-              type="button"
-              aria-label="Open navigation"
-              aria-controls="company-sidebar"
-              aria-expanded={isSidebarOpen}
-              onClick={() => setIsSidebarOpen(true)}
-            >
-              <Menu size={21} aria-hidden="true" />
-            </button>
-            <span>Company portal</span>
-            <strong>{currentSection}</strong>
-          </div>
-          <StatusBadge tone={isCompanyVerified ? "green" : "amber"}>
-            {isCompanyVerified ? "Verified" : "Pending verification"}
-          </StatusBadge>
-        </header>
-
-        {!isCheckingProfile && profileIsComplete && !isCompanyVerified && !isProfileRoute ? (
+        {!isCheckingProfile &&
+        profileIsComplete &&
+        !isCompanyVerified &&
+        !isAccountSetupRoute ? (
           <div className="company-verification-banner" role="status">
             <ShieldCheck size={20} aria-hidden="true" />
             <div>
@@ -311,9 +273,19 @@ export default function CompanyPortalLayout() {
         ) : null}
 
         <main className="company-content">
+          <button
+            className="portal-mobile-menu-button portal-content-menu-button"
+            type="button"
+            aria-label="Open navigation"
+            aria-controls="company-sidebar"
+            aria-expanded={isSidebarOpen}
+            onClick={() => setIsSidebarOpen(true)}
+          >
+            <Menu size={21} aria-hidden="true" />
+          </button>
           {isCheckingProfile ? (
             <div className="notice">Checking company profile...</div>
-          ) : profileError && !isProfileRoute ? (
+          ) : profileError && !isAccountSetupRoute ? (
             <div className="notice notice-error">{profileError}</div>
           ) : (
             <Outlet

@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Bell,
   BriefcaseBusiness,
   FileCheck2,
   FolderKanban,
+  KeyRound,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -34,7 +35,6 @@ import { getMyNotificationsAsync } from "../../features/notifications/infrastruc
 import { useAuth } from "../../shared/auth/AuthContext";
 import Button from "../../shared/components/Button";
 import BrandIcon from "../../shared/components/BrandIcon";
-import StatusBadge from "../../shared/components/StatusBadge";
 
 type JobSeekerNavItem = {
   label: string;
@@ -63,19 +63,8 @@ const jobSeekerNavItems: JobSeekerNavItem[] = [
     badge: "notifications",
   },
   { label: "Profile", to: "/job-seeker/profile", icon: UserRound },
+  { label: "Security", to: "/job-seeker/security", icon: KeyRound },
 ];
-
-const sectionTitles: Record<string, string> = {
-  "/job-seeker/dashboard": "Career overview",
-  "/job-seeker/opportunities": "Discover opportunities",
-  "/job-seeker/applications": "Application tracker",
-  "/job-seeker/skills": "Skills profile",
-  "/job-seeker/portfolio": "Portfolio proof",
-  "/job-seeker/reviews": "Reviews received",
-  "/job-seeker/messages": "Messages",
-  "/job-seeker/notifications": "Notifications",
-  "/job-seeker/profile": "Career profile",
-};
 
 export default function JobSeekerPortalLayout() {
   const { user, logout } = useAuth();
@@ -156,21 +145,14 @@ export default function JobSeekerPortalLayout() {
 
   const profileIsComplete = isJobSeekerProfileComplete(profile);
   const isProfileRoute = location.pathname === "/job-seeker/profile";
+  const isSecurityRoute = location.pathname === "/job-seeker/security";
+  const isAccountSetupRoute = isProfileRoute || isSecurityRoute;
   const navItems = profileIsComplete
     ? jobSeekerNavItems
-    : jobSeekerNavItems.filter((item) => item.to === "/job-seeker/profile");
-
-  const currentSection = useMemo(() => {
-    if (location.pathname.startsWith("/job-seeker/work/")) {
-      return "Work hub";
-    }
-
-    if (location.pathname.startsWith("/job-seeker/opportunities/")) {
-      return "Opportunity details";
-    }
-
-    return sectionTitles[location.pathname] ?? "Career workspace";
-  }, [location.pathname]);
+    : jobSeekerNavItems.filter(
+        (item) =>
+          item.to === "/job-seeker/profile" || item.to === "/job-seeker/security",
+      );
 
   const profileInitial = (profile?.fullName || user?.fullName || "J")
     .trim()
@@ -182,7 +164,7 @@ export default function JobSeekerPortalLayout() {
     navigate("/login", { replace: true });
   }
 
-  if (!isCheckingProfile && !profileIsComplete && !isProfileRoute) {
+  if (!isCheckingProfile && !profileIsComplete && !isAccountSetupRoute) {
     return (
       <Navigate
         to="/job-seeker/profile?required=1"
@@ -282,30 +264,20 @@ export default function JobSeekerPortalLayout() {
       ) : null}
 
       <div className="jobseeker-workspace">
-        <header className="jobseeker-workspace-header">
-          <div className="portal-header-title">
-            <button
-              className="portal-mobile-menu-button"
-              type="button"
-              aria-label="Open navigation"
-              aria-controls="jobseeker-sidebar"
-              aria-expanded={isSidebarOpen}
-              onClick={() => setIsSidebarOpen(true)}
-            >
-              <Menu size={21} aria-hidden="true" />
-            </button>
-            <span>Job seeker portal</span>
-            <strong>{currentSection}</strong>
-          </div>
-          <StatusBadge tone={profileIsComplete ? "green" : "amber"}>
-            {profileIsComplete ? "Profile active" : "Profile required"}
-          </StatusBadge>
-        </header>
-
         <main className="jobseeker-content">
+          <button
+            className="portal-mobile-menu-button portal-content-menu-button"
+            type="button"
+            aria-label="Open navigation"
+            aria-controls="jobseeker-sidebar"
+            aria-expanded={isSidebarOpen}
+            onClick={() => setIsSidebarOpen(true)}
+          >
+            <Menu size={21} aria-hidden="true" />
+          </button>
           {isCheckingProfile ? (
             <div className="notice">Checking job seeker profile...</div>
-          ) : profileError && !isProfileRoute ? (
+          ) : profileError && !isAccountSetupRoute ? (
             <div className="notice notice-error">{profileError}</div>
           ) : (
             <Outlet

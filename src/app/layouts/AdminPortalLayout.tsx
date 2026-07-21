@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   BadgeCheck,
   BriefcaseBusiness,
@@ -6,6 +6,7 @@ import {
   FileCheck2,
   Gauge,
   GraduationCap,
+  KeyRound,
   LogOut,
   Menu,
   ShieldCheck,
@@ -15,7 +16,7 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
-import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { ApplicationStatuses } from "../../features/applications/domain/applicationTypes";
 import {
   getAdminApplicationsAsync,
@@ -25,7 +26,6 @@ import {
 import { useAuth } from "../../shared/auth/AuthContext";
 import Button from "../../shared/components/Button";
 import BrandIcon from "../../shared/components/BrandIcon";
-import StatusBadge from "../../shared/components/StatusBadge";
 
 type AdminNavItem = {
   label: string;
@@ -43,23 +43,12 @@ const adminNavItems: AdminNavItem[] = [
   { label: "Applications", to: "/admin/applications", icon: FileCheck2, badge: "applications" },
   { label: "Reviews", to: "/admin/reviews", icon: Star, badge: "reviews" },
   { label: "Skills catalog", to: "/admin/skills", icon: Tags },
+  { label: "Security", to: "/admin/security", icon: KeyRound },
 ];
-
-const sectionTitles: Record<string, string> = {
-  "/admin/dashboard": "Platform control center",
-  "/admin/users": "User accounts",
-  "/admin/companies": "Company verification",
-  "/admin/job-seekers": "Job seeker oversight",
-  "/admin/projects": "Project governance",
-  "/admin/applications": "Application oversight",
-  "/admin/reviews": "Review moderation",
-  "/admin/skills": "Skills catalog",
-};
 
 export default function AdminPortalLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const [pendingCompanies, setPendingCompanies] = useState(0);
   const [pendingApplications, setPendingApplications] = useState(0);
   const [flaggedReviews, setFlaggedReviews] = useState(0);
@@ -109,11 +98,6 @@ export default function AdminPortalLayout() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isSidebarOpen]);
-
-  const currentSection = useMemo(
-    () => sectionTitles[location.pathname] ?? "Administration",
-    [location.pathname],
-  );
 
   function handleLogout() {
     logout();
@@ -204,28 +188,17 @@ export default function AdminPortalLayout() {
       ) : null}
 
       <div className="admin-workspace-v2">
-        <header className="admin-workspace-header-v2">
-          <div className="portal-header-title">
-            <button
-              className="portal-mobile-menu-button"
-              type="button"
-              aria-label="Open navigation"
-              aria-controls="admin-sidebar"
-              aria-expanded={isSidebarOpen}
-              onClick={() => setIsSidebarOpen(true)}
-            >
-              <Menu size={21} aria-hidden="true" />
-            </button>
-            <span>Admin portal</span>
-            <strong>{currentSection}</strong>
-          </div>
-          <div className="admin-system-status">
-            <span>{pendingCompanies + pendingApplications + flaggedReviews} items need attention</span>
-            <StatusBadge tone="green">System online</StatusBadge>
-          </div>
-        </header>
-
         <main className="admin-content admin-content-v2">
+          <button
+            className="portal-mobile-menu-button portal-content-menu-button"
+            type="button"
+            aria-label="Open navigation"
+            aria-controls="admin-sidebar"
+            aria-expanded={isSidebarOpen}
+            onClick={() => setIsSidebarOpen(true)}
+          >
+            <Menu size={21} aria-hidden="true" />
+          </button>
           <Outlet context={{ refreshQueues }} />
         </main>
       </div>

@@ -2,8 +2,12 @@ import { httpClient } from "../../../shared/api/httpClient";
 import type {
   AuthResponse,
   AuthRole,
+  AuthMessageResponse,
+  ChangePasswordRequest,
+  ForgotPasswordRequest,
   LoginRequest,
   RegisterRequest,
+  ResetPasswordRequest,
 } from "../domain/authTypes";
 import { normalizeAuthRole } from "../domain/authTypes";
 
@@ -30,6 +34,29 @@ export async function registerAsync(request: RegisterRequest) {
   });
 
   return normalizeAuthResponse(response);
+}
+
+export function changePasswordAsync(request: ChangePasswordRequest) {
+  return httpClient<void>("/api/auth/change-password", {
+    method: "POST",
+    body: JSON.stringify(request),
+  });
+}
+
+export function forgotPasswordAsync(request: ForgotPasswordRequest) {
+  return httpClient<AuthMessageResponse>("/api/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify(request),
+    skipAuth: true,
+  });
+}
+
+export function resetPasswordAsync(request: ResetPasswordRequest) {
+  return httpClient<AuthMessageResponse>("/api/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify(request),
+    skipAuth: true,
+  });
 }
 
 function normalizeAuthResponse(response: RawAuthResponse): AuthResponse {

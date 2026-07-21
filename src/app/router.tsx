@@ -13,8 +13,11 @@ import CompaniesPage from "../features/admin/presentation/CompaniesPage";
 import JobSeekersPage from "../features/admin/presentation/JobSeekersPage";
 import UsersPage from "../features/admin/presentation/UsersPage";
 import AdminLoginPage from "../features/auth/presentation/AdminLoginPage";
+import ChangePasswordPage from "../features/auth/presentation/ChangePasswordPage";
+import ForgotPasswordPage from "../features/auth/presentation/ForgotPasswordPage";
 import LoginPage from "../features/auth/presentation/LoginPage";
 import RegisterPage from "../features/auth/presentation/RegisterPage";
+import ResetPasswordPage from "../features/auth/presentation/ResetPasswordPage";
 import CompanyApplicationsPage from "../features/applications/presentation/CompanyApplicationsPage";
 import CompanyProjectApplicationsPage from "../features/applications/presentation/CompanyProjectApplicationsPage";
 import MyApplicationsPage from "../features/applications/presentation/MyApplicationsPage";
@@ -42,6 +45,8 @@ export const router = createBrowserRouter([
       { path: "login", element: <LoginPage /> },
       { path: "portal/login", element: <LoginPage /> },
       { path: "register", element: <RegisterPage /> },
+      { path: "forgot-password", element: <ForgotPasswordPage /> },
+      { path: "reset-password", element: <ResetPasswordPage /> },
       { path: "opportunities", element: <ProjectsPage /> },
       { path: "opportunities/:projectId", element: <ProjectDetailsPage /> },
     ],
@@ -70,6 +75,7 @@ export const router = createBrowserRouter([
       { path: "profile", element: <CompanyProfilePage /> },
       { path: "messages", element: <MessagesPage /> },
       { path: "notifications", element: <NotificationsPage /> },
+      { path: "security", element: <ChangePasswordPage /> },
       { path: "reviews", element: <Navigate to="/company/projects" replace /> },
     ],
   },
@@ -93,6 +99,7 @@ export const router = createBrowserRouter([
       { path: "reviews", element: <JobSeekerReviewsPage /> },
       { path: "messages", element: <MessagesPage /> },
       { path: "notifications", element: <NotificationsPage /> },
+      { path: "security", element: <ChangePasswordPage /> },
     ],
   },
   {
@@ -112,6 +119,7 @@ export const router = createBrowserRouter([
       { path: "applications", element: <AdminApplicationsPage /> },
       { path: "reviews", element: <AdminReviewsPage /> },
       { path: "skills", element: <AdminSkillsPage /> },
+      { path: "security", element: <ChangePasswordPage /> },
     ],
   },
   { path: "*", element: <Navigate to="/opportunities" replace /> },

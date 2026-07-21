@@ -1,5 +1,5 @@
 import { type FormEvent, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { getRoleHomePath, useAuth } from "../../../shared/auth/AuthContext";
 import Button from "../../../shared/components/Button";
 import BrandIcon from "../../../shared/components/BrandIcon";
@@ -8,6 +8,7 @@ import { loginAsync } from "../infrastructure/authApi";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { logout, setAuth } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -57,6 +58,11 @@ export default function LoginPage() {
         </div>
 
         {error ? <div className="auth-error">{error}</div> : null}
+        {searchParams.get("passwordChanged") === "1" ? (
+          <div className="auth-success">
+            Password changed successfully. Log in with your new password.
+          </div>
+        ) : null}
 
         <Input
           label="Email"
@@ -77,6 +83,10 @@ export default function LoginPage() {
           onChange={(event) => setPassword(event.target.value)}
           required
         />
+
+        <div className="auth-field-link">
+          <Link to="/forgot-password">Forgot password?</Link>
+        </div>
 
         <Button type="submit" fullWidth isLoading={isSubmitting}>
           Log in

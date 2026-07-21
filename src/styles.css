@@ -23,6 +23,105 @@
   background: var(--bg);
 }
 
+/* Account security */
+.account-security-page {
+  width: 100%;
+}
+
+.account-security-layout {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(260px, 0.75fr) minmax(420px, 1.25fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.account-security-summary,
+.account-security-form {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 12px 32px rgba(24, 50, 82, 0.08);
+}
+
+.account-security-summary {
+  display: grid;
+  gap: 18px;
+  padding: 24px;
+}
+
+.account-security-icon {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #eaf3ff;
+  color: var(--blue-dark);
+}
+
+.account-security-summary h2,
+.account-security-form h2 {
+  margin: 0;
+  font-size: 21px;
+}
+
+.account-security-summary p,
+.account-security-form p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.account-security-summary ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 20px;
+  color: #41536d;
+}
+
+.account-security-form {
+  display: grid;
+  gap: 18px;
+  padding: 24px;
+}
+
+.account-security-form > header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.account-security-form > header > svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--blue-dark);
+}
+
+.account-security-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
+@media (max-width: 820px) {
+  .account-security-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .account-security-summary,
+  .account-security-form {
+    padding: 20px;
+  }
+
+  .account-security-actions .button {
+    width: 100%;
+  }
+}
+
 /* Shared portfolio evidence system */
 .portfolio-page-v2 {
   display: grid;
@@ -696,38 +795,6 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-}
-
-.jobseeker-workspace-header {
-  min-height: 68px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  border-bottom: 1px solid #dce4e5;
-  background: rgba(255, 255, 255, 0.96);
-  padding: 12px clamp(22px, 3vw, 42px);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  backdrop-filter: blur(12px);
-}
-
-.jobseeker-workspace-header > div span,
-.jobseeker-workspace-header > div strong {
-  display: block;
-}
-
-.jobseeker-workspace-header > div span {
-  color: #667085;
-  font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.jobseeker-workspace-header > div strong {
-  margin-top: 3px;
-  font-size: 17px;
 }
 
 .jobseeker-portal-v2 .jobseeker-content {
@@ -2344,10 +2411,6 @@
     display: none;
   }
 
-  .jobseeker-workspace-header {
-    position: static;
-  }
-
   .jobseeker-kpi-grid,
   .jobseeker-application-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2370,16 +2433,6 @@
 @media (max-width: 720px) {
   .jobseeker-portal-v2 .jobseeker-content {
     padding: 22px 16px 36px;
-  }
-
-  .jobseeker-workspace-header {
-    min-height: 60px;
-    padding-right: 16px;
-    padding-left: 16px;
-  }
-
-  .jobseeker-workspace-header > div span {
-    display: none;
   }
 
   .jobseeker-portal-v2 .page-header {
@@ -2705,6 +2758,27 @@ input {
   color: var(--danger);
   font-size: 14px;
   font-weight: 800;
+}
+
+.auth-success {
+  padding: 12px 14px;
+  border: 1px solid #b7e1c7;
+  border-radius: 8px;
+  background: #edf9f1;
+  color: #17663a;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.auth-field-link {
+  margin-top: -8px;
+  text-align: right;
+}
+
+.auth-field-link a {
+  color: var(--blue-dark);
+  font-size: 14px;
+  font-weight: 850;
 }
 
 .field,
@@ -3966,38 +4040,6 @@ input {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-}
-
-.company-workspace-header {
-  min-height: 68px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  border-bottom: 1px solid #dde2e8;
-  background: rgba(255, 255, 255, 0.96);
-  padding: 12px clamp(22px, 3vw, 42px);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  backdrop-filter: blur(12px);
-}
-
-.company-workspace-header > div span,
-.company-workspace-header > div strong {
-  display: block;
-}
-
-.company-workspace-header > div span {
-  color: #667085;
-  font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.company-workspace-header > div strong {
-  margin-top: 3px;
-  font-size: 17px;
 }
 
 .company-verification-banner,
@@ -5302,10 +5344,6 @@ input {
     display: none;
   }
 
-  .company-workspace-header {
-    position: static;
-  }
-
   .company-kpi-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -5324,18 +5362,9 @@ input {
     padding: 22px 16px 36px;
   }
 
-  .company-workspace-header,
   .company-verification-banner {
     padding-right: 16px;
     padding-left: 16px;
-  }
-
-  .company-workspace-header {
-    min-height: 60px;
-  }
-
-  .company-workspace-header > div span {
-    display: none;
   }
 
   .company-verification-banner {
@@ -5790,49 +5819,6 @@ input {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-}
-
-.admin-workspace-header-v2 {
-  min-height: 68px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  border-bottom: 1px solid #dfe2e6;
-  background: rgba(255, 255, 255, 0.97);
-  padding: 12px clamp(22px, 3vw, 42px);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  backdrop-filter: blur(12px);
-}
-
-.admin-workspace-header-v2 > div:first-child span,
-.admin-workspace-header-v2 > div:first-child strong {
-  display: block;
-}
-
-.admin-workspace-header-v2 > div:first-child span {
-  color: #667085;
-  font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.admin-workspace-header-v2 > div:first-child strong {
-  margin-top: 3px;
-  font-size: 17px;
-}
-
-.admin-system-status {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.admin-system-status > span:first-child {
-  color: #667085;
-  font-size: 11px;
 }
 
 .admin-content.admin-content-v2 {
@@ -6539,10 +6525,6 @@ input {
     display: none;
   }
 
-  .admin-workspace-header-v2 {
-    position: static;
-  }
-
   .admin-dashboard-columns,
   .admin-dashboard-columns.lower {
     grid-template-columns: 1fr;
@@ -6564,17 +6546,6 @@ input {
 @media (max-width: 720px) {
   .admin-content.admin-content-v2 {
     padding: 22px 16px 36px;
-  }
-
-  .admin-workspace-header-v2 {
-    min-height: 60px;
-    padding-right: 16px;
-    padding-left: 16px;
-  }
-
-  .admin-workspace-header-v2 > div:first-child span,
-  .admin-system-status > span:first-child {
-    display: none;
   }
 
   .admin-portal-v2 .page-header {
@@ -6809,22 +6780,13 @@ input {
   }
 
   .portal-mobile-menu-button {
-    grid-row: 1 / 3;
     background: #ffffff;
     border-color: #d7dfe7;
     color: #243746;
   }
 
-  .portal-header-title {
-    display: grid;
-    grid-template-columns: 40px minmax(0, 1fr);
-    align-items: center;
-    column-gap: 10px;
-  }
-
-  .portal-header-title > span,
-  .portal-header-title > strong {
-    grid-column: 2;
+  .portal-content-menu-button {
+    margin-bottom: 18px;
   }
 }
 
