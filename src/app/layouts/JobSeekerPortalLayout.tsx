@@ -35,6 +35,7 @@ import { getMyNotificationsAsync } from "../../features/notifications/infrastruc
 import { useAuth } from "../../shared/auth/AuthContext";
 import Button from "../../shared/components/Button";
 import BrandIcon from "../../shared/components/BrandIcon";
+import useSidebarPreference from "../../shared/hooks/useSidebarPreference";
 
 type JobSeekerNavItem = {
   label: string;
@@ -76,7 +77,8 @@ export default function JobSeekerPortalLayout() {
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] =
+    useSidebarPreference("job-seeker");
 
   const refreshProfileCompletion = useCallback(async () => {
     setIsCheckingProfile(true);

@@ -26,6 +26,7 @@ import {
 import { useAuth } from "../../shared/auth/AuthContext";
 import Button from "../../shared/components/Button";
 import BrandIcon from "../../shared/components/BrandIcon";
+import useSidebarPreference from "../../shared/hooks/useSidebarPreference";
 
 type AdminNavItem = {
   label: string;
@@ -53,7 +54,8 @@ export default function AdminPortalLayout() {
   const [pendingApplications, setPendingApplications] = useState(0);
   const [flaggedReviews, setFlaggedReviews] = useState(0);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] =
+    useSidebarPreference("admin");
 
   const refreshQueues = useCallback(async () => {
     const [companyResult, applicationResult, reviewResult] = await Promise.allSettled([

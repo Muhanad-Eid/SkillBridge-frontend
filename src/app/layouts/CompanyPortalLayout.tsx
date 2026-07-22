@@ -25,6 +25,7 @@ import {
 import { useAuth } from "../../shared/auth/AuthContext";
 import Button from "../../shared/components/Button";
 import BrandIcon from "../../shared/components/BrandIcon";
+import useSidebarPreference from "../../shared/hooks/useSidebarPreference";
 import {
   isCompanyProfileComplete,
   type CompanyProfile,
@@ -70,7 +71,8 @@ export default function CompanyPortalLayout() {
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] =
+    useSidebarPreference("company");
 
   const refreshProfileCompletion = useCallback(async () => {
     setIsCheckingProfile(true);

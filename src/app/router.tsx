@@ -23,6 +23,7 @@ import CompanyProjectApplicationsPage from "../features/applications/presentatio
 import MyApplicationsPage from "../features/applications/presentation/MyApplicationsPage";
 import CompanyDashboardPage from "../features/home/presentation/CompanyDashboardPage";
 import HomePage from "../features/home/presentation/HomePage";
+import NotFoundPage from "../features/home/presentation/NotFoundPage";
 import JobSeekerDashboardPage from "../features/home/presentation/JobSeekerDashboardPage";
 import MessagesPage from "../features/messages/presentation/MessagesPage";
 import NotificationsPage from "../features/notifications/presentation/NotificationsPage";
@@ -49,6 +50,7 @@ export const router = createBrowserRouter([
       { path: "reset-password", element: <ResetPasswordPage /> },
       { path: "opportunities", element: <ProjectsPage /> },
       { path: "opportunities/:projectId", element: <ProjectDetailsPage /> },
+      { path: "*", element: <NotFoundPage /> },
     ],
   },
   {
@@ -122,5 +124,4 @@ export const router = createBrowserRouter([
       { path: "security", element: <ChangePasswordPage /> },
     ],
   },
-  { path: "*", element: <Navigate to="/opportunities" replace /> },
 ]);
