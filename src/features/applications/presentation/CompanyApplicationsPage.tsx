@@ -227,7 +227,7 @@ export default function CompanyApplicationsPage() {
   return (
     <section className="page company-pipeline-page">
       <PageHeader
-        title="Talent pipeline"
+        title="Applications"
       />
 
       {actionMessage ? <div className="notice notice-success">{actionMessage}</div> : null}

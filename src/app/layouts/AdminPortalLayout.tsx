@@ -44,7 +44,7 @@ const adminNavItems: AdminNavItem[] = [
   { label: "Applications", to: "/admin/applications", icon: FileCheck2, badge: "applications" },
   { label: "Reviews", to: "/admin/reviews", icon: Star, badge: "reviews" },
   { label: "Skills catalog", to: "/admin/skills", icon: Tags },
-  { label: "Security", to: "/admin/security", icon: KeyRound },
+  { label: "Change password", to: "/admin/security", icon: KeyRound },
 ];
 
 export default function AdminPortalLayout() {

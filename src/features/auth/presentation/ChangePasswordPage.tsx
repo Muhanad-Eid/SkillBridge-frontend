@@ -56,7 +56,7 @@ export default function ChangePasswordPage() {
   return (
     <section className="page account-security-page">
       <PageHeader
-        title="Password and security"
+        title="Change password"
       />
 
       <div className="account-security-layout">

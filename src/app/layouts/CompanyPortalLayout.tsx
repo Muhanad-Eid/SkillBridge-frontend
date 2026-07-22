@@ -44,7 +44,7 @@ type CompanyNavItem = {
 const companyNavItems: CompanyNavItem[] = [
   { label: "Overview", to: "/company/dashboard", icon: LayoutDashboard },
   { label: "Opportunities", to: "/company/projects", icon: BriefcaseBusiness },
-  { label: "Talent pipeline", to: "/company/applications", icon: ClipboardList },
+  { label: "Applications", to: "/company/applications", icon: ClipboardList },
   {
     label: "Messages",
     to: "/company/messages",
@@ -58,7 +58,7 @@ const companyNavItems: CompanyNavItem[] = [
     badge: "notifications",
   },
   { label: "Company profile", to: "/company/profile", icon: Building2 },
-  { label: "Security", to: "/company/security", icon: KeyRound },
+  { label: "Change password", to: "/company/security", icon: KeyRound },
 ];
 
 export default function CompanyPortalLayout() {

@@ -64,7 +64,7 @@ const jobSeekerNavItems: JobSeekerNavItem[] = [
     badge: "notifications",
   },
   { label: "Profile", to: "/job-seeker/profile", icon: UserRound },
-  { label: "Security", to: "/job-seeker/security", icon: KeyRound },
+  { label: "Change password", to: "/job-seeker/security", icon: KeyRound },
 ];
 
 export default function JobSeekerPortalLayout() {
