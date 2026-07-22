@@ -70,6 +70,7 @@ export default function CompanyPortalLayout() {
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const refreshProfileCompletion = useCallback(async () => {
     setIsCheckingProfile(true);
@@ -163,11 +164,24 @@ export default function CompanyPortalLayout() {
   }
 
   return (
-    <div className="company-portal company-portal-v2">
+    <div
+      className={`company-portal company-portal-v2 ${
+        isSidebarCollapsed ? "is-sidebar-collapsed" : ""
+      }`}
+    >
       <aside
         className={`company-sidebar ${isSidebarOpen ? "is-mobile-open" : ""}`}
         id="company-sidebar"
       >
+        <button
+          className="portal-desktop-sidebar-close"
+          type="button"
+          aria-label="Collapse navigation"
+          title="Collapse navigation"
+          onClick={() => setIsSidebarCollapsed(true)}
+        >
+          <Menu size={20} aria-hidden="true" />
+        </button>
         <button
           className="portal-sidebar-close"
           type="button"
@@ -273,6 +287,18 @@ export default function CompanyPortalLayout() {
         ) : null}
 
         <main className="company-content">
+          {isSidebarCollapsed ? (
+            <button
+              className="portal-desktop-sidebar-open"
+              type="button"
+              aria-label="Open navigation"
+              title="Open navigation"
+              aria-controls="company-sidebar"
+              onClick={() => setIsSidebarCollapsed(false)}
+            >
+              <Menu size={20} aria-hidden="true" />
+            </button>
+          ) : null}
           <button
             className="portal-mobile-menu-button portal-content-menu-button"
             type="button"

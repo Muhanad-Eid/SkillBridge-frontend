@@ -6635,7 +6635,83 @@ input {
   display: none;
 }
 
+.portal-desktop-sidebar-close,
+.portal-desktop-sidebar-open {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.portal-desktop-sidebar-close {
+  position: absolute;
+  top: 18px;
+  right: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.portal-desktop-sidebar-close:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.portal-desktop-sidebar-open {
+  margin-bottom: 18px;
+  border: 1px solid #d7dfe7;
+  background: #ffffff;
+  color: #243746;
+  box-shadow: 0 4px 12px rgba(16, 24, 40, 0.08);
+}
+
+.portal-desktop-sidebar-open:hover {
+  border-color: #b8c5d1;
+  background: #f8fafc;
+}
+
+@media (min-width: 961px) {
+  .jobseeker-portal.jobseeker-portal-v2,
+  .company-portal-v2,
+  .admin-portal.admin-portal-v2 {
+    transition: grid-template-columns 180ms ease;
+  }
+
+  .jobseeker-portal.jobseeker-portal-v2.is-sidebar-collapsed,
+  .company-portal-v2.is-sidebar-collapsed,
+  .admin-portal.admin-portal-v2.is-sidebar-collapsed {
+    grid-template-columns: 0 minmax(0, 1fr);
+  }
+
+  .jobseeker-portal-v2.is-sidebar-collapsed > .jobseeker-sidebar,
+  .company-portal-v2.is-sidebar-collapsed > .company-sidebar,
+  .admin-portal-v2.is-sidebar-collapsed > .admin-sidebar-v2 {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-100%);
+  }
+
+  .jobseeker-sidebar,
+  .company-sidebar,
+  .admin-sidebar-v2 {
+    transition: opacity 180ms ease, transform 180ms ease;
+  }
+
+  .jobseeker-brand,
+  .company-brand,
+  .admin-brand-v2 {
+    padding-right: 46px;
+  }
+}
+
 @media (max-width: 960px) {
+  .portal-desktop-sidebar-close,
+  .portal-desktop-sidebar-open {
+    display: none;
+  }
+
   .jobseeker-sidebar,
   .company-sidebar,
   .admin-sidebar-v2 {

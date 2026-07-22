@@ -53,6 +53,7 @@ export default function AdminPortalLayout() {
   const [pendingApplications, setPendingApplications] = useState(0);
   const [flaggedReviews, setFlaggedReviews] = useState(0);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const refreshQueues = useCallback(async () => {
     const [companyResult, applicationResult, reviewResult] = await Promise.allSettled([
@@ -105,11 +106,24 @@ export default function AdminPortalLayout() {
   }
 
   return (
-    <div className="admin-portal admin-portal-v2">
+    <div
+      className={`admin-portal admin-portal-v2 ${
+        isSidebarCollapsed ? "is-sidebar-collapsed" : ""
+      }`}
+    >
       <aside
         className={`admin-sidebar-v2 ${isSidebarOpen ? "is-mobile-open" : ""}`}
         id="admin-sidebar"
       >
+        <button
+          className="portal-desktop-sidebar-close"
+          type="button"
+          aria-label="Collapse navigation"
+          title="Collapse navigation"
+          onClick={() => setIsSidebarCollapsed(true)}
+        >
+          <Menu size={20} aria-hidden="true" />
+        </button>
         <button
           className="portal-sidebar-close"
           type="button"
@@ -189,6 +203,18 @@ export default function AdminPortalLayout() {
 
       <div className="admin-workspace-v2">
         <main className="admin-content admin-content-v2">
+          {isSidebarCollapsed ? (
+            <button
+              className="portal-desktop-sidebar-open"
+              type="button"
+              aria-label="Open navigation"
+              title="Open navigation"
+              aria-controls="admin-sidebar"
+              onClick={() => setIsSidebarCollapsed(false)}
+            >
+              <Menu size={20} aria-hidden="true" />
+            </button>
+          ) : null}
           <button
             className="portal-mobile-menu-button portal-content-menu-button"
             type="button"

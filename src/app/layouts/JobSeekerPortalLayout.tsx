@@ -76,6 +76,7 @@ export default function JobSeekerPortalLayout() {
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const refreshProfileCompletion = useCallback(async () => {
     setIsCheckingProfile(true);
@@ -175,11 +176,24 @@ export default function JobSeekerPortalLayout() {
   }
 
   return (
-    <div className="jobseeker-portal jobseeker-portal-v2">
+    <div
+      className={`jobseeker-portal jobseeker-portal-v2 ${
+        isSidebarCollapsed ? "is-sidebar-collapsed" : ""
+      }`}
+    >
       <aside
         className={`jobseeker-sidebar ${isSidebarOpen ? "is-mobile-open" : ""}`}
         id="jobseeker-sidebar"
       >
+        <button
+          className="portal-desktop-sidebar-close"
+          type="button"
+          aria-label="Collapse navigation"
+          title="Collapse navigation"
+          onClick={() => setIsSidebarCollapsed(true)}
+        >
+          <Menu size={20} aria-hidden="true" />
+        </button>
         <button
           className="portal-sidebar-close"
           type="button"
@@ -265,6 +279,18 @@ export default function JobSeekerPortalLayout() {
 
       <div className="jobseeker-workspace">
         <main className="jobseeker-content">
+          {isSidebarCollapsed ? (
+            <button
+              className="portal-desktop-sidebar-open"
+              type="button"
+              aria-label="Open navigation"
+              title="Open navigation"
+              aria-controls="jobseeker-sidebar"
+              onClick={() => setIsSidebarCollapsed(false)}
+            >
+              <Menu size={20} aria-hidden="true" />
+            </button>
+          ) : null}
           <button
             className="portal-mobile-menu-button portal-content-menu-button"
             type="button"
