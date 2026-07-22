@@ -88,10 +88,6 @@ export default function AdminLoginPage() {
           required
         />
 
-        <div className="auth-field-link">
-          <Link to="/forgot-password?account=admin">Forgot password?</Link>
-        </div>
-
         <Button type="submit" fullWidth isLoading={isSubmitting}>
           Log in
         </Button>

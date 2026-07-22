@@ -4,6 +4,7 @@ import {
   CheckCircle2,
   Clock3,
   ExternalLink,
+  PencilLine,
   ShieldCheck,
 } from "lucide-react";
 import {
@@ -42,6 +43,7 @@ export default function CompanyProfilePage() {
   const [city, setCity] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const isRequiredFlow = searchParams.get("required") === "1";
@@ -65,7 +67,9 @@ export default function CompanyProfilePage() {
       setError("");
 
       try {
-        applyProfile(await getMyCompanyProfileAsync());
+        const data = await getMyCompanyProfileAsync();
+        applyProfile(data);
+        setIsEditing(isRequiredFlow || !isCompanyProfileComplete(data));
       } catch (caughtError) {
         setError(
           caughtError instanceof Error
@@ -78,7 +82,7 @@ export default function CompanyProfilePage() {
     }
 
     loadProfile();
-  }, []);
+  }, [isRequiredFlow]);
 
   useEffect(() => {
     if (
@@ -93,6 +97,9 @@ export default function CompanyProfilePage() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (!isEditing) return;
+
     setError("");
     setMessage("");
 
@@ -117,6 +124,7 @@ export default function CompanyProfilePage() {
 
       const refreshedProfile = await getMyCompanyProfileAsync();
       applyProfile(refreshedProfile);
+      setIsEditing(false);
       await portalContext.refreshProfileCompletion?.();
 
       if (isRequiredFlow && isCompanyProfileComplete(refreshedProfile)) {
@@ -139,22 +147,51 @@ export default function CompanyProfilePage() {
   }
 
   const profileComplete = isCompanyProfileComplete(profile);
+  const canCancelEditing = !isRequiredFlow && profileComplete;
+
+  function handleStartEditing() {
+    setError("");
+    setMessage("");
+    setIsEditing(true);
+  }
+
+  function handleCancelEditing() {
+    if (profile) applyProfile(profile);
+    setError("");
+    setMessage("");
+    setIsEditing(false);
+  }
 
   return (
     <section className="page company-profile-page-v2">
       <PageHeader
         title="Company profile"
         actions={
-          profile?.website ? (
-            <a
-              className="button button-secondary button-with-icon"
-              href={profile.website}
-              target="_blank"
-              rel="noreferrer"
-            >
-              <ExternalLink size={16} aria-hidden="true" />
-              Open website
-            </a>
+          profile ? (
+            <>
+              {profile.website ? (
+                <a
+                  className="button button-secondary button-with-icon"
+                  href={profile.website}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <ExternalLink size={16} aria-hidden="true" />
+                  Open website
+                </a>
+              ) : null}
+              {!isEditing ? (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="button-with-icon"
+                  onClick={handleStartEditing}
+                >
+                  <PencilLine size={16} aria-hidden="true" />
+                  Edit profile
+                </Button>
+              ) : null}
+            </>
           ) : null
         }
       />
@@ -233,7 +270,10 @@ export default function CompanyProfilePage() {
               </div>
             </header>
 
-            <form onSubmit={handleSubmit}>
+            <form
+              className={`profile-edit-form ${isEditing ? "is-editing" : "is-read-only"}`}
+              onSubmit={handleSubmit}
+            >
               <div className="company-form-grid">
                 <Input
                   label="Company name"
@@ -241,6 +281,7 @@ export default function CompanyProfilePage() {
                   maxLength={120}
                   required
                   onChange={(event) => setCompanyName(event.target.value)}
+                  readOnly={!isEditing}
                 />
                 <Input
                   label="City"
@@ -248,6 +289,7 @@ export default function CompanyProfilePage() {
                   maxLength={120}
                   required
                   onChange={(event) => setCity(event.target.value)}
+                  readOnly={!isEditing}
                 />
               </div>
               <Input
@@ -256,6 +298,7 @@ export default function CompanyProfilePage() {
                 placeholder="https://company.example"
                 value={website}
                 onChange={(event) => setWebsite(event.target.value)}
+                readOnly={!isEditing}
               />
               <label className="field">
                 <span>Company description</span>
@@ -264,6 +307,7 @@ export default function CompanyProfilePage() {
                   maxLength={2000}
                   required
                   onChange={(event) => setDescription(event.target.value)}
+                  readOnly={!isEditing}
                 />
               </label>
 
@@ -271,9 +315,21 @@ export default function CompanyProfilePage() {
               {error ? <div className="notice notice-error">{error}</div> : null}
 
               <div className="company-profile-form-actions">
-                <Button type="submit" isLoading={isSaving}>
-                  {isRequiredFlow ? "Complete company profile" : "Save profile"}
-                </Button>
+                {isEditing ? (
+                  <Button type="submit" isLoading={isSaving}>
+                    {isRequiredFlow ? "Complete company profile" : "Save changes"}
+                  </Button>
+                ) : null}
+                {isEditing && canCancelEditing ? (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={isSaving}
+                    onClick={handleCancelEditing}
+                  >
+                    Cancel
+                  </Button>
+                ) : null}
               </div>
             </form>
           </section>

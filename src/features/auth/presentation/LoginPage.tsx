@@ -35,7 +35,9 @@ export default function LoginPage() {
       setAuth(user);
       navigate(getRoleHomePath(user.role), { replace: true });
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : "Login failed.");
+      setError(
+        caughtError instanceof Error ? caughtError.message : "Login failed.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -97,7 +99,7 @@ export default function LoginPage() {
         </p>
 
         <p className="auth-switch">
-          Administrator? <Link to="/admin/login">Log in here</Link>
+          Administrator? <Link to="/admin/login">Admin login</Link>
         </p>
       </form>
     </section>

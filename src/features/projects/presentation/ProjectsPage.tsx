@@ -1,12 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
   BriefcaseBusiness,
+  ChevronDown,
   Clock3,
   MapPin,
   Search,
   ShieldCheck,
+  SlidersHorizontal,
   Wrench,
+  X,
 } from "lucide-react";
 import { useAuth } from "../../../shared/auth/AuthContext";
 import Button from "../../../shared/components/Button";
@@ -46,9 +49,33 @@ export default function ProjectsPage() {
   const [experienceFilter, setExperienceFilter] = useState("all");
   const [skillFilter, setSkillFilter] = useState("all");
   const [matchFilter, setMatchFilter] = useState("all");
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const filterControlRef = useRef<HTMLDivElement>(null);
   const isJobSeeker = user?.role === "JobSeeker";
+
+  useEffect(() => {
+    if (!isFiltersOpen) return;
+
+    function closeOnOutsideClick(event: MouseEvent) {
+      if (!filterControlRef.current?.contains(event.target as Node)) {
+        setIsFiltersOpen(false);
+      }
+    }
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setIsFiltersOpen(false);
+    }
+
+    document.addEventListener("mousedown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [isFiltersOpen]);
 
   useEffect(() => {
     let isMounted = true;
@@ -174,6 +201,25 @@ export default function ProjectsPage() {
   const openCount = projects.filter(
     (project) => project.status === ProjectStatuses.Open,
   ).length;
+  const activeFilterCount = [
+    typeFilter,
+    durationFilter,
+    applicationFilter,
+    workModeFilter,
+    experienceFilter,
+    skillFilter,
+    matchFilter,
+  ].filter((value) => value !== "all").length;
+
+  function clearFilters() {
+    setTypeFilter("all");
+    setDurationFilter("all");
+    setApplicationFilter("all");
+    setWorkModeFilter("all");
+    setExperienceFilter("all");
+    setSkillFilter("all");
+    setMatchFilter("all");
+  }
 
   return (
     <section className={`page marketplace-page ${isJobSeeker ? "jobseeker-discovery-page" : ""}`}>
@@ -217,77 +263,149 @@ export default function ProjectsPage() {
             onChange={(event) => setSearch(event.target.value)}
           />
         </label>
-        <select
-          aria-label="Filter by type"
-          value={typeFilter}
-          onChange={(event) => setTypeFilter(event.target.value)}
-        >
-          <option value="all">All opportunity types</option>
-          <option value={OpportunityTypes.PaidProject}>Paid projects</option>
-          <option value={OpportunityTypes.Training}>Training</option>
-        </select>
-        <select
-          aria-label="Filter by work mode"
-          value={workModeFilter}
-          onChange={(event) => setWorkModeFilter(event.target.value)}
-        >
-          <option value="all">Any work mode</option>
-          <option value={WorkModes.Remote}>Remote</option>
-          <option value={WorkModes.Hybrid}>Hybrid</option>
-          <option value={WorkModes.OnSite}>On-site</option>
-        </select>
-        <select
-          aria-label="Filter by experience level"
-          value={experienceFilter}
-          onChange={(event) => setExperienceFilter(event.target.value)}
-        >
-          <option value="all">Any experience level</option>
-          <option value={ExperienceLevels.Beginner}>Beginner</option>
-          <option value={ExperienceLevels.Intermediate}>Intermediate</option>
-          <option value={ExperienceLevels.Advanced}>Advanced</option>
-        </select>
-        <select
-          aria-label="Filter by skill"
-          value={skillFilter}
-          onChange={(event) => setSkillFilter(event.target.value)}
-        >
-          <option value="all">Any skill</option>
-          {availableProjectSkills.map(([id, name]) => (
-            <option key={id} value={id}>{name}</option>
-          ))}
-        </select>
-        <select
-          aria-label="Filter by duration"
-          value={durationFilter}
-          onChange={(event) => setDurationFilter(event.target.value)}
-        >
-          <option value="all">Any duration</option>
-          <option value="short">Up to 4 weeks</option>
-          <option value="medium">5 to 8 weeks</option>
-          <option value="long">More than 8 weeks</option>
-        </select>
-        {isJobSeeker ? (
-          <>
-            <select
-              aria-label="Filter by skill match"
-              value={matchFilter}
-              onChange={(event) => setMatchFilter(event.target.value)}
+        <div className="jobseeker-filter-control" ref={filterControlRef}>
+          <Button
+            type="button"
+            variant="secondary"
+            className={`jobseeker-filter-trigger ${isFiltersOpen ? "active" : ""}`}
+            aria-expanded={isFiltersOpen}
+            aria-controls="opportunity-filters"
+            onClick={() => setIsFiltersOpen((isOpen) => !isOpen)}
+          >
+            <SlidersHorizontal size={17} aria-hidden="true" />
+            Filters
+            {activeFilterCount > 0 ? (
+              <span className="jobseeker-filter-count">{activeFilterCount}</span>
+            ) : null}
+            <ChevronDown
+              className="jobseeker-filter-chevron"
+              size={16}
+              aria-hidden="true"
+            />
+          </Button>
+
+          {isFiltersOpen ? (
+            <section
+              id="opportunity-filters"
+              className="jobseeker-filter-panel"
+              aria-label="Opportunity filters"
             >
-              <option value="all">Any match score</option>
-              <option value="strong">70% match or better</option>
-              <option value="complete">All required skills</option>
-            </select>
-            <select
-              aria-label="Filter by application status"
-              value={applicationFilter}
-              onChange={(event) => setApplicationFilter(event.target.value)}
-            >
-              <option value="all">All listings</option>
-              <option value="new">Not applied</option>
-              <option value="applied">Already applied</option>
-            </select>
-          </>
-        ) : null}
+              <header>
+                <strong>Filters</strong>
+                <button
+                  type="button"
+                  aria-label="Close filters"
+                  title="Close filters"
+                  onClick={() => setIsFiltersOpen(false)}
+                >
+                  <X size={18} aria-hidden="true" />
+                </button>
+              </header>
+
+              <div className="jobseeker-filter-grid">
+                <label>
+                  <span>Opportunity type</span>
+                  <select
+                    value={typeFilter}
+                    onChange={(event) => setTypeFilter(event.target.value)}
+                  >
+                    <option value="all">All types</option>
+                    <option value={OpportunityTypes.PaidProject}>Paid projects</option>
+                    <option value={OpportunityTypes.Training}>Training</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Work mode</span>
+                  <select
+                    value={workModeFilter}
+                    onChange={(event) => setWorkModeFilter(event.target.value)}
+                  >
+                    <option value="all">Any work mode</option>
+                    <option value={WorkModes.Remote}>Remote</option>
+                    <option value={WorkModes.Hybrid}>Hybrid</option>
+                    <option value={WorkModes.OnSite}>On-site</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Experience level</span>
+                  <select
+                    value={experienceFilter}
+                    onChange={(event) => setExperienceFilter(event.target.value)}
+                  >
+                    <option value="all">Any experience level</option>
+                    <option value={ExperienceLevels.Beginner}>Beginner</option>
+                    <option value={ExperienceLevels.Intermediate}>Intermediate</option>
+                    <option value={ExperienceLevels.Advanced}>Advanced</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Skill</span>
+                  <select
+                    value={skillFilter}
+                    onChange={(event) => setSkillFilter(event.target.value)}
+                  >
+                    <option value="all">Any skill</option>
+                    {availableProjectSkills.map(([id, name]) => (
+                      <option key={id} value={id}>{name}</option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  <span>Duration</span>
+                  <select
+                    value={durationFilter}
+                    onChange={(event) => setDurationFilter(event.target.value)}
+                  >
+                    <option value="all">Any duration</option>
+                    <option value="short">Up to 4 weeks</option>
+                    <option value="medium">5 to 8 weeks</option>
+                    <option value="long">More than 8 weeks</option>
+                  </select>
+                </label>
+                {isJobSeeker ? (
+                  <>
+                    <label>
+                      <span>Skill match</span>
+                      <select
+                        value={matchFilter}
+                        onChange={(event) => setMatchFilter(event.target.value)}
+                      >
+                        <option value="all">Any match score</option>
+                        <option value="strong">70% match or better</option>
+                        <option value="complete">All required skills</option>
+                      </select>
+                    </label>
+                    <label>
+                      <span>Application status</span>
+                      <select
+                        value={applicationFilter}
+                        onChange={(event) => setApplicationFilter(event.target.value)}
+                      >
+                        <option value="all">All listings</option>
+                        <option value="new">Not applied</option>
+                        <option value="applied">Already applied</option>
+                      </select>
+                    </label>
+                  </>
+                ) : null}
+              </div>
+
+              <footer>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  disabled={activeFilterCount === 0}
+                  onClick={clearFilters}
+                >
+                  Clear all
+                </Button>
+                <Button type="button" onClick={() => setIsFiltersOpen(false)}>
+                  Show {filteredProjects.length} result{filteredProjects.length === 1 ? "" : "s"}
+                </Button>
+              </footer>
+            </section>
+          ) : null}
+        </div>
       </div>
 
       <div className="jobseeker-results-heading">
@@ -295,26 +413,6 @@ export default function ProjectsPage() {
           <strong>{filteredProjects.length} result{filteredProjects.length === 1 ? "" : "s"}</strong>
           <span>Only opportunities from verified companies are listed.</span>
         </div>
-        {search || typeFilter !== "all" || durationFilter !== "all" ||
-        applicationFilter !== "all" || workModeFilter !== "all" ||
-        experienceFilter !== "all" || skillFilter !== "all" || matchFilter !== "all" ? (
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => {
-              setSearch("");
-              setTypeFilter("all");
-              setDurationFilter("all");
-              setApplicationFilter("all");
-              setWorkModeFilter("all");
-              setExperienceFilter("all");
-              setSkillFilter("all");
-              setMatchFilter("all");
-            }}
-          >
-            Clear filters
-          </Button>
-        ) : null}
       </div>
 
       <DataState

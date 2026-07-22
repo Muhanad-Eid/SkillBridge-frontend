@@ -1,5 +1,6 @@
 import {
   forwardRef,
+  useEffect,
   useState,
   type InputHTMLAttributes,
 } from "react";
@@ -11,10 +12,17 @@ type InputProps = InputHTMLAttributes<HTMLInputElement> & {
 };
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, id, name, className = "", type, ...props }, ref) => {
+  (
+    { label, error, id, name, className = "", type, disabled, ...props },
+    ref,
+  ) => {
     const inputId = id ?? name;
     const isPassword = type === "password";
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+
+    useEffect(() => {
+      if (disabled) setIsPasswordVisible(false);
+    }, [disabled]);
 
     return (
       <label className={`field ${className}`} htmlFor={inputId}>
@@ -25,6 +33,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             id={inputId}
             name={name}
             type={isPassword && isPasswordVisible ? "text" : type}
+            disabled={disabled}
             {...props}
           />
           {isPassword ? (
@@ -33,6 +42,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               className="password-toggle"
               aria-label={isPasswordVisible ? "Hide password" : "Show password"}
               title={isPasswordVisible ? "Hide password" : "Show password"}
+              disabled={disabled}
               onClick={() => setIsPasswordVisible((visible) => !visible)}
             >
               {isPasswordVisible ? (

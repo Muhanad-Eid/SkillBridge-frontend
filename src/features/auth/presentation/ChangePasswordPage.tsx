@@ -15,9 +15,30 @@ export default function ChangePasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+
+  function clearForm() {
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setError("");
+  }
+
+  function handleStartEditing() {
+    clearForm();
+    setIsEditing(true);
+  }
+
+  function handleCancelEditing() {
+    clearForm();
+    setIsEditing(false);
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (!isEditing) return;
+
     setError("");
 
     if (newPassword.length < 8) {
@@ -57,6 +78,19 @@ export default function ChangePasswordPage() {
     <section className="page account-security-page">
       <PageHeader
         title="Change password"
+        actions={
+          !isEditing ? (
+            <Button
+              type="button"
+              variant="secondary"
+              className="button-with-icon"
+              onClick={handleStartEditing}
+            >
+              <KeyRound size={16} aria-hidden="true" />
+              Change password
+            </Button>
+          ) : null
+        }
       />
 
       <div className="account-security-layout">
@@ -75,7 +109,10 @@ export default function ChangePasswordPage() {
           </ul>
         </aside>
 
-        <form className="account-security-form" onSubmit={handleSubmit}>
+        <form
+          className={`account-security-form ${isEditing ? "is-editing" : "is-read-only"}`}
+          onSubmit={handleSubmit}
+        >
           <header>
             <KeyRound size={20} aria-hidden="true" />
             <div>
@@ -95,6 +132,7 @@ export default function ChangePasswordPage() {
             maxLength={128}
             value={currentPassword}
             onChange={(event) => setCurrentPassword(event.target.value)}
+            disabled={!isEditing || isSubmitting}
             required
           />
           <Input
@@ -106,6 +144,7 @@ export default function ChangePasswordPage() {
             maxLength={128}
             value={newPassword}
             onChange={(event) => setNewPassword(event.target.value)}
+            disabled={!isEditing || isSubmitting}
             required
           />
           <Input
@@ -117,13 +156,26 @@ export default function ChangePasswordPage() {
             maxLength={128}
             value={confirmPassword}
             onChange={(event) => setConfirmPassword(event.target.value)}
+            disabled={!isEditing || isSubmitting}
             required
           />
 
           <div className="account-security-actions">
-            <Button type="submit" isLoading={isSubmitting}>
-              Change password
-            </Button>
+            {isEditing ? (
+              <>
+                <Button type="submit" isLoading={isSubmitting}>
+                  Save password
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={isSubmitting}
+                  onClick={handleCancelEditing}
+                >
+                  Cancel
+                </Button>
+              </>
+            ) : null}
           </div>
         </form>
       </div>

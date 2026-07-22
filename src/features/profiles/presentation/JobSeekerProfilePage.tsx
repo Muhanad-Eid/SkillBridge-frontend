@@ -1,5 +1,12 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Code2, Link2, MapPin, UserRound } from "lucide-react";
+import {
+  CheckCircle2,
+  Code2,
+  Link2,
+  MapPin,
+  PencilLine,
+  UserRound,
+} from "lucide-react";
 import {
   useLocation,
   useNavigate,
@@ -35,6 +42,7 @@ export default function JobSeekerProfilePage() {
   const [gitHubUrl, setGitHubUrl] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const isRequiredFlow = searchParams.get("required") === "1";
@@ -59,7 +67,12 @@ export default function JobSeekerProfilePage() {
     async function loadProfile() {
       try {
         const data = await getMyJobSeekerProfileAsync();
-        if (isMounted) applyProfile(data);
+        if (isMounted) {
+          applyProfile(data);
+          setIsEditing(
+            isRequiredFlow || !isJobSeekerProfileComplete(data),
+          );
+        }
       } catch (caughtError) {
         if (isMounted) {
           setError(
@@ -77,7 +90,7 @@ export default function JobSeekerProfilePage() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [isRequiredFlow]);
 
   useEffect(() => {
     if (
@@ -104,8 +117,27 @@ export default function JobSeekerProfilePage() {
     (completionItems.filter((item) => item.done).length / completionItems.length) * 100,
   );
 
+  const canCancelEditing =
+    !isRequiredFlow && isJobSeekerProfileComplete(profile);
+
+  function handleStartEditing() {
+    setError("");
+    setMessage("");
+    setIsEditing(true);
+  }
+
+  function handleCancelEditing() {
+    if (profile) applyProfile(profile);
+    setError("");
+    setMessage("");
+    setIsEditing(false);
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (!isEditing) return;
+
     setError("");
     setMessage("");
 
@@ -129,6 +161,7 @@ export default function JobSeekerProfilePage() {
 
       const refreshedProfile = await getMyJobSeekerProfileAsync();
       applyProfile(refreshedProfile);
+      setIsEditing(false);
       await portalContext.refreshProfileCompletion?.();
 
       if (isRequiredFlow && isJobSeekerProfileComplete(refreshedProfile)) {
@@ -150,6 +183,19 @@ export default function JobSeekerProfilePage() {
     <section className="page jobseeker-profile-page">
       <PageHeader
         title={isRequiredFlow ? "Complete your profile to continue" : "Profile and public details"}
+        actions={
+          profile && !isEditing ? (
+            <Button
+              type="button"
+              variant="secondary"
+              className="button-with-icon"
+              onClick={handleStartEditing}
+            >
+              <PencilLine size={16} aria-hidden="true" />
+              Edit profile
+            </Button>
+          ) : null
+        }
       />
 
       {isRequiredFlow ? (
@@ -210,7 +256,10 @@ export default function JobSeekerProfilePage() {
               <small>Profile ID #{profile.id}</small>
             </header>
 
-            <form className="stack" onSubmit={handleSubmit}>
+            <form
+              className={`stack profile-edit-form ${isEditing ? "is-editing" : "is-read-only"}`}
+              onSubmit={handleSubmit}
+            >
               <label className="field">
                 <span>Professional bio *</span>
                 <textarea
@@ -219,6 +268,7 @@ export default function JobSeekerProfilePage() {
                   placeholder="Describe your focus, strongest experience, and the work you want to do."
                   maxLength={1500}
                   required
+                  readOnly={!isEditing}
                 />
                 <small>{bio.length}/1500 characters</small>
               </label>
@@ -230,6 +280,7 @@ export default function JobSeekerProfilePage() {
                   value={city}
                   onChange={(event) => setCity(event.target.value)}
                   required
+                  readOnly={!isEditing}
                 />
                 <Input
                   label="LinkedIn URL"
@@ -237,6 +288,7 @@ export default function JobSeekerProfilePage() {
                   placeholder="https://linkedin.com/in/your-name"
                   value={linkedInUrl}
                   onChange={(event) => setLinkedInUrl(event.target.value)}
+                  readOnly={!isEditing}
                 />
                 <Input
                   label="GitHub URL"
@@ -244,6 +296,7 @@ export default function JobSeekerProfilePage() {
                   placeholder="https://github.com/your-name"
                   value={gitHubUrl}
                   onChange={(event) => setGitHubUrl(event.target.value)}
+                  readOnly={!isEditing}
                 />
               </div>
 
@@ -258,9 +311,21 @@ export default function JobSeekerProfilePage() {
               {message ? <div className="notice">{message}</div> : null}
 
               <div className="jobseeker-profile-actions">
-                <Button type="submit" isLoading={isSaving}>
-                  {isRequiredFlow ? "Complete profile" : "Save profile"}
-                </Button>
+                {isEditing ? (
+                  <Button type="submit" isLoading={isSaving}>
+                    {isRequiredFlow ? "Complete profile" : "Save changes"}
+                  </Button>
+                ) : null}
+                {isEditing && canCancelEditing ? (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={isSaving}
+                    onClick={handleCancelEditing}
+                  >
+                    Cancel
+                  </Button>
+                ) : null}
                 {!isRequiredFlow ? (
                   <Button to="/job-seeker/skills" variant="secondary">
                     Manage skills

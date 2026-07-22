@@ -3,6 +3,7 @@ import AdminPortalLayout from "./layouts/AdminPortalLayout";
 import CompanyPortalLayout from "./layouts/CompanyPortalLayout";
 import JobSeekerPortalLayout from "./layouts/JobSeekerPortalLayout";
 import PublicLayout from "./layouts/PublicLayout";
+import RequireGuest from "../shared/auth/RequireGuest";
 import RequireRole from "../shared/auth/RequireRole";
 import AdminApplicationsPage from "../features/admin/presentation/AdminApplicationsPage";
 import AdminDashboard from "../features/admin/presentation/AdminDashboard";
@@ -43,9 +44,30 @@ export const router = createBrowserRouter([
     element: <PublicLayout />,
     children: [
       { index: true, element: <HomePage /> },
-      { path: "login", element: <LoginPage /> },
-      { path: "portal/login", element: <LoginPage /> },
-      { path: "register", element: <RegisterPage /> },
+      {
+        path: "login",
+        element: (
+          <RequireGuest>
+            <LoginPage />
+          </RequireGuest>
+        ),
+      },
+      {
+        path: "portal/login",
+        element: (
+          <RequireGuest>
+            <LoginPage />
+          </RequireGuest>
+        ),
+      },
+      {
+        path: "register",
+        element: (
+          <RequireGuest>
+            <RegisterPage />
+          </RequireGuest>
+        ),
+      },
       { path: "forgot-password", element: <ForgotPasswordPage /> },
       { path: "reset-password", element: <ResetPasswordPage /> },
       { path: "opportunities", element: <ProjectsPage /> },
@@ -55,7 +77,11 @@ export const router = createBrowserRouter([
   },
   {
     path: "/admin/login",
-    element: <AdminLoginPage />,
+    element: (
+      <RequireGuest>
+        <AdminLoginPage />
+      </RequireGuest>
+    ),
   },
   {
     path: "/company",
