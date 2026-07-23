@@ -221,6 +221,14 @@ export default function ProjectDetailsPage() {
                     {companyProfile?.city ? <span><MapPin size={14} />{companyProfile.city}</span> : null}
                     {companyProfile?.isVerified ? <span><ShieldCheck size={14} />Verified by SkillBridge</span> : null}
                   </div>
+                  {isJobSeeker && companyMessagePath ? (
+                    <div className="jobseeker-company-actions">
+                      <Button to={companyMessagePath} variant="secondary">
+                        <MessageSquare size={16} aria-hidden="true" />
+                        Chat with company
+                      </Button>
+                    </div>
+                  ) : null}
                 </div>
               </section>
             </main>
@@ -251,12 +259,6 @@ export default function ProjectDetailsPage() {
                   <Button to="/job-seeker/applications" variant="primary">
                     View application
                   </Button>
-                  {companyMessagePath ? (
-                    <Button to={companyMessagePath} variant="secondary">
-                      <MessageSquare size={16} aria-hidden="true" />
-                      Message company
-                    </Button>
-                  ) : null}
                 </div>
               ) : isJobSeeker ? (
                 <form onSubmit={handleApply}>

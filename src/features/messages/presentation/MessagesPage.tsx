@@ -1,5 +1,6 @@
 import {
   type FormEvent,
+  type KeyboardEvent,
   useCallback,
   useEffect,
   useMemo,
@@ -358,6 +359,26 @@ export default function MessagesPage() {
     }
   }
 
+  function handleComposerKeyDown(
+    event: KeyboardEvent<HTMLTextAreaElement>,
+  ) {
+    if (
+      event.key !== "Enter" ||
+      event.shiftKey ||
+      event.nativeEvent.isComposing
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+
+    if (isSending || !content.trim()) {
+      return;
+    }
+
+    event.currentTarget.form?.requestSubmit();
+  }
+
   return (
     <section className="page messages-page">
       <PageHeader
@@ -477,6 +498,7 @@ export default function MessagesPage() {
                   <textarea
                     value={content}
                     onChange={(event) => setContent(event.target.value)}
+                    onKeyDown={handleComposerKeyDown}
                     placeholder={`Write to ${activeConversation.receiverName}`}
                     required
                   />
