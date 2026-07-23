@@ -32,8 +32,11 @@ import {
   ExperienceLevels,
   getExperienceLevelLabel,
   getOpportunityTypeLabel,
+  getProjectDisplayStatusLabel,
   getProjectStatusLabel,
   getWorkModeLabel,
+  isApplicationDeadlinePassed,
+  isProjectAcceptingApplications,
   OpportunityTypes,
   ProjectStatuses,
   WorkModes,
@@ -103,10 +106,18 @@ function mergeSkillNames(...groups: string[][]) {
   return [...names.values()];
 }
 
-function getStatusTone(status: ProjectStatus) {
-  if (status === ProjectStatuses.Open) return "green";
-  if (status === ProjectStatuses.InProgress) return "blue";
-  if (status === ProjectStatuses.Cancelled) return "red";
+function getStatusTone(
+  project: Pick<Project, "status" | "applicationDeadline">,
+) {
+  if (
+    project.status === ProjectStatuses.Open &&
+    isApplicationDeadlinePassed(project.applicationDeadline)
+  ) {
+    return "amber";
+  }
+  if (project.status === ProjectStatuses.Open) return "green";
+  if (project.status === ProjectStatuses.InProgress) return "blue";
+  if (project.status === ProjectStatuses.Cancelled) return "red";
   return "neutral";
 }
 
@@ -169,7 +180,13 @@ export default function CompanyProjectsPage() {
 
     return projects.filter((project) => {
       const matchesStatus =
-        statusFilter === "All" || project.status === Number(statusFilter);
+        statusFilter === "All" ||
+        (statusFilter === "ApplicationsClosed"
+          ? project.status === ProjectStatuses.Open &&
+            isApplicationDeadlinePassed(project.applicationDeadline)
+          : Number(statusFilter) === ProjectStatuses.Open
+            ? isProjectAcceptingApplications(project)
+            : project.status === Number(statusFilter));
       const matchesType = typeFilter === "All" || project.type === Number(typeFilter);
       const matchesSearch =
         !value ||
@@ -185,8 +202,7 @@ export default function CompanyProjectsPage() {
   const stats = useMemo(
     () => ({
       total: projects.length,
-      open: projects.filter((project) => project.status === ProjectStatuses.Open)
-        .length,
+      open: projects.filter(isProjectAcceptingApplications).length,
       active: projects.filter(
         (project) => project.status === ProjectStatuses.InProgress,
       ).length,
@@ -527,6 +543,7 @@ export default function CompanyProjectsPage() {
         >
           <option value="All">All statuses</option>
           <option value={ProjectStatuses.Open}>Open</option>
+          <option value="ApplicationsClosed">Applications closed</option>
           <option value={ProjectStatuses.InProgress}>In progress</option>
           <option value={ProjectStatuses.Completed}>Completed</option>
           <option value={ProjectStatuses.Cancelled}>Cancelled</option>
@@ -557,6 +574,11 @@ export default function CompanyProjectsPage() {
       <div className="company-opportunity-list-v2">
         {filteredProjects.map((project) => {
           const isBusy = busyProjectId === project.id;
+          const isAcceptingApplications =
+            isProjectAcceptingApplications(project);
+          const deadlinePassed = isApplicationDeadlinePassed(
+            project.applicationDeadline,
+          );
 
           return (
             <article className="company-opportunity-row" key={project.id}>
@@ -566,8 +588,8 @@ export default function CompanyProjectsPage() {
                     <span>{getOpportunityTypeLabel(project.type)} · #{project.id}</span>
                     <h2>{project.title}</h2>
                   </div>
-                  <StatusBadge tone={getStatusTone(project.status)}>
-                    {getProjectStatusLabel(project.status)}
+                  <StatusBadge tone={getStatusTone(project)}>
+                    {getProjectDisplayStatusLabel(project)}
                   </StatusBadge>
                 </div>
                 <p>{project.description}</p>
@@ -577,7 +599,11 @@ export default function CompanyProjectsPage() {
                   <span><MapPin size={16} /> {getWorkModeLabel(project.workMode)}</span>
                   <span><Wrench size={16} /> {getExperienceLevelLabel(project.experienceLevel)}</span>
                   {project.applicationDeadline ? (
-                    <span><CalendarDays size={16} /> Apply by {project.applicationDeadline}</span>
+                    <span>
+                      <CalendarDays size={16} />
+                      {deadlinePassed ? "Closed" : "Apply by"}{" "}
+                      {project.applicationDeadline}
+                    </span>
                   ) : null}
                   <span>
                     <CircleDollarSign size={16} />
@@ -598,9 +624,7 @@ export default function CompanyProjectsPage() {
                   <Button
                     to={`/company/projects/${project.id}/work`}
                     variant={
-                      project.status === ProjectStatuses.Open
-                        ? "secondary"
-                        : "primary"
+                      isAcceptingApplications ? "secondary" : "primary"
                     }
                     className="button-with-icon"
                   >
@@ -611,9 +635,7 @@ export default function CompanyProjectsPage() {
                 <Button
                   to={`/company/projects/${project.id}/applications`}
                   variant={
-                    project.status === ProjectStatuses.Open
-                      ? "primary"
-                      : "secondary"
+                    isAcceptingApplications ? "primary" : "secondary"
                   }
                   className="button-with-icon"
                 >

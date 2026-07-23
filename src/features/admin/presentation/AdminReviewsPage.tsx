@@ -124,7 +124,7 @@ export default function AdminReviewsPage() {
   return (
     <section className="page admin-list-page admin-reviews-v2">
       <PageHeader
-        title="Review moderation"
+        title="Reviews"
       />
 
       <div className="admin-list-stats">

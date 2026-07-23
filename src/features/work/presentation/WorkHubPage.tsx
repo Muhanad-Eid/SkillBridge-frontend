@@ -51,8 +51,10 @@ import {
 import {
   getExperienceLevelLabel,
   getOpportunityTypeLabel,
+  getProjectDisplayStatusLabel,
   getProjectStatusLabel,
   getWorkModeLabel,
+  isApplicationDeadlinePassed,
   ProjectStatuses,
   type Project,
   type ProjectStatus,
@@ -80,10 +82,18 @@ type TimelineStep = {
   icon: LucideIcon;
 };
 
-function getProjectTone(status: ProjectStatus) {
-  if (status === ProjectStatuses.Open) return "green";
-  if (status === ProjectStatuses.InProgress) return "blue";
-  if (status === ProjectStatuses.Cancelled) return "red";
+function getProjectTone(
+  project: Pick<Project, "status" | "applicationDeadline">,
+) {
+  if (
+    project.status === ProjectStatuses.Open &&
+    isApplicationDeadlinePassed(project.applicationDeadline)
+  ) {
+    return "amber";
+  }
+  if (project.status === ProjectStatuses.Open) return "green";
+  if (project.status === ProjectStatuses.InProgress) return "blue";
+  if (project.status === ProjectStatuses.Cancelled) return "red";
   return "neutral";
 }
 
@@ -331,7 +341,7 @@ export default function WorkHubPage() {
         icon: Star,
       },
       {
-        label: "Portfolio proof",
+        label: "Portfolio",
         detail: "Document the result and link to the work you delivered.",
         done: Boolean(portfolioItem),
         icon: FolderKanban,
@@ -352,7 +362,7 @@ export default function WorkHubPage() {
     if (
       status === ProjectStatuses.Completed &&
       !window.confirm(
-        `Mark "${project.title}" complete? This enables reviews and portfolio proof.`,
+        `Mark "${project.title}" complete? This enables reviews and portfolio items.`,
       )
     ) {
       return;
@@ -392,8 +402,8 @@ export default function WorkHubPage() {
         title={project?.title ?? "Opportunity work"}
         actions={
           project ? (
-            <StatusBadge tone={getProjectTone(project.status)}>
-              {getProjectStatusLabel(project.status)}
+            <StatusBadge tone={getProjectTone(project)}>
+              {getProjectDisplayStatusLabel(project)}
             </StatusBadge>
           ) : null
         }
@@ -838,7 +848,7 @@ export default function WorkHubPage() {
                 project.status === ProjectStatuses.Completed ? (
                   <>
                     <h2>
-                      {portfolioItem ? "Proof added" : "Add your completed work"}
+                      {portfolioItem ? "Added to portfolio" : "Add your completed work"}
                     </h2>
                     <p>
                       {portfolioItem
@@ -855,7 +865,7 @@ export default function WorkHubPage() {
                       fullWidth
                     >
                       <FolderKanban size={17} aria-hidden="true" />
-                      {portfolioItem ? "View portfolio" : "Add portfolio proof"}
+                      {portfolioItem ? "View portfolio" : "Add to portfolio"}
                     </Button>
                   </>
                 ) : null}

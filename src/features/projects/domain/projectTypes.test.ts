@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { calculateProjectMatch, type Project } from "./projectTypes";
+import {
+  calculateProjectMatch,
+  getProjectDisplayStatusLabel,
+  isApplicationDeadlinePassed,
+  isProjectAcceptingApplications,
+  ProjectStatuses,
+  type Project,
+} from "./projectTypes";
 
 const project = {
   skills: [
@@ -30,5 +37,29 @@ describe("calculateProjectMatch", () => {
 
   it("does not claim a match when an older project has no skill data", () => {
     expect(calculateProjectMatch({ ...project, skills: [] }, [1, 2]).score).toBe(0);
+  });
+});
+
+describe("project application deadline", () => {
+  const now = new Date("2026-07-23T12:00:00Z");
+
+  it("treats a past deadline as closed", () => {
+    expect(isApplicationDeadlinePassed("2026-07-22", now)).toBe(true);
+  });
+
+  it("keeps the opportunity open through its deadline date", () => {
+    expect(isApplicationDeadlinePassed("2026-07-23", now)).toBe(false);
+  });
+
+  it("shows a closed application state without changing the work status", () => {
+    const expiredProject = {
+      status: ProjectStatuses.Open,
+      applicationDeadline: "2026-07-22",
+    };
+
+    expect(isProjectAcceptingApplications(expiredProject)).toBe(false);
+    expect(getProjectDisplayStatusLabel(expiredProject)).toBe(
+      "Applications closed",
+    );
   });
 });

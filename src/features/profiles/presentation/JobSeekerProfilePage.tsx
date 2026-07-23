@@ -182,7 +182,7 @@ export default function JobSeekerProfilePage() {
   return (
     <section className="page jobseeker-profile-page">
       <PageHeader
-        title={isRequiredFlow ? "Complete your profile to continue" : "Profile and public details"}
+        title={isRequiredFlow ? "Complete your profile" : "Profile"}
         actions={
           profile && !isEditing ? (
             <Button

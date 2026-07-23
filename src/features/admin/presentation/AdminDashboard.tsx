@@ -15,8 +15,16 @@ import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
 import StatusBadge from "../../../shared/components/StatusBadge";
-import { ApplicationStatuses } from "../../applications/domain/applicationTypes";
-import { ProjectStatuses } from "../../projects/domain/projectTypes";
+import {
+  ApplicationStatuses,
+  getApplicationStatusLabel,
+  type ApplicationStatus,
+} from "../../applications/domain/applicationTypes";
+import {
+  getProjectStatusLabel,
+  ProjectStatuses,
+  type ProjectStatus,
+} from "../../projects/domain/projectTypes";
 import type {
   AdminApplication,
   AdminCompany,
@@ -35,6 +43,24 @@ import {
   getAdminSkillsAsync,
   getAdminUsersAsync,
 } from "../infrastructure/adminApi";
+
+function getProjectStatusTone(
+  status: ProjectStatus,
+): "green" | "amber" | "red" | "neutral" {
+  if (status === ProjectStatuses.Completed) return "green";
+  if (status === ProjectStatuses.InProgress) return "amber";
+  if (status === ProjectStatuses.Cancelled) return "red";
+  return "green";
+}
+
+function getApplicationStatusTone(
+  status: ApplicationStatus,
+): "green" | "amber" | "red" | "neutral" {
+  if (status === ApplicationStatuses.Accepted) return "green";
+  if (status === ApplicationStatuses.Rejected) return "red";
+  if (status === ApplicationStatuses.Pending) return "amber";
+  return "neutral";
+}
 
 export default function AdminDashboard() {
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -76,7 +102,7 @@ export default function AdminDashboard() {
           setError(
             caughtError instanceof Error
               ? caughtError.message
-              : "Unable to load admin control center.",
+              : "Unable to load the admin dashboard.",
           );
         }
       } finally {
@@ -128,7 +154,7 @@ export default function AdminDashboard() {
   return (
     <section className="page admin-dashboard-page admin-dashboard-v2">
       <PageHeader
-        title="Control center"
+        title="Overview"
         actions={
           <>
             <Button to="/admin/users?action=create" variant="secondary">
@@ -180,7 +206,7 @@ export default function AdminDashboard() {
 
           <div className="admin-dashboard-columns">
             <section className="admin-ops-panel">
-              <header><div><span>Trust queue</span><h2>Companies awaiting verification</h2></div><Button to="/admin/companies" variant="ghost">View all</Button></header>
+              <header><div><h2>Companies awaiting verification</h2></div><Button to="/admin/companies" variant="ghost">View all</Button></header>
               <div className="admin-ops-list">
                 {unverifiedCompanies.slice(0, 5).map((company) => (
                   <article key={company.id}>
@@ -195,38 +221,42 @@ export default function AdminDashboard() {
             </section>
 
             <aside className="admin-health-panel">
-              <header><span>Platform health</span><h2>Operational signals</h2></header>
+              <header><h2>Platform status</h2></header>
               <div>
                 <article><span>Company verification</span><strong>{metrics.companies ? Math.round((metrics.verified / metrics.companies) * 100) : 100}%</strong><div><b style={{ width: `${metrics.companies ? (metrics.verified / metrics.companies) * 100 : 100}%` }} /></div></article>
-                <article><span>Job seeker profiles ready</span><strong>{metrics.jobSeekers ? Math.round(((metrics.jobSeekers - incompleteProfiles.length) / metrics.jobSeekers) * 100) : 100}%</strong><div><b style={{ width: `${metrics.jobSeekers ? ((metrics.jobSeekers - incompleteProfiles.length) / metrics.jobSeekers) * 100 : 100}%` }} /></div></article>
+                <article><span>Complete job seeker profiles</span><strong>{metrics.jobSeekers ? Math.round(((metrics.jobSeekers - incompleteProfiles.length) / metrics.jobSeekers) * 100) : 100}%</strong><div><b style={{ width: `${metrics.jobSeekers ? ((metrics.jobSeekers - incompleteProfiles.length) / metrics.jobSeekers) * 100 : 100}%` }} /></div></article>
                 <article><span>Skills in active use</span><strong>{skills.length ? Math.round(((skills.length - unusedSkills.length) / skills.length) * 100) : 100}%</strong><div><b style={{ width: `${skills.length ? ((skills.length - unusedSkills.length) / skills.length) * 100 : 100}%` }} /></div></article>
               </div>
-              <Button to="/admin/skills" variant="secondary">Review skill catalog</Button>
+              <Button to="/admin/skills" variant="secondary">Manage skills</Button>
             </aside>
           </div>
 
           <div className="admin-dashboard-columns lower">
             <section className="admin-ops-panel">
-              <header><div><span>Marketplace</span><h2>Highest activity projects</h2></div><Button to="/admin/projects" variant="ghost">View all</Button></header>
+              <header><div><h2>Projects with most applications</h2></div><Button to="/admin/projects" variant="ghost">View all</Button></header>
               <div className="admin-project-activity-list">
                 {activeProjects.map((project) => (
                   <article key={project.id}>
                     <div><strong>{project.title}</strong><span>{project.companyName}</span></div>
                     <span>{project.applicationsCount} applications</span>
-                    <StatusBadge tone={project.status === ProjectStatuses.Open ? "green" : "neutral"}>{project.status === ProjectStatuses.Open ? "Open" : "Managed"}</StatusBadge>
+                    <StatusBadge tone={getProjectStatusTone(project.status)}>
+                      {getProjectStatusLabel(project.status)}
+                    </StatusBadge>
                   </article>
                 ))}
               </div>
             </section>
 
             <section className="admin-ops-panel">
-              <header><div><span>Latest pipeline</span><h2>Application oversight</h2></div><Button to="/admin/applications" variant="ghost">View all</Button></header>
+              <header><div><h2>Applications</h2></div><Button to="/admin/applications" variant="ghost">View all</Button></header>
               <div className="admin-project-activity-list">
                 {recentApplications.map((application) => (
                   <article key={application.id}>
                     <div><strong>{application.jobSeekerName}</strong><span>{application.projectTitle}</span></div>
                     <span>{application.companyName}</span>
-                    <StatusBadge tone={application.status === ApplicationStatuses.Pending ? "amber" : "green"}>{application.status === ApplicationStatuses.Pending ? "Pending" : "Updated"}</StatusBadge>
+                    <StatusBadge tone={getApplicationStatusTone(application.status)}>
+                      {getApplicationStatusLabel(application.status)}
+                    </StatusBadge>
                   </article>
                 ))}
               </div>

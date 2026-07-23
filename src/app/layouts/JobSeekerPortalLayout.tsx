@@ -35,6 +35,7 @@ import { getMyNotificationsAsync } from "../../features/notifications/infrastruc
 import { useAuth } from "../../shared/auth/AuthContext";
 import Button from "../../shared/components/Button";
 import BrandIcon from "../../shared/components/BrandIcon";
+import ConfirmDialog from "../../shared/components/ConfirmDialog";
 import useSidebarPreference from "../../shared/hooks/useSidebarPreference";
 
 type JobSeekerNavItem = {
@@ -77,6 +78,7 @@ export default function JobSeekerPortalLayout() {
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] =
     useSidebarPreference("job-seeker");
 
@@ -161,8 +163,17 @@ export default function JobSeekerPortalLayout() {
     .trim()
     .charAt(0)
     .toUpperCase();
+  const closeLogoutDialog = useCallback(
+    () => setIsLogoutDialogOpen(false),
+    [],
+  );
 
   function handleLogout() {
+    setIsLogoutDialogOpen(true);
+  }
+
+  function confirmLogout() {
+    closeLogoutDialog();
     logout();
     navigate("/login", { replace: true });
   }
@@ -212,7 +223,6 @@ export default function JobSeekerPortalLayout() {
           <BrandIcon />
           <span>
             <strong>SkillBridge</strong>
-            <small>Career workspace</small>
           </span>
         </Link>
 
@@ -224,7 +234,7 @@ export default function JobSeekerPortalLayout() {
             <strong>{profile?.fullName || user?.fullName || "Job seeker"}</strong>
             <small>{profile?.city || "Complete your profile"}</small>
           </div>
-          {profileIsComplete ? <Sparkles size={17} aria-label="Profile ready" /> : null}
+          {profileIsComplete ? <Sparkles size={17} aria-label="Profile complete" /> : null}
         </div>
 
         <nav className="jobseeker-sidebar-nav" aria-label="Job seeker navigation">
@@ -319,6 +329,14 @@ export default function JobSeekerPortalLayout() {
           )}
         </main>
       </div>
+      <ConfirmDialog
+        isOpen={isLogoutDialogOpen}
+        title="Log out?"
+        description="You will need to sign in again to access your portal."
+        confirmLabel="Log out"
+        onCancel={closeLogoutDialog}
+        onConfirm={confirmLogout}
+      />
     </div>
   );
 }

@@ -103,14 +103,14 @@ export default function JobSeekerDashboardPage() {
   const readinessSteps = useMemo(
     () => [
       {
-        label: "Career profile",
+        label: "Profile",
         detail: "Bio and location are complete",
         done: Boolean(profile?.bio?.trim() && profile.city?.trim()),
         to: "/job-seeker/profile",
         icon: CheckCircle2,
       },
       {
-        label: "Skills profile",
+        label: "Skills",
         detail: `${skills.length}/3 recommended skills added`,
         done: skills.length >= 3,
         to: "/job-seeker/skills",
@@ -118,13 +118,16 @@ export default function JobSeekerDashboardPage() {
       },
       {
         label: "First application",
-        detail: applications.length > 0 ? "Your pipeline is active" : "Start your application pipeline",
+        detail:
+          applications.length > 0
+            ? "Your applications are available"
+            : "Submit your first application",
         done: applications.length > 0,
         to: "/job-seeker/opportunities",
         icon: FileCheck2,
       },
       {
-        label: "Portfolio proof",
+        label: "Portfolio",
         detail: `${portfolioItems.length} work sample${portfolioItems.length === 1 ? "" : "s"}`,
         done: portfolioItems.length > 0,
         to: "/job-seeker/portfolio",
@@ -178,17 +181,17 @@ export default function JobSeekerDashboardPage() {
           <small>{stats.pending} awaiting a decision</small>
         </article>
         <article>
-          <span>Accepted work</span>
+          <span>Accepted applications</span>
           <strong>{isLoading ? "-" : stats.accepted}</strong>
-          <small>Projects in your active record</small>
+          <small>Applications accepted by companies</small>
         </article>
         <article>
-          <span>Portfolio proof</span>
+          <span>Portfolio items</span>
           <strong>{isLoading ? "-" : portfolioItems.length}</strong>
           <small>{portfolioItems.filter((item) => item.projectUrl).length} with a project link</small>
         </article>
         <article>
-          <span>Reputation</span>
+          <span>Average rating</span>
           <strong>{isLoading ? "-" : profile?.averageRating?.toFixed(1) ?? "New"}</strong>
           <small>{stats.reviews} company review{stats.reviews === 1 ? "" : "s"}</small>
         </article>
@@ -198,7 +201,7 @@ export default function JobSeekerDashboardPage() {
         <div className="jobseeker-next-action">
           <span className="jobseeker-next-icon"><SparkIcon /></span>
           <div>
-            <span>Best next step</span>
+            <span>Next step</span>
             <strong>{nextStep.label}</strong>
             <p>{nextStep.detail}. Complete this to strengthen what companies see.</p>
           </div>
@@ -214,7 +217,6 @@ export default function JobSeekerDashboardPage() {
           <section className="jobseeker-panel-card">
             <header>
               <div>
-                <span>Pipeline</span>
                 <h2>Recent applications</h2>
               </div>
               <Button to="/job-seeker/applications" variant="ghost">
@@ -225,7 +227,7 @@ export default function JobSeekerDashboardPage() {
             {recentApplications.length === 0 ? (
               <div className="jobseeker-empty-panel">
                 <Search size={24} aria-hidden="true" />
-                <strong>Your application pipeline is empty</strong>
+                <strong>No applications yet</strong>
                 <p>Browse verified company opportunities and apply when the work fits.</p>
                 <Button to="/job-seeker/opportunities" variant="secondary">
                   Browse opportunities
@@ -278,7 +280,6 @@ export default function JobSeekerDashboardPage() {
           <section className="jobseeker-panel-card">
             <header>
               <div>
-                <span>Open now</span>
                 <h2>Opportunities to explore</h2>
               </div>
               <Button to="/job-seeker/opportunities" variant="ghost">Browse all</Button>
@@ -322,8 +323,8 @@ export default function JobSeekerDashboardPage() {
             <div style={{ "--score": `${readinessScore * 3.6}deg` } as React.CSSProperties}>
               <strong>{readinessScore}%</strong>
             </div>
-            <span>Profile readiness</span>
-            <p>Complete each signal companies use when they review applicants.</p>
+            <span>Profile completion</span>
+            <p>Complete your profile, skills, applications, and portfolio.</p>
           </div>
 
           <div className="jobseeker-readiness-list">

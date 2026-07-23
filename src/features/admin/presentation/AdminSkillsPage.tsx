@@ -128,7 +128,7 @@ export default function AdminSkillsPage() {
   return (
     <section className="page admin-list-page">
       <PageHeader
-        title="Skills catalog"
+        title="Skills"
         actions={
           <Button type="button" onClick={startCreate}>
             Add skill
@@ -194,7 +194,7 @@ export default function AdminSkillsPage() {
         error={error}
         empty={filteredSkills.length === 0}
         emptyTitle="No skills"
-        emptyDescription="Skill catalog items will appear here."
+        emptyDescription="Skills will appear here."
       />
 
       <div className="table-card admin-table-card">

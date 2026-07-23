@@ -33,8 +33,8 @@ function getValidWorkUrl(value: string | null) {
 
 export default function PortfolioGallery({
   items,
-  emptyTitle = "No portfolio proof yet",
-  emptyDescription = "Completed work will appear here as portfolio evidence.",
+  emptyTitle = "No portfolio items yet",
+  emptyDescription = "Completed work will appear here.",
   onEdit,
   onDelete,
 }: PortfolioGalleryProps) {
@@ -67,7 +67,7 @@ export default function PortfolioGallery({
                       type="button"
                       variant="ghost"
                       aria-label={`Edit ${item.projectTitle}`}
-                      title="Edit portfolio evidence"
+                      title="Edit portfolio item"
                       onClick={() => onEdit(item)}
                     >
                       <Pencil size={17} aria-hidden="true" />
@@ -79,7 +79,7 @@ export default function PortfolioGallery({
                       variant="ghost"
                       className="button-danger"
                       aria-label={`Delete ${item.projectTitle}`}
-                      title="Delete portfolio evidence"
+                      title="Delete portfolio item"
                       onClick={() => onDelete(item)}
                     >
                       <Trash2 size={17} aria-hidden="true" />

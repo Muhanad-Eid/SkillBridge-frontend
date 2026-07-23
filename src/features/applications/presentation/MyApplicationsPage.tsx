@@ -136,7 +136,7 @@ export default function MyApplicationsPage() {
   return (
     <section className="page jobseeker-applications-page">
       <PageHeader
-        title="Application tracker"
+        title="Applications"
         actions={
           <Button to="/job-seeker/opportunities" variant="primary">
             <Search size={17} aria-hidden="true" />
@@ -149,7 +149,7 @@ export default function MyApplicationsPage() {
         <article><span>Total applications</span><strong>{stats.total}</strong></article>
         <article><span>Awaiting decision</span><strong>{stats.pending}</strong></article>
         <article><span>Accepted</span><strong>{stats.accepted}</strong></article>
-        <article><span>Closed</span><strong>{stats.closed}</strong></article>
+        <article><span>Rejected / withdrawn</span><strong>{stats.closed}</strong></article>
       </div>
 
       <div className="jobseeker-application-controls">

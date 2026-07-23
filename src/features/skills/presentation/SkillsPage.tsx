@@ -130,7 +130,7 @@ export default function SkillsPage() {
   return (
     <section className="page jobseeker-skills-page">
       <PageHeader
-        title="Skills profile"
+        title="Skills"
       />
 
       <DataState
@@ -146,9 +146,8 @@ export default function SkillsPage() {
           <header>
             <span className="jobseeker-section-icon"><Wrench size={20} /></span>
             <div>
-              <span>Add a skill</span>
-              <h2>What can you do?</h2>
-              <p>Type any skill. Existing platform skills appear as quick suggestions.</p>
+              <h2>Add skills</h2>
+              <p>Type a skill or choose one of the suggestions.</p>
             </div>
           </header>
 
@@ -194,7 +193,7 @@ export default function SkillsPage() {
 
         <aside className="jobseeker-skill-summary">
           <div className="jobseeker-skill-strength">
-            <span><Sparkles size={18} aria-hidden="true" />Profile signal</span>
+            <span><Sparkles size={18} aria-hidden="true" />Skill count</span>
             <strong>{mySkills.length} skill{mySkills.length === 1 ? "" : "s"}</strong>
             <p>A focused set of 3 to 8 skills is easier for companies to review.</p>
             <div aria-hidden="true"><b style={{ width: `${profileStrength}%` }} /></div>

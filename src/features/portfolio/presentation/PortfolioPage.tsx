@@ -155,7 +155,7 @@ export default function PortfolioPage() {
 
       if (editingItem) {
         await updatePortfolioItemAsync(editingItem.id, request);
-        setMessage("Portfolio evidence updated.");
+        setMessage("Portfolio item updated.");
       } else {
         await createPortfolioItemAsync({
           projectId: Number(form.projectId),
@@ -170,7 +170,7 @@ export default function PortfolioPage() {
       setError(
         caughtError instanceof Error
           ? caughtError.message
-          : "Unable to save portfolio evidence.",
+          : "Unable to save the portfolio item.",
       );
     } finally {
       setIsSaving(false);
@@ -179,7 +179,7 @@ export default function PortfolioPage() {
 
   async function handleDelete(item: PortfolioItem) {
     const confirmed = window.confirm(
-      `Delete portfolio evidence for "${item.projectTitle}"?`,
+      `Delete the portfolio item for "${item.projectTitle}"?`,
     );
 
     if (!confirmed) return;
@@ -190,13 +190,13 @@ export default function PortfolioPage() {
     try {
       await deletePortfolioItemAsync(item.id);
       if (editingItem?.id === item.id) closeEditor();
-      setMessage("Portfolio evidence deleted.");
+      setMessage("Portfolio item deleted.");
       await loadPortfolio();
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
           ? caughtError.message
-          : "Unable to delete portfolio evidence.",
+          : "Unable to delete the portfolio item.",
       );
     }
   }
@@ -218,7 +218,7 @@ export default function PortfolioPage() {
       />
 
       <div className="portfolio-summary-grid">
-        <article><span>Completed work</span><strong>{portfolioStats.total}</strong></article>
+        <article><span>Portfolio items</span><strong>{portfolioStats.total}</strong></article>
         <article><span>Company reviews</span><strong>{portfolioStats.reviewed}</strong></article>
         <article><span>Ready to add</span><strong>{portfolioStats.ready}</strong></article>
       </div>
@@ -243,7 +243,7 @@ export default function PortfolioPage() {
         <section className="portfolio-editor-panel" aria-labelledby="portfolio-editor-title">
           <header>
             <div>
-              <span>{editingItem ? "Update evidence" : "New evidence"}</span>
+              <span>{editingItem ? "Edit item" : "New item"}</span>
               <h2 id="portfolio-editor-title">
                 {editingItem ? editingItem.projectTitle : "Add completed work"}
               </h2>
@@ -344,10 +344,9 @@ export default function PortfolioPage() {
       <section className="portfolio-work-section">
         <div className="portfolio-section-heading">
           <div>
-            <span>Evidence gallery</span>
             <h2>Your completed work</h2>
           </div>
-          <p>Companies see this same evidence when they review your profile.</p>
+          <p>Companies can see these items when they review your profile.</p>
         </div>
 
         <DataState

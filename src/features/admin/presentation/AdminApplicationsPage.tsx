@@ -133,7 +133,7 @@ export default function AdminApplicationsPage() {
   return (
     <section className="page admin-list-page">
       <PageHeader
-        title="Application oversight"
+        title="Applications"
       />
 
       <div className="toolbar admin-toolbar">

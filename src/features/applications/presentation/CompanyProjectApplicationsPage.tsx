@@ -24,7 +24,9 @@ import StatusBadge from "../../../shared/components/StatusBadge";
 import type { JobSeekerProfile } from "../../profiles/domain/profileTypes";
 import { getPublicJobSeekerProfileAsync } from "../../profiles/infrastructure/profileApi";
 import {
+  getProjectDisplayStatusLabel,
   getProjectStatusLabel,
+  isApplicationDeadlinePassed,
   ProjectStatuses,
   type Project,
   type ProjectStatus,
@@ -66,10 +68,18 @@ function getApplicationTone(status: ApplicationStatus) {
   return "neutral";
 }
 
-function getProjectTone(status: ProjectStatus) {
-  if (status === ProjectStatuses.Open) return "green";
-  if (status === ProjectStatuses.InProgress) return "blue";
-  if (status === ProjectStatuses.Cancelled) return "red";
+function getProjectTone(
+  project: Pick<Project, "status" | "applicationDeadline">,
+) {
+  if (
+    project.status === ProjectStatuses.Open &&
+    isApplicationDeadlinePassed(project.applicationDeadline)
+  ) {
+    return "amber";
+  }
+  if (project.status === ProjectStatuses.Open) return "green";
+  if (project.status === ProjectStatuses.InProgress) return "blue";
+  if (project.status === ProjectStatuses.Cancelled) return "red";
   return "neutral";
 }
 
@@ -313,8 +323,8 @@ export default function CompanyProjectApplicationsPage() {
         actions={
           project ? (
             <div className="company-project-header-actions">
-              <StatusBadge tone={getProjectTone(project.status)}>
-                {getProjectStatusLabel(project.status)}
+              <StatusBadge tone={getProjectTone(project)}>
+                {getProjectDisplayStatusLabel(project)}
               </StatusBadge>
               {project.status === ProjectStatuses.Open ? (
                 <Button

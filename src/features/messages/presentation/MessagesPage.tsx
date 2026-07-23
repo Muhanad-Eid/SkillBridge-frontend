@@ -382,11 +382,11 @@ export default function MessagesPage() {
   return (
     <section className="page messages-page">
       <PageHeader
-        title="Conversations"
+        title="Messages"
       />
 
       <div className="messages-layout">
-        <Card title="Chats" description="People connected to your projects.">
+        <Card title="Conversations">
           <DataState
             isLoading={isLoading}
             error={error}

@@ -64,7 +64,9 @@ export default function JobSeekersPage() {
     const value = search.trim().toLowerCase();
 
     return jobSeekers.filter((jobSeeker) => {
-      const hasProfile = jobSeeker.id !== 0;
+      const hasProfile = Boolean(
+        jobSeeker.bio?.trim() && jobSeeker.city?.trim(),
+      );
       const matchesProfile =
         profileFilter === "All" ||
         (profileFilter === "Ready" && hasProfile) ||
@@ -83,7 +85,7 @@ export default function JobSeekersPage() {
 
   const jobSeekerStats = useMemo(() => {
     const missingProfiles = jobSeekers.filter(
-      (jobSeeker) => jobSeeker.id === 0,
+      (jobSeeker) => !jobSeeker.bio?.trim() || !jobSeeker.city?.trim(),
     ).length;
     const applications = jobSeekers.reduce(
       (sum, jobSeeker) => sum + jobSeeker.applicationsCount,
@@ -171,7 +173,7 @@ export default function JobSeekersPage() {
       setPortfolioError(
         caughtError instanceof Error
           ? caughtError.message
-          : "Unable to load portfolio evidence.",
+          : "Unable to load portfolio items.",
       );
     } finally {
       setIsPortfolioLoading(false);
@@ -181,7 +183,7 @@ export default function JobSeekersPage() {
   return (
     <section className="page admin-list-page">
       <PageHeader
-        title="Job seeker oversight"
+        title="Job seekers"
         actions={
           <Button to="/admin/users?action=create&role=JobSeeker" variant="primary">
             <Plus size={16} aria-hidden="true" />Add job seeker
@@ -202,8 +204,8 @@ export default function JobSeekersPage() {
           onChange={(event) => setProfileFilter(event.target.value)}
         >
           <option value="All">All profiles</option>
-          <option value="Ready">Profile ready</option>
-          <option value="Missing">Profile missing</option>
+          <option value="Ready">Profile complete</option>
+          <option value="Missing">Profile incomplete</option>
         </select>
       </div>
 
@@ -213,11 +215,11 @@ export default function JobSeekersPage() {
           <strong>{jobSeekerStats.total}</strong>
         </article>
         <article>
-          <span>Profile ready</span>
+          <span>Profile complete</span>
           <strong>{jobSeekerStats.readyProfiles}</strong>
         </article>
         <article>
-          <span>Profile missing</span>
+          <span>Profile incomplete</span>
           <strong>{jobSeekerStats.missingProfiles}</strong>
         </article>
         <article>
@@ -317,8 +319,16 @@ export default function JobSeekersPage() {
               </span>
             </div>
             <div className="admin-status-stack">
-              <StatusBadge tone={jobSeeker.id === 0 ? "amber" : "green"}>
-                {jobSeeker.id === 0 ? "Profile missing" : "Profile ready"}
+              <StatusBadge
+                tone={
+                  jobSeeker.bio?.trim() && jobSeeker.city?.trim()
+                    ? "green"
+                    : "amber"
+                }
+              >
+                {jobSeeker.bio?.trim() && jobSeeker.city?.trim()
+                  ? "Profile complete"
+                  : "Profile incomplete"}
               </StatusBadge>
               <span>
                 {jobSeeker.skillsCount} skills / {jobSeeker.applicationsCount}{" "}
@@ -364,7 +374,7 @@ export default function JobSeekersPage() {
           >
             <header>
               <div>
-                <span>Verified work evidence</span>
+                <span>Portfolio items</span>
                 <h2 id="admin-portfolio-title">
                   {portfolioJobSeeker.fullName}'s portfolio
                 </h2>

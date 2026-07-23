@@ -69,7 +69,7 @@ export default function ApplicantProfilePanel({
           setPortfolioError(
             caughtError instanceof Error
               ? caughtError.message
-              : "Unable to load portfolio evidence.",
+              : "Unable to load portfolio items.",
           );
         }
       } finally {
@@ -135,7 +135,7 @@ export default function ApplicantProfilePanel({
               </article>
               <article>
                 <BriefcaseBusiness size={18} aria-hidden="true" />
-                <span>Portfolio proof</span>
+                <span>Portfolio items</span>
                 <strong>{profile.portfolioItemsCount} items</strong>
               </article>
               <article>

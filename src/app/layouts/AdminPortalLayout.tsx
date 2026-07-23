@@ -1,15 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import {
-  BadgeCheck,
   BriefcaseBusiness,
   Building2,
   FileCheck2,
-  Gauge,
   GraduationCap,
   KeyRound,
+  LayoutDashboard,
   LogOut,
   Menu,
-  ShieldCheck,
   Star,
   Tags,
   UserCog,
@@ -26,6 +24,7 @@ import {
 import { useAuth } from "../../shared/auth/AuthContext";
 import Button from "../../shared/components/Button";
 import BrandIcon from "../../shared/components/BrandIcon";
+import ConfirmDialog from "../../shared/components/ConfirmDialog";
 import useSidebarPreference from "../../shared/hooks/useSidebarPreference";
 
 type AdminNavItem = {
@@ -36,14 +35,14 @@ type AdminNavItem = {
 };
 
 const adminNavItems: AdminNavItem[] = [
-  { label: "Control center", to: "/admin/dashboard", icon: Gauge },
+  { label: "Overview", to: "/admin/dashboard", icon: LayoutDashboard },
   { label: "Users", to: "/admin/users", icon: UserCog },
   { label: "Companies", to: "/admin/companies", icon: Building2, badge: "companies" },
   { label: "Job seekers", to: "/admin/job-seekers", icon: GraduationCap },
   { label: "Projects", to: "/admin/projects", icon: BriefcaseBusiness },
   { label: "Applications", to: "/admin/applications", icon: FileCheck2, badge: "applications" },
   { label: "Reviews", to: "/admin/reviews", icon: Star, badge: "reviews" },
-  { label: "Skills catalog", to: "/admin/skills", icon: Tags },
+  { label: "Skills", to: "/admin/skills", icon: Tags },
   { label: "Change password", to: "/admin/security", icon: KeyRound },
 ];
 
@@ -54,6 +53,7 @@ export default function AdminPortalLayout() {
   const [pendingApplications, setPendingApplications] = useState(0);
   const [flaggedReviews, setFlaggedReviews] = useState(0);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] =
     useSidebarPreference("admin");
 
@@ -101,8 +101,17 @@ export default function AdminPortalLayout() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isSidebarOpen]);
+  const closeLogoutDialog = useCallback(
+    () => setIsLogoutDialogOpen(false),
+    [],
+  );
 
   function handleLogout() {
+    setIsLogoutDialogOpen(true);
+  }
+
+  function confirmLogout() {
+    closeLogoutDialog();
     logout();
     navigate("/admin/login", { replace: true });
   }
@@ -141,15 +150,6 @@ export default function AdminPortalLayout() {
             <small>Administration</small>
           </span>
         </Link>
-
-        <div className="admin-authority-card">
-          <span><ShieldCheck size={18} aria-hidden="true" /></span>
-          <div>
-            <strong>Platform administrator</strong>
-            <small>Full governance access</small>
-          </div>
-          <BadgeCheck size={17} aria-label="Administrator verified" />
-        </div>
 
         <nav className="admin-sidebar-nav" aria-label="Admin navigation">
           {adminNavItems.map((item) => {
@@ -230,6 +230,14 @@ export default function AdminPortalLayout() {
           <Outlet context={{ refreshQueues }} />
         </main>
       </div>
+      <ConfirmDialog
+        isOpen={isLogoutDialogOpen}
+        title="Log out?"
+        description="You will need to sign in again to access the admin portal."
+        confirmLabel="Log out"
+        onCancel={closeLogoutDialog}
+        onConfirm={confirmLogout}
+      />
     </div>
   );
 }

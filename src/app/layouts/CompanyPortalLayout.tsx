@@ -25,6 +25,7 @@ import {
 import { useAuth } from "../../shared/auth/AuthContext";
 import Button from "../../shared/components/Button";
 import BrandIcon from "../../shared/components/BrandIcon";
+import ConfirmDialog from "../../shared/components/ConfirmDialog";
 import useSidebarPreference from "../../shared/hooks/useSidebarPreference";
 import {
   isCompanyProfileComplete,
@@ -71,6 +72,7 @@ export default function CompanyPortalLayout() {
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] =
     useSidebarPreference("company");
 
@@ -149,8 +151,17 @@ export default function CompanyPortalLayout() {
     : companyNavItems.filter(
         (item) => item.to === "/company/profile" || item.to === "/company/security",
       );
+  const closeLogoutDialog = useCallback(
+    () => setIsLogoutDialogOpen(false),
+    [],
+  );
 
   function handleLogout() {
+    setIsLogoutDialogOpen(true);
+  }
+
+  function confirmLogout() {
+    closeLogoutDialog();
     logout();
     navigate("/login", { replace: true });
   }
@@ -200,7 +211,6 @@ export default function CompanyPortalLayout() {
           <BrandIcon />
           <span>
             <strong>SkillBridge</strong>
-            <small>Company workspace</small>
           </span>
         </Link>
 
@@ -279,7 +289,7 @@ export default function CompanyPortalLayout() {
             <div>
               <strong>Admin verification is required to publish.</strong>
               <span>
-                You can review your workspace while your company profile is pending.
+                You can view your account while your company profile is pending.
               </span>
             </div>
             <Button to="/company/profile" variant="secondary">
@@ -328,6 +338,14 @@ export default function CompanyPortalLayout() {
           )}
         </main>
       </div>
+      <ConfirmDialog
+        isOpen={isLogoutDialogOpen}
+        title="Log out?"
+        description="You will need to sign in again to access your portal."
+        confirmLabel="Log out"
+        onCancel={closeLogoutDialog}
+        onConfirm={confirmLogout}
+      />
     </div>
   );
 }

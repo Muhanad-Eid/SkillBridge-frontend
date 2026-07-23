@@ -17,8 +17,10 @@ import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
 import StatusBadge from "../../../shared/components/StatusBadge";
 import {
+  ApplicationStatuses,
   getApplicationStatusLabel,
   type Application,
+  type ApplicationStatus,
 } from "../../applications/domain/applicationTypes";
 import { getMyApplicationsAsync } from "../../applications/infrastructure/applicationApi";
 import type { Skill } from "../../skills/domain/skillTypes";
@@ -35,6 +37,15 @@ import {
   type Project,
 } from "../domain/projectTypes";
 import { getProjectsAsync } from "../infrastructure/projectApi";
+
+function getApplicationTone(
+  status: ApplicationStatus,
+): "green" | "amber" | "red" | "neutral" {
+  if (status === ApplicationStatuses.Accepted) return "green";
+  if (status === ApplicationStatuses.Pending) return "amber";
+  if (status === ApplicationStatuses.Rejected) return "red";
+  return "neutral";
+}
 
 export default function ProjectsPage() {
   const { user } = useAuth();
@@ -224,7 +235,7 @@ export default function ProjectsPage() {
   return (
     <section className={`page marketplace-page ${isJobSeeker ? "jobseeker-discovery-page" : ""}`}>
       <PageHeader
-        title={isJobSeeker ? "Opportunities" : "Opportunity marketplace"}
+        title="Opportunities"
         actions={
           isJobSeeker ? (
             <Button to="/job-seeker/applications" variant="secondary">
@@ -439,7 +450,7 @@ export default function ProjectsPage() {
                     {getOpportunityTypeLabel(project.type)}
                   </StatusBadge>
                   {application ? (
-                    <StatusBadge tone="green">
+                    <StatusBadge tone={getApplicationTone(application.status)}>
                       {getApplicationStatusLabel(application.status)}
                     </StatusBadge>
                   ) : null}
@@ -469,7 +480,7 @@ export default function ProjectsPage() {
               </div>
               <div className="jobseeker-opportunity-action">
                 <Button to={`${detailsBasePath}/${project.id}`} variant="secondary">
-                  {application ? "View application" : "View opportunity"}
+                  View details
                   <ArrowRight size={16} aria-hidden="true" />
                 </Button>
               </div>

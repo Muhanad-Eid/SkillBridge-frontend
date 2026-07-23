@@ -243,7 +243,7 @@ export default function AdminProjectsPage() {
   return (
     <section className="page admin-list-page">
       <PageHeader
-        title="Project oversight"
+        title="Projects"
         actions={
           <Button type="button" onClick={startCreate}>
             Add project

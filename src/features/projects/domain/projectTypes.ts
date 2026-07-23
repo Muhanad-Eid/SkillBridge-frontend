@@ -104,6 +104,38 @@ export function getProjectStatusLabel(status: ProjectStatus) {
   return "Open";
 }
 
+export function isApplicationDeadlinePassed(
+  applicationDeadline: string | null | undefined,
+  now = new Date(),
+) {
+  if (!applicationDeadline) return false;
+
+  const currentUtcDate = now.toISOString().slice(0, 10);
+  return applicationDeadline < currentUtcDate;
+}
+
+export function isProjectAcceptingApplications(
+  project: Pick<Project, "status" | "applicationDeadline">,
+) {
+  return (
+    project.status === ProjectStatuses.Open &&
+    !isApplicationDeadlinePassed(project.applicationDeadline)
+  );
+}
+
+export function getProjectDisplayStatusLabel(
+  project: Pick<Project, "status" | "applicationDeadline">,
+) {
+  if (
+    project.status === ProjectStatuses.Open &&
+    isApplicationDeadlinePassed(project.applicationDeadline)
+  ) {
+    return "Applications closed";
+  }
+
+  return getProjectStatusLabel(project.status);
+}
+
 type ProjectMatch = {
   score: number;
   matchedRequired: number;

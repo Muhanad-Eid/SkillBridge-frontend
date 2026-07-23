@@ -33,7 +33,7 @@ import {
   getExperienceLevelLabel,
   getOpportunityTypeLabel,
   getWorkModeLabel,
-  ProjectStatuses,
+  isProjectAcceptingApplications,
   type Project,
 } from "../domain/projectTypes";
 import { getProjectAsync } from "../infrastructure/projectApi";
@@ -104,10 +104,13 @@ export default function ProjectDetailsPage() {
   const projectMatch = project && isJobSeeker && project.skills.length > 0
     ? calculateProjectMatch(project, mySkills.map((skill) => skill.id))
     : null;
+  const isAcceptingApplications = project
+    ? isProjectAcceptingApplications(project)
+    : false;
 
   async function handleApply(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!project || project.status !== ProjectStatuses.Open || existingApplication) return;
+    if (!project || !isAcceptingApplications || existingApplication) return;
 
     setIsApplying(true);
     setMessage("");
@@ -156,8 +159,8 @@ export default function ProjectDetailsPage() {
             <div>
               <div className="jobseeker-opportunity-labels">
                 <StatusBadge tone="blue">{getOpportunityTypeLabel(project.type)}</StatusBadge>
-                <StatusBadge tone={project.status === ProjectStatuses.Open ? "green" : "neutral"}>
-                  {project.status === ProjectStatuses.Open ? "Accepting applications" : "Closed"}
+                <StatusBadge tone={isAcceptingApplications ? "green" : "neutral"}>
+                  {isAcceptingApplications ? "Accepting applications" : "Applications closed"}
                 </StatusBadge>
               </div>
               <h1>{project.title}</h1>
@@ -255,10 +258,19 @@ export default function ProjectDetailsPage() {
                   <CheckCircle2 size={30} aria-hidden="true" />
                   <span>Application submitted</span>
                   <h2>{getApplicationStatusLabel(existingApplication.status)}</h2>
-                  <p>Your application is in the company pipeline. Follow updates from your tracker.</p>
+                  <p>Your application was sent to the company. Follow its status from Applications.</p>
                   <Button to="/job-seeker/applications" variant="primary">
                     View application
                   </Button>
+                </div>
+              ) : !isAcceptingApplications ? (
+                <div className="jobseeker-applied-state">
+                  <CalendarDays size={30} aria-hidden="true" />
+                  <span>Applications closed</span>
+                  <h2>The application window has ended</h2>
+                  <p>
+                    This opportunity is no longer accepting new applications.
+                  </p>
                 </div>
               ) : isJobSeeker ? (
                 <form onSubmit={handleApply}>
@@ -279,7 +291,7 @@ export default function ProjectDetailsPage() {
                   <Button
                     type="submit"
                     isLoading={isApplying}
-                    disabled={project.status !== ProjectStatuses.Open}
+                    disabled={!isAcceptingApplications}
                   >
                     Submit application
                   </Button>

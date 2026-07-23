@@ -173,7 +173,7 @@ export default function CompaniesPage() {
   return (
     <section className="page admin-list-page">
       <PageHeader
-        title="Company verification"
+        title="Companies"
         actions={
           <Button to="/admin/users?action=create&role=Company" variant="primary">
             <Plus size={16} aria-hidden="true" />Add company

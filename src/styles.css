@@ -3089,6 +3089,97 @@ input {
   color: #b42318;
 }
 
+.confirm-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.48);
+  backdrop-filter: blur(2px);
+}
+
+.confirm-dialog {
+  position: relative;
+  width: min(100%, 410px);
+  border: 1px solid #dce4e5;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.22);
+  padding: 28px;
+}
+
+.confirm-dialog-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #667085;
+  cursor: pointer;
+}
+
+.confirm-dialog-close:hover {
+  background: #f1f5f6;
+  color: #172b36;
+}
+
+.confirm-dialog-icon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #fff1f0;
+  color: #b42318;
+}
+
+.confirm-dialog h2 {
+  margin: 18px 0 7px;
+  color: #101828;
+  font-size: 21px;
+}
+
+.confirm-dialog p {
+  margin: 0;
+  color: #667085;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.confirm-dialog footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.confirm-dialog footer .button {
+  min-width: 108px;
+  gap: 8px;
+}
+
+@media (max-width: 480px) {
+  .confirm-dialog {
+    padding: 24px 20px 20px;
+  }
+
+  .confirm-dialog footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .confirm-dialog footer .button {
+    min-width: 0;
+  }
+}
+
 .button-ghost {
   background: transparent;
   color: #ffffff;
@@ -5869,7 +5960,7 @@ input {
 .notification-list-v2 > article {
   min-width: 0;
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
   gap: 13px;
   border-bottom: 1px solid #edf0f3;
@@ -5899,22 +5990,57 @@ input {
   color: #174ea6;
 }
 
-.notification-list-v2 > article > div:nth-child(2) {
+.notification-open-action {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 20px;
+  align-items: start;
+  gap: 13px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  padding: 0;
+  cursor: pointer;
+}
+
+.notification-open-action:disabled {
+  cursor: wait;
+}
+
+.notification-open-action:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 5px;
+  border-radius: 4px;
+}
+
+.notification-copy {
   min-width: 0;
 }
 
-.notification-list-v2 > article > div:nth-child(2) > span,
+.notification-copy > span,
 .notification-list-v2 strong,
 .notification-list-v2 p,
 .notification-list-v2 time {
   display: block;
 }
 
-.notification-list-v2 > article > div:nth-child(2) > span {
+.notification-copy > span {
   color: #667085;
   font-size: 10px;
   font-weight: 900;
   text-transform: uppercase;
+}
+
+.notification-open-icon {
+  margin-top: 11px;
+  color: #7a8698;
+}
+
+.notification-open-action:hover .notification-copy strong,
+.notification-open-action:hover .notification-open-icon {
+  color: var(--primary);
 }
 
 .notification-list-v2 strong {
@@ -5943,11 +6069,11 @@ input {
 
 @media (max-width: 720px) {
   .notification-list-v2 > article {
-    grid-template-columns: 40px minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .notification-row-actions {
-    grid-column: 2;
+    margin-left: 53px;
     justify-content: flex-start;
   }
 }

@@ -3,6 +3,7 @@ import {
   Bell,
   BriefcaseBusiness,
   CheckCheck,
+  ExternalLink,
   MessageSquare,
   ShieldCheck,
   Star,
@@ -10,10 +11,15 @@ import {
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
-import type { Notification } from "../domain/notificationTypes";
+import { useAuth } from "../../../shared/auth/AuthContext";
+import {
+  getNotificationDestination,
+  type Notification,
+} from "../domain/notificationTypes";
 import {
   deleteNotificationAsync,
   getMyNotificationsAsync,
@@ -35,6 +41,8 @@ const notificationPresentation: Record<
 };
 
 export default function NotificationsPage() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [filter, setFilter] = useState<NotificationFilter>("all");
   const [isLoading, setIsLoading] = useState(true);
@@ -126,6 +134,23 @@ export default function NotificationsPage() {
     }
   }
 
+  function openNotification(notification: Notification) {
+    const destination = getNotificationDestination(notification, user?.role);
+
+    if (!notification.isRead) {
+      setNotifications((current) =>
+        current.map((item) =>
+          item.id === notification.id ? { ...item, isRead: true } : item,
+        ),
+      );
+      void markNotificationReadAsync(notification.id).catch(() => {
+        // Opening the destination should not be blocked by a read-state error.
+      });
+    }
+
+    navigate(destination);
+  }
+
   return (
     <section className="page portal-notifications-page">
       <PageHeader
@@ -189,17 +214,30 @@ export default function NotificationsPage() {
               key={notification.id}
               className={notification.isRead ? "" : "unread"}
             >
-              <span className="notification-type-icon" aria-hidden="true">
-                <Icon size={18} />
-              </span>
-              <div>
-                <span>{presentation.label}</span>
-                <strong>{notification.title}</strong>
-                <p>{notification.message}</p>
-                <time dateTime={notification.createdAt}>
-                  {new Date(notification.createdAt).toLocaleString()}
-                </time>
-              </div>
+              <button
+                type="button"
+                className="notification-open-action"
+                disabled={busyId === notification.id}
+                onClick={() => openNotification(notification)}
+                aria-label={`Open ${notification.title}`}
+              >
+                <span className="notification-type-icon" aria-hidden="true">
+                  <Icon size={18} />
+                </span>
+                <span className="notification-copy">
+                  <span>{presentation.label}</span>
+                  <strong>{notification.title}</strong>
+                  <p>{notification.message}</p>
+                  <time dateTime={notification.createdAt}>
+                    {new Date(notification.createdAt).toLocaleString()}
+                  </time>
+                </span>
+                <ExternalLink
+                  className="notification-open-icon"
+                  size={17}
+                  aria-hidden="true"
+                />
+              </button>
               <div className="notification-row-actions">
                 {!notification.isRead ? (
                   <Button

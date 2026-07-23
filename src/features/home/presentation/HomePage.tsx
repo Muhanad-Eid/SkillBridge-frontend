@@ -2,13 +2,20 @@ import {
   BriefcaseBusiness,
   Building2,
   CheckCircle2,
+  LayoutDashboard,
   LogIn,
   UserPlus,
 } from "lucide-react";
+import {
+  getRoleHomePath,
+  useAuth,
+} from "../../../shared/auth/AuthContext";
 import Button from "../../../shared/components/Button";
 import BrandIcon from "../../../shared/components/BrandIcon";
 
 export default function HomePage() {
+  const { user } = useAuth();
+
   return (
     <div className="about-page">
       <section className="about-hero">
@@ -19,14 +26,23 @@ export default function HomePage() {
           apply, complete the work, and build their portfolio.
         </p>
         <div className="about-actions">
-          <Button to="/login" variant="secondary">
-            <LogIn size={17} aria-hidden="true" />
-            Log in
-          </Button>
-          <Button to="/register" variant="primary">
-            <UserPlus size={17} aria-hidden="true" />
-            Register
-          </Button>
+          {user ? (
+            <Button to={getRoleHomePath(user.role)} variant="primary">
+              <LayoutDashboard size={17} aria-hidden="true" />
+              Open portal
+            </Button>
+          ) : (
+            <>
+              <Button to="/login" variant="secondary">
+                <LogIn size={17} aria-hidden="true" />
+                Log in
+              </Button>
+              <Button to="/register" variant="primary">
+                <UserPlus size={17} aria-hidden="true" />
+                Register
+              </Button>
+            </>
+          )}
         </div>
       </section>
 

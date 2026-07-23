@@ -219,7 +219,7 @@ export default function UsersPage() {
   return (
     <section className="page admin-list-page">
       <PageHeader
-        title="User accounts"
+        title="Users"
         actions={
           <Button type="button" onClick={startCreate}>
             Add user

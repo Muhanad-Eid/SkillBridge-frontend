@@ -200,7 +200,7 @@ export default function CompanyProfilePage() {
         <div className="company-profile-required" role="status">
           <Building2 size={20} aria-hidden="true" />
           <div>
-            <strong>Complete your profile to open the company workspace.</strong>
+            <strong>Complete your profile to open the company portal.</strong>
             <span>Company name, description, and city are required.</span>
           </div>
         </div>
@@ -237,7 +237,7 @@ export default function CompanyProfilePage() {
                 <p>
                   {profile.isVerified
                     ? "Changing company identity details will require admin verification again."
-                    : "You can use the workspace while waiting, but publishing and reopening opportunities are disabled."}
+                    : "You can use the portal while waiting, but publishing and reopening opportunities are disabled."}
                 </p>
               </div>
             </div>

@@ -20,10 +20,10 @@ import {
 } from "../../applications/domain/applicationTypes";
 import { getCompanyApplicationsAsync } from "../../applications/infrastructure/applicationApi";
 import {
-  getProjectStatusLabel,
+  getProjectDisplayStatusLabel,
+  isApplicationDeadlinePassed,
   ProjectStatuses,
   type Project,
-  type ProjectStatus,
 } from "../../projects/domain/projectTypes";
 import { getMyCompanyProjectsAsync } from "../../projects/infrastructure/projectApi";
 
@@ -31,10 +31,18 @@ type CompanyPortalContext = {
   isCompanyVerified: boolean;
 };
 
-function getStatusTone(status: ProjectStatus) {
-  if (status === ProjectStatuses.Open) return "green";
-  if (status === ProjectStatuses.InProgress) return "blue";
-  if (status === ProjectStatuses.Cancelled) return "red";
+function getStatusTone(
+  project: Pick<Project, "status" | "applicationDeadline">,
+) {
+  if (
+    project.status === ProjectStatuses.Open &&
+    isApplicationDeadlinePassed(project.applicationDeadline)
+  ) {
+    return "amber";
+  }
+  if (project.status === ProjectStatuses.Open) return "green";
+  if (project.status === ProjectStatuses.InProgress) return "blue";
+  if (project.status === ProjectStatuses.Cancelled) return "red";
   return "neutral";
 }
 
@@ -66,7 +74,7 @@ export default function CompanyDashboardPage() {
           setError(
             caughtError instanceof Error
               ? caughtError.message
-              : "Unable to load company workspace.",
+              : "Unable to load the company dashboard.",
           );
         }
       } finally {
@@ -195,11 +203,10 @@ export default function CompanyDashboardPage() {
             <section className="company-panel company-attention-panel">
               <header className="company-panel-header">
                 <div>
-                  <span>Needs attention</span>
                   <h2>Pending applications</h2>
                 </div>
                 <Button to="/company/applications?status=0" variant="secondary">
-                  View pipeline
+                  View applications
                 </Button>
               </header>
 
@@ -241,7 +248,6 @@ export default function CompanyDashboardPage() {
             <aside className="company-quick-actions">
               <header className="company-panel-header">
                 <div>
-                  <span>Workspace</span>
                   <h2>Quick actions</h2>
                 </div>
               </header>
@@ -304,11 +310,10 @@ export default function CompanyDashboardPage() {
           <section className="company-panel">
             <header className="company-panel-header">
               <div>
-                <span>Opportunity performance</span>
-                <h2>Current work</h2>
+                <h2>Opportunities</h2>
               </div>
               <Button to="/company/projects" variant="secondary">
-                Manage all
+                View all
               </Button>
             </header>
 
@@ -333,8 +338,8 @@ export default function CompanyDashboardPage() {
                       <strong>{project.title}</strong>
                       <span>Project #{project.id}</span>
                     </div>
-                    <StatusBadge tone={getStatusTone(project.status)}>
-                      {getProjectStatusLabel(project.status)}
+                    <StatusBadge tone={getStatusTone(project)}>
+                      {getProjectDisplayStatusLabel(project)}
                     </StatusBadge>
                     <strong>{project.applicationsCount}</strong>
                     <span>{project.durationWeeks} weeks</span>

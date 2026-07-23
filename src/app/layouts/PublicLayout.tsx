@@ -19,13 +19,17 @@ export default function PublicLayout() {
 
         <nav className="site-nav" aria-label="Main navigation">
           <NavLink to="/">About</NavLink>
-          <NavLink to="/portal/login">Log in</NavLink>
-          <NavLink to="/register">Register</NavLink>
+          {!user ? (
+            <>
+              <NavLink to="/portal/login">Log in</NavLink>
+              <NavLink to="/register">Register</NavLink>
+            </>
+          ) : null}
         </nav>
 
         {user ? (
           <Button to={getRoleHomePath(user.role)} variant="primary">
-            Dashboard
+            Open portal
           </Button>
         ) : null}
       </header>
@@ -39,7 +43,7 @@ export default function PublicLayout() {
           <BrandIcon />
           <span>
             <strong>SkillBridge</strong>
-            <small>Real opportunities, cleaner applicant proof.</small>
+            <small>Internships, training, and projects</small>
           </span>
         </div>
         <small>2026 SkillBridge</small>
