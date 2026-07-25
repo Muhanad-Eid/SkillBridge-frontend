@@ -3320,27 +3320,41 @@ input {
 
 .about-hero {
   width: 100%;
-  min-height: 420px;
+  min-height: 380px;
   display: grid;
   place-content: center;
   justify-items: center;
   border-bottom: 1px solid #dbe4ee;
   background: #f4f7fb;
-  padding: 40px 24px;
+  padding: 48px 24px;
   text-align: center;
 }
 
+.about-hero-copy {
+  width: min(100%, 680px);
+  display: grid;
+  justify-items: center;
+}
+
 .about-brand-icon {
-  width: 72px;
-  height: 72px;
-  margin-bottom: 18px;
+  width: 68px;
+  height: 68px;
+  margin-bottom: 14px;
   box-shadow: 0 10px 22px rgba(18, 103, 232, 0.18);
 }
 
+.about-eyebrow {
+  color: var(--blue-dark);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
 .about-hero h1 {
-  margin: 0;
+  margin: 8px 0 0;
   color: var(--text);
-  font-size: 44px;
+  font-size: 48px;
   line-height: 1;
   letter-spacing: 0;
 }
@@ -3437,10 +3451,29 @@ input {
 
 .about-workflow-list li {
   min-width: 0;
-  display: grid;
-  gap: 7px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
   border-left: 1px solid #dbe4ee;
   padding: 0 24px;
+}
+
+.about-workflow-list li > b {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #c9d8ea;
+  border-radius: 50%;
+  color: var(--blue-dark);
+  font-size: 12px;
+}
+
+.about-workflow-list li > div {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
 }
 
 .about-workflow-list li:first-child {
@@ -4220,7 +4253,7 @@ input {
   }
 
   .about-hero {
-    min-height: 410px;
+    min-height: 360px;
     padding: 38px 18px;
   }
 

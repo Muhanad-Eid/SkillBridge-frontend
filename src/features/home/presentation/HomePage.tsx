@@ -3,7 +3,7 @@ import {
   Building2,
   CheckCircle2,
   LayoutDashboard,
-  LogIn,
+  Search,
   UserPlus,
 } from "lucide-react";
 import {
@@ -19,30 +19,31 @@ export default function HomePage() {
   return (
     <div className="about-page">
       <section className="about-hero">
-        <BrandIcon className="about-brand-icon" />
-        <h1>SkillBridge</h1>
-        <p>
-          Companies offer internships, training, and project work. Job seekers
-          apply, complete the work, and build their portfolio.
-        </p>
-        <div className="about-actions">
-          {user ? (
-            <Button to={getRoleHomePath(user.role)} variant="primary">
-              <LayoutDashboard size={17} aria-hidden="true" />
-              Open portal
+        <div className="about-hero-copy">
+          <BrandIcon className="about-brand-icon" />
+          <span className="about-eyebrow">Opportunity marketplace</span>
+          <h1>SkillBridge</h1>
+          <p>
+            A focused place for companies to post real opportunities and for
+            job seekers to apply, complete work, and build their portfolio.
+          </p>
+          <div className="about-actions">
+            <Button to="/opportunities" variant="primary">
+              <Search size={17} aria-hidden="true" />
+              Browse opportunities
             </Button>
-          ) : (
-            <>
-              <Button to="/login" variant="secondary">
-                <LogIn size={17} aria-hidden="true" />
-                Log in
+            {user ? (
+              <Button to={getRoleHomePath(user.role)} variant="secondary">
+                <LayoutDashboard size={17} aria-hidden="true" />
+                Open portal
               </Button>
-              <Button to="/register" variant="primary">
+            ) : (
+              <Button to="/register" variant="secondary">
                 <UserPlus size={17} aria-hidden="true" />
                 Register
               </Button>
-            </>
-          )}
+            )}
+          </div>
         </div>
       </section>
 
@@ -59,9 +60,9 @@ export default function HomePage() {
               <h3>Companies</h3>
             </div>
             <ol>
-              <li><strong>Post</strong><span>Create an internship, training offer, or project.</span></li>
-              <li><strong>Select</strong><span>Review profiles and accept applicants.</span></li>
-              <li><strong>Complete</strong><span>Manage the work and submit a review.</span></li>
+              <li><b>1</b><div><strong>Post</strong><span>Create an internship, training offer, or project.</span></div></li>
+              <li><b>2</b><div><strong>Select</strong><span>Review profiles and accept applicants.</span></div></li>
+              <li><b>3</b><div><strong>Complete</strong><span>Manage the work and submit a review.</span></div></li>
             </ol>
           </article>
 
@@ -71,9 +72,9 @@ export default function HomePage() {
               <h3>Job seekers</h3>
             </div>
             <ol>
-              <li><strong>Prepare</strong><span>Add profile details and skills.</span></li>
-              <li><strong>Apply</strong><span>Find opportunities and send an application.</span></li>
-              <li><strong>Build</strong><span>Add completed work to the portfolio.</span></li>
+              <li><b>1</b><div><strong>Prepare</strong><span>Add profile details and skills.</span></div></li>
+              <li><b>2</b><div><strong>Apply</strong><span>Find opportunities and send an application.</span></div></li>
+              <li><b>3</b><div><strong>Build</strong><span>Add completed work to the portfolio.</span></div></li>
             </ol>
           </article>
         </div>
