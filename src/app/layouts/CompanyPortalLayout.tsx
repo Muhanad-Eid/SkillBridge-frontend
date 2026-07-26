@@ -26,6 +26,7 @@ import { useAuth } from "../../shared/auth/AuthContext";
 import Button from "../../shared/components/Button";
 import BrandIcon from "../../shared/components/BrandIcon";
 import ConfirmDialog from "../../shared/components/ConfirmDialog";
+import ThemeToggle from "../../shared/components/ThemeToggle";
 import useSidebarPreference from "../../shared/hooks/useSidebarPreference";
 import {
   isCompanyProfileComplete,
@@ -211,6 +212,7 @@ export default function CompanyPortalLayout() {
           <BrandIcon />
           <span>
             <strong>SkillBridge</strong>
+            <small>Company portal</small>
           </span>
         </Link>
 
@@ -257,6 +259,7 @@ export default function CompanyPortalLayout() {
               <small>{user?.email}</small>
             </span>
           </div>
+          <ThemeToggle className="portal-theme-toggle" />
           <Button
             aria-label="Log out"
             title="Log out"

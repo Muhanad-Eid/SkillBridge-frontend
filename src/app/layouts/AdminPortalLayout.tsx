@@ -25,6 +25,7 @@ import { useAuth } from "../../shared/auth/AuthContext";
 import Button from "../../shared/components/Button";
 import BrandIcon from "../../shared/components/BrandIcon";
 import ConfirmDialog from "../../shared/components/ConfirmDialog";
+import ThemeToggle from "../../shared/components/ThemeToggle";
 import useSidebarPreference from "../../shared/hooks/useSidebarPreference";
 
 type AdminNavItem = {
@@ -181,6 +182,7 @@ export default function AdminPortalLayout() {
               <small>{user?.email}</small>
             </span>
           </div>
+          <ThemeToggle className="portal-theme-toggle" />
           <Button
             aria-label="Log out"
             title="Log out"

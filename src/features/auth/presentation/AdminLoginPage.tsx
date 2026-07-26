@@ -4,6 +4,7 @@ import { useAuth } from "../../../shared/auth/AuthContext";
 import Button from "../../../shared/components/Button";
 import BrandIcon from "../../../shared/components/BrandIcon";
 import Input from "../../../shared/components/Input";
+import ThemeToggle from "../../../shared/components/ThemeToggle";
 import { loginAsync } from "../infrastructure/authApi";
 
 export default function AdminLoginPage() {
@@ -47,6 +48,7 @@ export default function AdminLoginPage() {
 
   return (
     <section className="auth-page auth-simple">
+      <ThemeToggle className="auth-theme-toggle" />
       <form className="auth-card" onSubmit={handleSubmit}>
         <Link className="portal-brand auth-register-brand" to="/">
           <BrandIcon />

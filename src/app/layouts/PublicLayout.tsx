@@ -1,14 +1,20 @@
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
+import { LayoutDashboard } from "lucide-react";
 import { getRoleHomePath, useAuth } from "../../shared/auth/AuthContext";
 import Button from "../../shared/components/Button";
 import BrandIcon from "../../shared/components/BrandIcon";
+import ThemeToggle from "../../shared/components/ThemeToggle";
 
 export default function PublicLayout() {
   const { user } = useAuth();
+  const location = useLocation();
+  const isLandingPage = location.pathname === "/";
 
   return (
     <div className="app-shell public-shell">
-      <header className="site-header">
+      <header
+        className={`site-header ${isLandingPage ? "site-header-landing" : ""}`}
+      >
         <Link className="brand" to="/">
           <BrandIcon />
           <span>
@@ -18,19 +24,26 @@ export default function PublicLayout() {
         </Link>
 
         <nav className="site-nav" aria-label="Main navigation">
-          <NavLink to="/">About</NavLink>
+          <NavLink className="site-nav-home" to="/">
+            About
+          </NavLink>
           <NavLink to="/opportunities">Opportunities</NavLink>
           {!user ? (
             <>
               <NavLink to="/portal/login">Log in</NavLink>
-              <NavLink to="/register">Register</NavLink>
+              <NavLink className="site-register-link" to="/register">
+                Register
+              </NavLink>
             </>
           ) : null}
         </nav>
 
+        <ThemeToggle className="public-theme-toggle" />
+
         {user ? (
           <Button to={getRoleHomePath(user.role)} variant="primary">
-            Open portal
+            <LayoutDashboard size={18} aria-hidden="true" />
+            <span>Open portal</span>
           </Button>
         ) : null}
       </header>
@@ -39,7 +52,9 @@ export default function PublicLayout() {
         <Outlet />
       </main>
 
-      <footer className="site-footer">
+      <footer
+        className={`site-footer ${isLandingPage ? "site-footer-landing" : ""}`}
+      >
         <div className="site-footer-brand">
           <BrandIcon />
           <span>
