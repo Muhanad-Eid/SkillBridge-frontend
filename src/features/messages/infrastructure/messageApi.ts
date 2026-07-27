@@ -26,3 +26,4 @@ export function markMessageReadAsync(messageId: number) {
     method: "PUT",
   });
 }
+//
