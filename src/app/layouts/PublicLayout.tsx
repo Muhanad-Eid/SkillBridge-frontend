@@ -62,7 +62,7 @@ export default function PublicLayout() {
             <small>Internships, training, and projects</small>
           </span>
         </div>
-        <small>2026 SkillBridge</small>
+        <small>@2026 SkillBridge</small>
       </footer>
     </div>
   );
