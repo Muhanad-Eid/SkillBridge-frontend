@@ -255,7 +255,7 @@ export default function ProjectsPage() {
           </article>
           <article>
             <ShieldCheck size={19} aria-hidden="true" />
-            <div><strong>Verified</strong><span>Companies shown here</span></div>
+            <div><strong>Verified</strong><span>Providers shown here</span></div>
           </article>
           <article>
             <FileApplicationCount count={applications.length} />
@@ -269,7 +269,7 @@ export default function ProjectsPage() {
           <Search size={18} aria-hidden="true" />
           <input
             aria-label="Search opportunities"
-            placeholder="Search title, company, or keyword"
+            placeholder="Search title, provider, or keyword"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
@@ -321,8 +321,21 @@ export default function ProjectsPage() {
                     onChange={(event) => setTypeFilter(event.target.value)}
                   >
                     <option value="all">All types</option>
-                    <option value={OpportunityTypes.PaidProject}>Paid projects</option>
-                    <option value={OpportunityTypes.Training}>Training</option>
+                    <option value={OpportunityTypes.ProfessionalProject}>
+                      Professional projects
+                    </option>
+                    <option value={OpportunityTypes.UniversityTraining}>
+                      University training
+                    </option>
+                    <option value={OpportunityTypes.FreelanceTask}>
+                      Freelance tasks
+                    </option>
+                    <option value={OpportunityTypes.SkillDevelopmentChallenge}>
+                      Skill-development challenges
+                    </option>
+                    <option value={OpportunityTypes.TeamProject}>
+                      Team projects
+                    </option>
                   </select>
                 </label>
                 <label>
@@ -422,7 +435,7 @@ export default function ProjectsPage() {
       <div className="jobseeker-results-heading">
         <div>
           <strong>{filteredProjects.length} result{filteredProjects.length === 1 ? "" : "s"}</strong>
-          <span>Only opportunities from verified companies are listed.</span>
+          <span>Only opportunities from verified providers are listed.</span>
         </div>
       </div>
 
@@ -446,7 +459,13 @@ export default function ProjectsPage() {
               </div>
               <div className="jobseeker-opportunity-copy">
                 <div className="jobseeker-opportunity-labels">
-                  <StatusBadge tone={project.type === OpportunityTypes.Training ? "amber" : "blue"}>
+                  <StatusBadge
+                    tone={
+                      project.type === OpportunityTypes.UniversityTraining
+                        ? "amber"
+                        : "blue"
+                    }
+                  >
                     {getOpportunityTypeLabel(project.type)}
                   </StatusBadge>
                   {application ? (
@@ -465,10 +484,17 @@ export default function ProjectsPage() {
                 <p>{project.description}</p>
                 <div className="jobseeker-opportunity-meta">
                   <span><Clock3 size={15} />{project.durationWeeks} weeks</span>
-                  <span><BriefcaseBusiness size={15} />{project.budget ? `$${project.budget}` : "Unpaid training"}</span>
+                  <span>
+                    <BriefcaseBusiness size={15} />
+                    {project.budget
+                      ? `$${project.budget}`
+                      : project.type === OpportunityTypes.UniversityTraining
+                        ? "Unpaid training"
+                        : "No payment listed"}
+                  </span>
                   <span><MapPin size={15} />{getWorkModeLabel(project.workMode)}{project.location ? ` - ${project.location}` : ""}</span>
                   <span><Wrench size={15} />{getExperienceLevelLabel(project.experienceLevel)}</span>
-                  <span><ShieldCheck size={15} />Verified company</span>
+                  <span><ShieldCheck size={15} />Verified provider</span>
                 </div>
                 <div className="project-skill-tags">
                   {project.skills.map((skill) => (

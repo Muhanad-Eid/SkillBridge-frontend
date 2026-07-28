@@ -29,6 +29,8 @@ type ProjectForm = {
   description: string;
   budget: string;
   durationWeeks: string;
+  requiredTrainingHours: string;
+  academicRequirements: string;
   type: OpportunityType;
   status: ProjectStatus;
 };
@@ -39,7 +41,9 @@ const emptyProjectForm: ProjectForm = {
   description: "",
   budget: "",
   durationWeeks: "1",
-  type: OpportunityTypes.PaidProject,
+  requiredTrainingHours: "",
+  academicRequirements: "",
+  type: OpportunityTypes.ProfessionalProject,
   status: ProjectStatuses.Open,
 };
 
@@ -169,6 +173,8 @@ export default function AdminProjectsPage() {
       description: project.description,
       budget: project.budget?.toString() ?? "",
       durationWeeks: project.durationWeeks.toString(),
+      requiredTrainingHours: project.requiredTrainingHours?.toString() ?? "",
+      academicRequirements: project.academicRequirements ?? "",
       type: project.type,
       status: project.status,
     });
@@ -188,11 +194,35 @@ export default function AdminProjectsPage() {
     setError("");
 
     try {
+      const requiredTrainingHours = form.requiredTrainingHours.trim()
+        ? Number(form.requiredTrainingHours)
+        : null;
+
+      if (
+        form.type === OpportunityTypes.UniversityTraining &&
+        (!requiredTrainingHours ||
+          requiredTrainingHours < 1 ||
+          !form.academicRequirements.trim())
+      ) {
+        setError(
+          "University Training requires training hours and academic requirements.",
+        );
+        return;
+      }
+
       const request = {
         title: form.title.trim(),
         description: form.description.trim(),
         budget: form.budget.trim() ? Number(form.budget) : null,
         durationWeeks: Number(form.durationWeeks),
+        requiredTrainingHours:
+          form.type === OpportunityTypes.UniversityTraining
+            ? requiredTrainingHours
+            : null,
+        academicRequirements:
+          form.type === OpportunityTypes.UniversityTraining
+            ? form.academicRequirements.trim()
+            : null,
         type: form.type,
         status: form.status,
       };
@@ -296,14 +326,14 @@ export default function AdminProjectsPage() {
             <span>{mode === "create" ? "Add project" : "Edit project"}</span>
             <strong>
               {mode === "create"
-                ? "Create a company opportunity"
+                ? "Create a provider opportunity"
                 : editingProject?.title}
             </strong>
           </div>
           <div className="form-grid">
             {mode === "create" ? (
               <label className="field">
-                <span>Company</span>
+                <span>Provider</span>
                 <select
                   value={form.companyId}
                   onChange={(event) =>
@@ -315,7 +345,7 @@ export default function AdminProjectsPage() {
                   required
                 >
                   {companies.length === 0 ? (
-                    <option value="">No companies available</option>
+                    <option value="">No providers available</option>
                   ) : null}
                   {companies.map((company) => (
                     <option key={company.id} value={company.id}>
@@ -380,8 +410,19 @@ export default function AdminProjectsPage() {
                   }))
                 }
               >
-                <option value={OpportunityTypes.PaidProject}>Paid project</option>
-                <option value={OpportunityTypes.Training}>Training</option>
+                <option value={OpportunityTypes.ProfessionalProject}>
+                  Professional project
+                </option>
+                <option value={OpportunityTypes.UniversityTraining}>
+                  University training
+                </option>
+                <option value={OpportunityTypes.FreelanceTask}>
+                  Freelance task
+                </option>
+                <option value={OpportunityTypes.SkillDevelopmentChallenge}>
+                  Skill-development challenge
+                </option>
+                <option value={OpportunityTypes.TeamProject}>Team project</option>
               </select>
             </label>
             <label className="field">
@@ -401,6 +442,39 @@ export default function AdminProjectsPage() {
                 <option value={ProjectStatuses.Cancelled}>Cancelled</option>
               </select>
             </label>
+            {form.type === OpportunityTypes.UniversityTraining ? (
+              <>
+                <label className="field">
+                  <span>Required training hours</span>
+                  <input
+                    min="1"
+                    max="2000"
+                    type="number"
+                    value={form.requiredTrainingHours}
+                    onChange={(event) =>
+                      setForm((current) => ({
+                        ...current,
+                        requiredTrainingHours: event.target.value,
+                      }))
+                    }
+                    required
+                  />
+                </label>
+                <label className="field">
+                  <span>Academic requirements</span>
+                  <textarea
+                    value={form.academicRequirements}
+                    onChange={(event) =>
+                      setForm((current) => ({
+                        ...current,
+                        academicRequirements: event.target.value,
+                      }))
+                    }
+                    required
+                  />
+                </label>
+              </>
+            ) : null}
           </div>
           <label className="field">
             <span>Description</span>

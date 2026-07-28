@@ -144,12 +144,20 @@ export default function CompanyPortalLayout() {
 
   const profileIsComplete = isCompanyProfileComplete(profile);
   const isCompanyVerified = Boolean(profile?.isVerified);
+  const isTrainingProvider = profile?.providerType === 1;
+  const providerLabel = isTrainingProvider ? "Training provider" : "Company";
+  const providerLabelLower = providerLabel.toLowerCase();
   const isProfileRoute = location.pathname === "/company/profile";
   const isSecurityRoute = location.pathname === "/company/security";
   const isAccountSetupRoute = isProfileRoute || isSecurityRoute;
+  const availableNavItems = companyNavItems.map((item) =>
+    item.to === "/company/profile"
+      ? { ...item, label: `${providerLabel} profile` }
+      : item,
+  );
   const navItems = profileIsComplete
-    ? companyNavItems
-    : companyNavItems.filter(
+    ? availableNavItems
+    : availableNavItems.filter(
         (item) => item.to === "/company/profile" || item.to === "/company/security",
       );
   const closeLogoutDialog = useCallback(
@@ -212,7 +220,7 @@ export default function CompanyPortalLayout() {
           <BrandIcon />
           <span>
             <strong>SkillBridge</strong>
-            <small>Company portal</small>
+            <small>{providerLabel} portal</small>
           </span>
         </Link>
 
@@ -221,15 +229,20 @@ export default function CompanyPortalLayout() {
             <Building2 size={19} />
           </span>
           <div>
-            <strong>{profile?.companyName || user?.fullName || "Company"}</strong>
+            <strong>{profile?.companyName || user?.fullName || providerLabel}</strong>
             <small>
-              {isCompanyVerified ? "Verified company" : "Verification pending"}
+              {isCompanyVerified
+                ? `Verified ${providerLabelLower}`
+                : "Verification pending"}
             </small>
           </div>
           {isCompanyVerified ? <ShieldCheck size={18} aria-label="Verified" /> : null}
         </div>
 
-        <nav className="company-sidebar-nav" aria-label="Company navigation">
+        <nav
+          className="company-sidebar-nav"
+          aria-label={`${providerLabel} navigation`}
+        >
           {navItems.map((item) => {
             const Icon = item.icon;
             const badgeCount =
@@ -292,7 +305,8 @@ export default function CompanyPortalLayout() {
             <div>
               <strong>Admin verification is required to publish.</strong>
               <span>
-                You can view your account while your company profile is pending.
+                You can view your account while your {providerLabelLower} profile
+                is pending.
               </span>
             </div>
             <Button to="/company/profile" variant="secondary">

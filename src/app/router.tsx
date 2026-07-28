@@ -3,6 +3,7 @@ import AdminPortalLayout from "./layouts/AdminPortalLayout";
 import CompanyPortalLayout from "./layouts/CompanyPortalLayout";
 import JobSeekerPortalLayout from "./layouts/JobSeekerPortalLayout";
 import PublicLayout from "./layouts/PublicLayout";
+import UniversityPortalLayout from "./layouts/UniversityPortalLayout";
 import RequireGuest from "../shared/auth/RequireGuest";
 import RequireRole from "../shared/auth/RequireRole";
 import AdminApplicationsPage from "../features/admin/presentation/AdminApplicationsPage";
@@ -37,6 +38,7 @@ import ProjectDetailsPage from "../features/projects/presentation/ProjectDetails
 import ProjectsPage from "../features/projects/presentation/ProjectsPage";
 import SkillsPage from "../features/skills/presentation/SkillsPage";
 import WorkHubPage from "../features/work/presentation/WorkHubPage";
+import UniversityTrainingPage from "../features/work/presentation/UniversityTrainingPage";
 
 export const router = createBrowserRouter([
   {
@@ -126,6 +128,20 @@ export const router = createBrowserRouter([
       { path: "portfolio", element: <PortfolioPage /> },
       { path: "reviews", element: <JobSeekerReviewsPage /> },
       { path: "messages", element: <MessagesPage /> },
+      { path: "notifications", element: <NotificationsPage /> },
+      { path: "security", element: <ChangePasswordPage /> },
+    ],
+  },
+  {
+    path: "/university",
+    element: (
+      <RequireRole allowedRoles={["UniversitySupervisor"]}>
+        <UniversityPortalLayout />
+      </RequireRole>
+    ),
+    children: [
+      { index: true, element: <Navigate to="/university/training" replace /> },
+      { path: "training", element: <UniversityTrainingPage /> },
       { path: "notifications", element: <NotificationsPage /> },
       { path: "security", element: <ChangePasswordPage /> },
     ],

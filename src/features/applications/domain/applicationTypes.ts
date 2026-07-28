@@ -12,16 +12,34 @@ export type Application = {
   id: number;
   projectId: number;
   projectTitle: string;
-  jobSeekerId: number;
+  jobSeekerId: number | null;
   jobSeekerName: string;
   coverLetter: string | null;
+  workSampleUrl: string | null;
+  shortTaskResponse: string | null;
+  isIdentityHidden: boolean;
+  submittedAt: string;
+  workStatus: WorkSubmissionStatus;
   status: ApplicationStatus;
   
 };
 
 export type CreateApplicationRequest = {
   coverLetter?: string;
+  workSampleUrl?: string;
+  shortTaskResponse?: string;
 };
+
+export const WorkSubmissionStatuses = {
+  NotSubmitted: 0,
+  Submitted: 1,
+  ChangesRequested: 2,
+  AwaitingUniversityApproval: 3,
+  Approved: 4,
+} as const;
+
+export type WorkSubmissionStatus =
+  (typeof WorkSubmissionStatuses)[keyof typeof WorkSubmissionStatuses];
 
 export type UpdateApplicationStatusRequest = {
   status: ApplicationStatus;

@@ -33,6 +33,7 @@ export default function CompaniesPage() {
     city: "",
     website: "",
     isVerified: false,
+    providerType: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -98,6 +99,7 @@ export default function CompaniesPage() {
       city: company.city ?? "",
       website: company.website ?? "",
       isVerified: company.isVerified,
+      providerType: company.providerType ?? 0,
     });
     setError("");
   }

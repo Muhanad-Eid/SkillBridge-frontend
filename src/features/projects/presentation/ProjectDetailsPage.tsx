@@ -35,6 +35,7 @@ import {
   getOpportunityTypeLabel,
   getWorkModeLabel,
   isProjectAcceptingApplications,
+  OpportunityTypes,
   type Project,
 } from "../domain/projectTypes";
 import { getProjectAsync, getProjectsAsync } from "../infrastructure/projectApi";
@@ -48,6 +49,8 @@ export default function ProjectDetailsPage() {
   const [mySkills, setMySkills] = useState<Skill[]>([]);
   const [existingApplication, setExistingApplication] = useState<Application | null>(null);
   const [coverLetter, setCoverLetter] = useState("");
+  const [workSampleUrl, setWorkSampleUrl] = useState("");
+  const [shortTaskResponse, setShortTaskResponse] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isApplying, setIsApplying] = useState(false);
   const [error, setError] = useState("");
@@ -132,15 +135,24 @@ export default function ProjectDetailsPage() {
     event.preventDefault();
     if (!project || !isAcceptingApplications || existingApplication) return;
 
+    if (!workSampleUrl.trim() && !shortTaskResponse.trim()) {
+      setMessage("Add a work sample or complete the short application task.");
+      return;
+    }
+
     setIsApplying(true);
     setMessage("");
 
     try {
       const application = await applyToProjectAsync(project.id, {
         coverLetter: coverLetter.trim() || undefined,
+        workSampleUrl: workSampleUrl.trim() || undefined,
+        shortTaskResponse: shortTaskResponse.trim() || undefined,
       });
       setExistingApplication(application);
       setCoverLetter("");
+      setWorkSampleUrl("");
+      setShortTaskResponse("");
       setMessage("Application submitted successfully.");
     } catch (caughtError) {
       setMessage(
@@ -196,7 +208,7 @@ export default function ProjectDetailsPage() {
               </section>
 
               <section>
-                <h2>Requirements and outcomes</h2>
+                <h2>Requirements</h2>
                 <p>{project.requirements}</p>
                 <div className="project-requirement-groups">
                   <div>
@@ -220,11 +232,53 @@ export default function ProjectDetailsPage() {
                 </div>
               </section>
 
+              {project.deliverables?.trim() ? (
+                <section>
+                <h2>Deliverables</h2>
+                <p>{project.deliverables}</p>
+                </section>
+              ) : null}
+
+              {project.milestonePlan?.trim() ? (
+                <section>
+                <h2>Milestone plan</h2>
+                <p>{project.milestonePlan}</p>
+                </section>
+              ) : null}
+
+              {project.evaluationCriteria?.trim() ||
+              project.requiredTrainingHours ? (
+                <section>
+                <h2>How the work will be evaluated</h2>
+                {project.evaluationCriteria?.trim() ? (
+                  <p>{project.evaluationCriteria}</p>
+                ) : null}
+                {project.requiredTrainingHours ? (
+                  <p>
+                    <strong>{project.requiredTrainingHours} training hours</strong>
+                    {project.academicRequirements
+                      ? ` · ${project.academicRequirements}`
+                      : ""}
+                  </p>
+                ) : null}
+                </section>
+              ) : null}
+
               <section>
                 <h2>Commitment and details</h2>
                 <div className="jobseeker-opportunity-facts">
                   <article><Clock3 size={19} /><span>Duration</span><strong>{project.durationWeeks} weeks</strong></article>
-                  <article><BriefcaseBusiness size={19} /><span>Budget</span><strong>{project.budget ? `$${project.budget}` : "Unpaid training"}</strong></article>
+                  <article>
+                    <BriefcaseBusiness size={19} />
+                    <span>Budget</span>
+                    <strong>
+                      {project.budget
+                        ? `$${project.budget}`
+                        : project.type === OpportunityTypes.UniversityTraining
+                          ? "Unpaid training"
+                          : "No payment listed"}
+                    </strong>
+                  </article>
                   <article><MapPin size={19} /><span>Work mode</span><strong>{getWorkModeLabel(project.workMode)}{project.location ? ` - ${project.location}` : ""}</strong></article>
                   <article><Wrench size={19} /><span>Experience</span><strong>{getExperienceLevelLabel(project.experienceLevel)}</strong></article>
                   <article><UsersRound size={19} /><span>Open positions</span><strong>{project.positionsAvailable}</strong></article>
@@ -237,9 +291,9 @@ export default function ProjectDetailsPage() {
                   {project.companyName.trim().charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <span>About the company</span>
+                  <span>About the provider</span>
                   <h2>{project.companyName}</h2>
-                  <p>{companyProfile?.description ?? "The company has not added a public description."}</p>
+                  <p>{companyProfile?.description ?? "The provider has not added a public description."}</p>
                   <div>
                     {companyProfile?.city ? <span><MapPin size={14} />{companyProfile.city}</span> : null}
                     {companyProfile?.isVerified ? <span><ShieldCheck size={14} />Verified by SkillBridge</span> : null}
@@ -248,7 +302,7 @@ export default function ProjectDetailsPage() {
                     <div className="jobseeker-company-actions">
                       <Button to={companyMessagePath} variant="secondary">
                         <MessageSquare size={16} aria-hidden="true" />
-                        Chat with company
+                        Chat with provider
                       </Button>
                     </div>
                   ) : null}
@@ -278,9 +332,9 @@ export default function ProjectDetailsPage() {
                   <CheckCircle2 size={30} aria-hidden="true" />
                   <span>Application submitted</span>
                   <h2>{getApplicationStatusLabel(existingApplication.status)}</h2>
-                  <p>Your application was sent to the company. Follow its status from Applications.</p>
+                  <p>Your application was sent to the provider. Follow its status from Applications.</p>
                   <Button to="/job-seeker/applications" variant="primary">
-                    View application
+                    Track application
                   </Button>
                 </div>
               ) : !isAcceptingApplications ? (
@@ -307,6 +361,31 @@ export default function ProjectDetailsPage() {
                     />
                     <small>{coverLetter.length}/1500 characters</small>
                   </label>
+                  <label className="field">
+                    <span>Work sample link</span>
+                    <input
+                      type="url"
+                      value={workSampleUrl}
+                      onChange={(event) => setWorkSampleUrl(event.target.value)}
+                      placeholder="https://github.com/you/project"
+                      maxLength={500}
+                    />
+                  </label>
+                  <label className="field">
+                    <span>Short application task</span>
+                    <textarea
+                      value={shortTaskResponse}
+                      onChange={(event) =>
+                        setShortTaskResponse(event.target.value)
+                      }
+                      placeholder="Describe how you would approach the requested work."
+                      maxLength={3000}
+                    />
+                    <small>
+                      Add a work sample or complete this short task. You do not
+                      need both.
+                    </small>
+                  </label>
                   {message ? <div className="notice">{message}</div> : null}
                   <Button
                     type="submit"
@@ -315,7 +394,9 @@ export default function ProjectDetailsPage() {
                   >
                     Submit application
                   </Button>
-                  <small>Your profile, skills, and portfolio are shared with the company.</small>
+                  <small>
+                    Selected personal details stay hidden during the first review.
+                  </small>
                 </form>
               ) : user ? (
                 <div className="jobseeker-applied-state">

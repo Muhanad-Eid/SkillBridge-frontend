@@ -201,5 +201,9 @@ export function getRoleHomePath(role?: unknown) {
     return "/admin/dashboard";
   }
 
+  if (normalizedRole === "UniversitySupervisor") {
+    return "/university/training";
+  }
+
   return "/login";
 }

@@ -5,6 +5,7 @@ import {
   Building2,
   CheckCircle2,
   ClipboardCheck,
+  GraduationCap,
   LayoutDashboard,
   MessageSquare,
   Search,
@@ -16,16 +17,22 @@ import {
 } from "../../../shared/auth/AuthContext";
 import Button from "../../../shared/components/Button";
 
-const companyFeatures = [
+const providerFeatures = [
   "Post internships, training, and project work",
-  "Review applications and choose the right person",
-  "Follow the work and leave a final review",
+  "Review submitted evidence before profile details",
+  "Track milestones and approve completed results",
 ];
 
-const jobSeekerFeatures = [
+const individualFeatures = [
   "Find opportunities that match your skills",
-  "Track applications and speak with companies",
-  "Turn completed work into portfolio experience",
+  "Apply with previous work or a short task",
+  "Choose which approved Evidence Cards to share",
+];
+
+const universityFeatures = [
+  "Monitor student progress and training hours",
+  "Confirm academic requirements and outcomes",
+  "Share final approval with the training provider",
 ];
 
 export default function HomePage() {
@@ -45,8 +52,8 @@ export default function HomePage() {
               Real opportunities. Experience you can prove.
             </p>
             <p className="landing-description">
-              Companies post work they need. Job seekers apply, complete it,
-              and build experience they can show.
+              Verified providers offer practical work. Individuals complete it
+              and build approved evidence they can choose to share.
             </p>
 
             <div className="landing-actions">
@@ -102,25 +109,28 @@ export default function HomePage() {
             <li>
               <span className="landing-step-number">01</span>
               <Building2 size={28} aria-hidden="true" />
-              <h3>Post the work</h3>
+              <h3>Define the opportunity</h3>
               <p>
-                A company adds the role, required skills, and deadline.
+                A verified provider sets the skills, deliverables, milestones,
+                deadline, and evaluation criteria.
               </p>
             </li>
             <li>
               <span className="landing-step-number">02</span>
               <BriefcaseBusiness size={28} aria-hidden="true" />
-              <h3>Apply and connect</h3>
+              <h3>Apply with evidence</h3>
               <p>
-                Job seekers apply with their profile, skills, and portfolio.
+                Individuals provide previous work or complete a short task.
+                Selected personal details stay hidden during the first review.
               </p>
             </li>
             <li>
               <span className="landing-step-number">03</span>
               <BadgeCheck size={28} aria-hidden="true" />
-              <h3>Complete and keep it</h3>
+              <h3>Complete and approve</h3>
               <p>
-                Finished work becomes a review and visible experience.
+                Approved work creates a private Skill Evidence Card that the
+                individual can share from their portfolio.
               </p>
             </li>
           </ol>
@@ -130,8 +140,8 @@ export default function HomePage() {
       <section className="landing-audience" aria-labelledby="audience-title">
         <div className="landing-section-inner">
           <header className="landing-section-heading">
-            <p>Built for both sides</p>
-            <h2 id="audience-title">The tools each person needs.</h2>
+            <p>One connected process</p>
+            <h2 id="audience-title">Clear roles from start to approval.</h2>
           </header>
 
           <div className="landing-audience-grid">
@@ -139,13 +149,13 @@ export default function HomePage() {
               <div className="landing-audience-icon landing-audience-icon-company">
                 <Building2 size={26} aria-hidden="true" />
               </div>
-              <span>For companies</span>
-              <h3>Find people ready to contribute.</h3>
+              <span>For verified providers</span>
+              <h3>Manage practical work clearly.</h3>
               <p>
                 Manage an opportunity from the first post to the final review.
               </p>
               <ul>
-                {companyFeatures.map((feature) => (
+                {providerFeatures.map((feature) => (
                   <li key={feature}>
                     <CheckCircle2 size={18} aria-hidden="true" />
                     {feature}
@@ -158,13 +168,32 @@ export default function HomePage() {
               <div className="landing-audience-icon landing-audience-icon-jobseeker">
                 <BriefcaseBusiness size={26} aria-hidden="true" />
               </div>
-              <span>For job seekers</span>
+              <span>For individuals</span>
               <h3>Build experience through real work.</h3>
               <p>
-                Move from finding an opportunity to showing what you completed.
+                Move from finding an opportunity to sharing approved evidence.
               </p>
               <ul>
-                {jobSeekerFeatures.map((feature) => (
+                {individualFeatures.map((feature) => (
+                  <li key={feature}>
+                    <CheckCircle2 size={18} aria-hidden="true" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </article>
+
+            <article>
+              <div className="landing-audience-icon landing-audience-icon-university">
+                <GraduationCap size={26} aria-hidden="true" />
+              </div>
+              <span>For universities</span>
+              <h3>Follow supervised training.</h3>
+              <p>
+                Keep academic monitoring connected to the company placement.
+              </p>
+              <ul>
+                {universityFeatures.map((feature) => (
                   <li key={feature}>
                     <CheckCircle2 size={18} aria-hidden="true" />
                     {feature}

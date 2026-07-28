@@ -21,6 +21,7 @@ export type AdminCompany = {
   city: string | null;
   website: string | null;
   isVerified: boolean;
+  providerType: 0 | 1;
   projectsCount: number;
   applicationsCount: number;
 };
@@ -51,6 +52,8 @@ export type AdminProject = {
   status: ProjectStatus;
   budget: number | null;
   durationWeeks: number;
+  requiredTrainingHours: number | null;
+  academicRequirements: string | null;
   applicationsCount: number;
 };
 
@@ -90,6 +93,7 @@ export const AdminUserRoles = {
   Admin: 1,
   Company: 2,
   JobSeeker: 3,
+  UniversitySupervisor: 4,
 } as const;
 
 export type AdminUserRole =
@@ -102,6 +106,9 @@ export type CreateAdminUserRequest = {
   password: string;
   role: AdminUserRole;
   companyName?: string | null;
+  providerType?: 0 | 1;
+  universityName?: string | null;
+  department?: string | null;
 };
 
 export type CreateAdminProjectRequest = {
@@ -112,6 +119,8 @@ export type CreateAdminProjectRequest = {
   durationWeeks: number;
   type: OpportunityType;
   status: ProjectStatus;
+  requiredTrainingHours?: number | null;
+  academicRequirements?: string | null;
 };
 
 export type CreateAdminSkillRequest = {
@@ -130,6 +139,7 @@ export type UpdateAdminCompanyRequest = {
   city?: string | null;
   website?: string | null;
   isVerified: boolean;
+  providerType: 0 | 1;
 };
 
 export type UpdateAdminJobSeekerRequest = {
@@ -146,6 +156,8 @@ export type UpdateAdminProjectRequest = {
   durationWeeks: number;
   type: OpportunityType;
   status: ProjectStatus;
+  requiredTrainingHours?: number | null;
+  academicRequirements?: string | null;
 };
 
 export type UpdateAdminApplicationStatusRequest = {

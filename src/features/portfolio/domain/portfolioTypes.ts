@@ -15,6 +15,12 @@ export type PortfolioItem = {
   skills: PortfolioSkill[];
   description: string | null;
   projectUrl: string | null;
+  contribution: string | null;
+  evaluationResult: string | null;
+  evaluatorName: string | null;
+  approvedAt: string | null;
+  isVisible: boolean;
+  isEvidenceCard: boolean;
   reviewRating: number | null;
   reviewComment: string | null;
 };
@@ -33,6 +39,7 @@ export type CreatePortfolioItemRequest = {
 };
 
 export type UpdatePortfolioItemRequest = {
-  description: string;
+  description?: string;
   projectUrl?: string;
+  isVisible: boolean;
 };

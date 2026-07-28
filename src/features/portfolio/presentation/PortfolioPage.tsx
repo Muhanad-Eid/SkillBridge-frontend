@@ -1,89 +1,40 @@
+import { useEffect, useMemo, useState } from "react";
 import {
-  type FormEvent,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { CheckCircle2, Plus, X } from "lucide-react";
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  ExternalLink,
+  FileCheck2,
+  ShieldCheck,
+} from "lucide-react";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
-import Input from "../../../shared/components/Input";
 import PageHeader from "../../../shared/components/PageHeader";
-import type {
-  EligiblePortfolioProject,
-  PortfolioItem,
-} from "../domain/portfolioTypes";
+import StatusBadge from "../../../shared/components/StatusBadge";
+import { getOpportunityTypeLabel } from "../../projects/domain/projectTypes";
+import type { PortfolioItem } from "../domain/portfolioTypes";
 import {
-  createPortfolioItemAsync,
-  deletePortfolioItemAsync,
-  getEligiblePortfolioProjectsAsync,
   getMyPortfolioAsync,
   updatePortfolioItemAsync,
 } from "../infrastructure/portfolioApi";
-import PortfolioGallery from "./PortfolioGallery";
-
-type PortfolioForm = {
-  projectId: string;
-  description: string;
-  projectUrl: string;
-};
-
-const emptyForm: PortfolioForm = {
-  projectId: "",
-  description: "",
-  projectUrl: "",
-};
 
 export default function PortfolioPage() {
-  const requestedProjectIdRef = useRef(
-    new URLSearchParams(window.location.search).get("projectId"),
-  );
   const [items, setItems] = useState<PortfolioItem[]>([]);
-  const [eligibleProjects, setEligibleProjects] = useState<
-    EligiblePortfolioProject[]
-  >([]);
-  const [editingItem, setEditingItem] = useState<PortfolioItem | null>(null);
-  const [isEditorOpen, setIsEditorOpen] = useState(false);
-  const [form, setForm] = useState<PortfolioForm>(emptyForm);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
+  const [busyItemId, setBusyItemId] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
   async function loadPortfolio() {
     setIsLoading(true);
     setError("");
-
     try {
-      const [portfolioItems, projects] = await Promise.all([
-        getMyPortfolioAsync(),
-        getEligiblePortfolioProjectsAsync(),
-      ]);
-
-      setItems(portfolioItems);
-      setEligibleProjects(projects);
-
-      const requestedProjectId = Number(requestedProjectIdRef.current);
-      const requestedProject = projects.find(
-        (project) => project.projectId === requestedProjectId,
-      );
-
-      if (requestedProject) {
-        setEditingItem(null);
-        setForm({
-          ...emptyForm,
-          projectId: requestedProject.projectId.toString(),
-        });
-        setIsEditorOpen(true);
-      }
-
-      requestedProjectIdRef.current = null;
+      setItems(await getMyPortfolioAsync());
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
           ? caughtError.message
-          : "Unable to load portfolio.",
+          : "Unable to load the Evidence Portfolio.",
       );
     } finally {
       setIsLoading(false);
@@ -91,280 +42,169 @@ export default function PortfolioPage() {
   }
 
   useEffect(() => {
-    const timeoutId = window.setTimeout(loadPortfolio, 0);
+    const timeoutId = window.setTimeout(() => void loadPortfolio(), 0);
     return () => window.clearTimeout(timeoutId);
   }, []);
 
-  const portfolioStats = useMemo(
+  const stats = useMemo(
     () => ({
       total: items.length,
-      reviewed: items.filter((item) => item.reviewRating !== null).length,
-      ready: eligibleProjects.length,
+      shared: items.filter((item) => item.isVisible).length,
+      evaluated: items.filter((item) => item.evaluationResult).length,
     }),
-    [eligibleProjects.length, items],
+    [items],
   );
 
-  const selectedProject = eligibleProjects.find(
-    (project) => project.projectId === Number(form.projectId),
-  );
-
-  function closeEditor() {
-    setEditingItem(null);
-    setIsEditorOpen(false);
-    setForm(emptyForm);
-  }
-
-  function startCreate() {
-    if (eligibleProjects.length === 0) {
-      return;
-    }
-
-    setEditingItem(null);
-    setForm({
-      ...emptyForm,
-      projectId: eligibleProjects[0].projectId.toString(),
-    });
-    setMessage("");
+  async function changeVisibility(item: PortfolioItem) {
+    setBusyItemId(item.id);
     setError("");
-    setIsEditorOpen(true);
-  }
-
-  function startEdit(item: PortfolioItem) {
-    setEditingItem(item);
-    setForm({
-      projectId: item.projectId.toString(),
-      description: item.description ?? "",
-      projectUrl: item.projectUrl ?? "",
-    });
     setMessage("");
-    setError("");
-    setIsEditorOpen(true);
-  }
-
-  async function handleSave(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setIsSaving(true);
-    setMessage("");
-    setError("");
-
     try {
-      const request = {
-        description: form.description.trim(),
-        projectUrl: form.projectUrl.trim() || undefined,
-      };
-
-      if (editingItem) {
-        await updatePortfolioItemAsync(editingItem.id, request);
-        setMessage("Portfolio item updated.");
-      } else {
-        await createPortfolioItemAsync({
-          projectId: Number(form.projectId),
-          ...request,
-        });
-        setMessage("Completed work added to your portfolio.");
-      }
-
-      closeEditor();
+      await updatePortfolioItemAsync(item.id, {
+        description: item.description ?? undefined,
+        projectUrl: item.projectUrl ?? undefined,
+        isVisible: !item.isVisible,
+      });
+      setMessage(
+        item.isVisible
+          ? "Evidence card is now private."
+          : "Evidence card is now visible in your shared portfolio.",
+      );
       await loadPortfolio();
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
           ? caughtError.message
-          : "Unable to save the portfolio item.",
+          : "Unable to update sharing.",
       );
     } finally {
-      setIsSaving(false);
-    }
-  }
-
-  async function handleDelete(item: PortfolioItem) {
-    const confirmed = window.confirm(
-      `Delete the portfolio item for "${item.projectTitle}"?`,
-    );
-
-    if (!confirmed) return;
-
-    setMessage("");
-    setError("");
-
-    try {
-      await deletePortfolioItemAsync(item.id);
-      if (editingItem?.id === item.id) closeEditor();
-      setMessage("Portfolio item deleted.");
-      await loadPortfolio();
-    } catch (caughtError) {
-      setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Unable to delete the portfolio item.",
-      );
+      setBusyItemId(null);
     }
   }
 
   return (
-    <section className="page portfolio-page portfolio-page-v2">
-      <PageHeader
-        title="Portfolio"
-        actions={
-          <Button
-            type="button"
-            onClick={startCreate}
-            disabled={eligibleProjects.length === 0 || isLoading}
-          >
-            <Plus size={17} aria-hidden="true" />
-            Add completed work
-          </Button>
-        }
-      />
+    <section className="page portfolio-page portfolio-evidence-page">
+      <PageHeader title="Evidence Portfolio" />
 
       <div className="portfolio-summary-grid">
-        <article><span>Portfolio items</span><strong>{portfolioStats.total}</strong></article>
-        <article><span>Company reviews</span><strong>{portfolioStats.reviewed}</strong></article>
-        <article><span>Ready to add</span><strong>{portfolioStats.ready}</strong></article>
+        <article>
+          <span>Evidence cards</span>
+          <strong>{stats.total}</strong>
+        </article>
+        <article>
+          <span>Shared</span>
+          <strong>{stats.shared}</strong>
+        </article>
+        <article>
+          <span>With evaluation</span>
+          <strong>{stats.evaluated}</strong>
+        </article>
+      </div>
+
+      <div className="portfolio-guidance-band">
+        <ShieldCheck size={22} aria-hidden="true" />
+        <div>
+          <strong>Evidence comes from approved SkillBridge work.</strong>
+          <span>
+            Cards are private when created. You decide which approved records
+            appear in your shared portfolio.
+          </span>
+        </div>
       </div>
 
       {message ? <div className="notice notice-success">{message}</div> : null}
-      {error && !isLoading ? <div className="notice notice-error">{error}</div> : null}
+      {error ? <div className="notice notice-error">{error}</div> : null}
 
-      {!isLoading && eligibleProjects.length === 0 ? (
-        <div className="portfolio-guidance-band">
-          <CheckCircle2 size={21} aria-hidden="true" />
-          <div>
-            <strong>Portfolio items come from completed opportunities</strong>
-            <p>
-              After a company accepts you and marks the opportunity complete,
-              you can document that work here. This keeps every item verified.
-            </p>
-          </div>
-        </div>
-      ) : null}
+      <DataState
+        isLoading={isLoading}
+        error={items.length === 0 ? error : ""}
+        empty={!isLoading && !error && items.length === 0}
+        emptyTitle="No approved evidence yet"
+        emptyDescription="Complete accepted work and receive final provider approval. The evidence card will appear here automatically."
+      />
 
-      {isEditorOpen ? (
-        <section className="portfolio-editor-panel" aria-labelledby="portfolio-editor-title">
-          <header>
-            <div>
-              <span>{editingItem ? "Edit item" : "New item"}</span>
-              <h2 id="portfolio-editor-title">
-                {editingItem ? editingItem.projectTitle : "Add completed work"}
-              </h2>
-            </div>
-            <Button
-              type="button"
-              variant="ghost"
-              aria-label="Close portfolio editor"
-              title="Close"
-              onClick={closeEditor}
-            >
-              <X size={19} aria-hidden="true" />
-            </Button>
-          </header>
-
-          <form onSubmit={handleSave}>
-            <label className="field">
-              <span>Completed opportunity</span>
-              <select
-                value={form.projectId}
-                onChange={(event) =>
-                  setForm((current) => ({
-                    ...current,
-                    projectId: event.target.value,
-                  }))
-                }
-                disabled={Boolean(editingItem)}
-                required
-              >
-                {editingItem ? (
-                  <option value={editingItem.projectId}>
-                    {editingItem.projectTitle} - {editingItem.companyName}
-                  </option>
-                ) : (
-                  eligibleProjects.map((project) => (
-                    <option key={project.projectId} value={project.projectId}>
-                      {project.projectTitle} - {project.companyName}
-                    </option>
-                  ))
-                )}
-              </select>
-            </label>
-
-            {selectedProject && selectedProject.skills.length > 0 ? (
-              <div className="portfolio-editor-skills">
-                <span>Skills from this opportunity</span>
-                <div className="portfolio-skill-list">
-                  {selectedProject.skills.map((skill) => (
-                    <span key={skill.id}>{skill.name}</span>
-                  ))}
-                </div>
+      <div className="evidence-card-list">
+        {items.map((item) => (
+          <article className="evidence-card" key={item.id}>
+            <header>
+              <div className="evidence-card-mark" aria-hidden="true">
+                <FileCheck2 size={22} />
               </div>
-            ) : null}
+              <div>
+                <span>{getOpportunityTypeLabel(item.opportunityType)}</span>
+                <h2>{item.projectTitle}</h2>
+                <p>{item.companyName}</p>
+              </div>
+              <StatusBadge tone={item.isVisible ? "green" : "neutral"}>
+                {item.isVisible ? "Shared" : "Private"}
+              </StatusBadge>
+            </header>
 
-            <label className="field portfolio-description-field">
-              <span>What did you deliver?</span>
-              <textarea
-                value={form.description}
-                minLength={30}
-                maxLength={1000}
-                required
-                placeholder="Describe your contribution, the result, and what you learned."
-                onChange={(event) =>
-                  setForm((current) => ({
-                    ...current,
-                    description: event.target.value,
-                  }))
-                }
-              />
-              <small>{form.description.length}/1000 characters</small>
-            </label>
-
-            <Input
-              label="Completed work URL"
-              type="url"
-              placeholder="https://github.com/you/project or live demo"
-              value={form.projectUrl}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  projectUrl: event.target.value,
-                }))
-              }
-            />
-
-            <div className="portfolio-editor-actions">
-              <Button type="submit" isLoading={isSaving}>
-                {editingItem ? "Save changes" : "Add to portfolio"}
-              </Button>
-              <Button type="button" variant="secondary" onClick={closeEditor}>
-                Cancel
-              </Button>
+            <div className="evidence-card-grid">
+              <section>
+                <span>Approved work</span>
+                <p>{item.description ?? "Approved completed work."}</p>
+              </section>
+              <section>
+                <span>Individual contribution</span>
+                <p>{item.contribution ?? item.description}</p>
+              </section>
+              <section>
+                <span>Evaluation</span>
+                <p>{item.evaluationResult ?? "Final approval recorded."}</p>
+              </section>
+              <section>
+                <span>Approved by</span>
+                <p>{item.evaluatorName ?? item.companyName}</p>
+                {item.approvedAt ? (
+                  <small>
+                    {new Date(item.approvedAt).toLocaleDateString()}
+                  </small>
+                ) : null}
+              </section>
             </div>
-          </form>
-        </section>
-      ) : null}
 
-      <section className="portfolio-work-section">
-        <div className="portfolio-section-heading">
-          <div>
-            <h2>Your completed work</h2>
-          </div>
-          <p>Companies can see these items when they review your profile.</p>
-        </div>
+            <div className="evidence-card-skills">
+              {item.skills.map((skill) => (
+                <span key={skill.id}>{skill.name}</span>
+              ))}
+            </div>
 
-        <DataState
-          isLoading={isLoading}
-          error=""
-          empty={false}
-          emptyTitle=""
-          emptyDescription=""
-        />
-        {!isLoading ? (
-          <PortfolioGallery
-            items={items}
-            emptyDescription="Complete an accepted opportunity, then add a clear summary of what you delivered."
-            onEdit={startEdit}
-            onDelete={handleDelete}
-          />
-        ) : null}
-      </section>
+            <footer>
+              <Button
+                type="button"
+                variant={item.isVisible ? "secondary" : "primary"}
+                isLoading={busyItemId === item.id}
+                onClick={() => void changeVisibility(item)}
+              >
+                {item.isVisible ? (
+                  <EyeOff size={16} aria-hidden="true" />
+                ) : (
+                  <Eye size={16} aria-hidden="true" />
+                )}
+                {item.isVisible ? "Make private" : "Share card"}
+              </Button>
+              {item.projectUrl ? (
+                <a
+                  className="button button-secondary"
+                  href={item.projectUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <ExternalLink size={16} aria-hidden="true" />
+                  Open deliverable
+                </a>
+              ) : null}
+              {item.reviewRating ? (
+                <span className="evidence-card-rating">
+                  <CheckCircle2 size={16} aria-hidden="true" />
+                  Company review {item.reviewRating}/5
+                </span>
+              ) : null}
+            </footer>
+          </article>
+        ))}
+      </div>
     </section>
   );
 }

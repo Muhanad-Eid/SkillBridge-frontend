@@ -128,7 +128,7 @@ export default function JobSeekerDashboardPage() {
       },
       {
         label: "Portfolio",
-        detail: `${portfolioItems.length} work sample${portfolioItems.length === 1 ? "" : "s"}`,
+        detail: `${portfolioItems.length} approved Evidence Card${portfolioItems.length === 1 ? "" : "s"}`,
         done: portfolioItems.length > 0,
         to: "/job-seeker/portfolio",
         icon: FolderKanban,
@@ -190,9 +190,9 @@ export default function JobSeekerDashboardPage() {
             <CheckCircle2 size={19} aria-hidden="true" />
           </span>
           <div>
-            <span>Accepted applications</span>
+            <span>Accepted work</span>
             <strong>{isLoading ? "-" : stats.accepted}</strong>
-            <small>Applications accepted by companies</small>
+            <small>Applications accepted by providers</small>
           </div>
         </article>
         <article>
@@ -200,9 +200,9 @@ export default function JobSeekerDashboardPage() {
             <FolderKanban size={19} aria-hidden="true" />
           </span>
           <div>
-            <span>Portfolio items</span>
+            <span>Evidence Cards</span>
             <strong>{isLoading ? "-" : portfolioItems.length}</strong>
-            <small>{portfolioItems.filter((item) => item.projectUrl).length} with a project link</small>
+            <small>{portfolioItems.filter((item) => item.isVisible).length} shared</small>
           </div>
         </article>
         <article>
@@ -212,7 +212,7 @@ export default function JobSeekerDashboardPage() {
           <div>
             <span>Average rating</span>
             <strong>{isLoading ? "-" : profile?.averageRating?.toFixed(1) ?? "New"}</strong>
-            <small>{stats.reviews} company review{stats.reviews === 1 ? "" : "s"}</small>
+            <small>{stats.reviews} provider review{stats.reviews === 1 ? "" : "s"}</small>
           </div>
         </article>
       </div>
@@ -223,7 +223,7 @@ export default function JobSeekerDashboardPage() {
           <div>
             <span>Next step</span>
             <strong>{nextStep.label}</strong>
-            <p>{nextStep.detail}. Complete this to strengthen what companies see.</p>
+            <p>{nextStep.detail}. Complete this to strengthen what providers see.</p>
           </div>
           <Button to={nextStep.to} variant="primary">
             Continue
@@ -248,7 +248,7 @@ export default function JobSeekerDashboardPage() {
               <div className="jobseeker-empty-panel">
                 <Search size={24} aria-hidden="true" />
                 <strong>No applications yet</strong>
-                <p>Browse verified company opportunities and apply when the work fits.</p>
+                <p>Browse verified provider opportunities and apply when the work fits.</p>
                 <Button to="/job-seeker/opportunities" variant="secondary">
                   Browse opportunities
                 </Button>
@@ -308,7 +308,7 @@ export default function JobSeekerDashboardPage() {
               {recommendedProjects.length === 0 ? (
                 <div className="jobseeker-empty-panel compact">
                   <strong>You have reviewed the current open opportunities</strong>
-                  <p>Check back as verified companies publish more work.</p>
+                  <p>Check back as verified providers publish more work.</p>
                 </div>
               ) : (
                 recommendedProjects.map((project) => (
@@ -367,7 +367,7 @@ export default function JobSeekerDashboardPage() {
 
           <Button to="/job-seeker/reviews" variant="secondary" className="jobseeker-reviews-link">
             <Star size={17} aria-hidden="true" />
-            See company feedback
+            See provider feedback
           </Button>
         </aside>
       </div>

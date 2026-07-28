@@ -1,4 +1,8 @@
-export type AuthRole = "Admin" | "Company" | "JobSeeker";
+export type AuthRole =
+  | "Admin"
+  | "Company"
+  | "JobSeeker"
+  | "UniversitySupervisor";
 
 export function normalizeAuthRole(role: unknown): AuthRole | null {
   const normalized = String(role ?? "")
@@ -15,6 +19,10 @@ export function normalizeAuthRole(role: unknown): AuthRole | null {
 
   if (normalized === "3" || normalized === "jobseeker") {
     return "JobSeeker";
+  }
+
+  if (normalized === "4" || normalized === "universitysupervisor") {
+    return "UniversitySupervisor";
   }
 
   return null;
@@ -58,7 +66,16 @@ export type RegisterRequest = {
   password: string;
   role: RegisterRole;
   companyName?: string;
+  providerType?: ProviderType;
 };
+
+export const ProviderTypes = {
+  Company: 0,
+  TrainingProvider: 1,
+} as const;
+
+export type ProviderType =
+  (typeof ProviderTypes)[keyof typeof ProviderTypes];
 
 export type AuthResponse = {
   userId: string;

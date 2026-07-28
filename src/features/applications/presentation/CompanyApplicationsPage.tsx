@@ -131,6 +131,11 @@ export default function CompanyApplicationsPage() {
     setSelectedApplication(application);
     setSelectedProfile(null);
     setProfileError("");
+    if (application.isIdentityHidden || application.jobSeekerId === null) {
+      setIsProfileLoading(false);
+      return;
+    }
+
     setIsProfileLoading(true);
     setSearchParams((current) => {
       const next = new URLSearchParams(current);

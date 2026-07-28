@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-type PortalName = "admin" | "company" | "job-seeker";
+type PortalName = "admin" | "company" | "job-seeker" | "university";
 
 export default function useSidebarPreference(portal: PortalName) {
   const storageKey = `skillbridge:${portal}:sidebar-collapsed`;

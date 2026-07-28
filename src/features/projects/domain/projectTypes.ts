@@ -1,6 +1,9 @@
 export const OpportunityTypes = {
-  PaidProject: 0,
-  Training: 1,
+  ProfessionalProject: 0,
+  UniversityTraining: 1,
+  FreelanceTask: 2,
+  SkillDevelopmentChallenge: 3,
+  TeamProject: 4,
 } as const;
 
 export type OpportunityType =
@@ -38,6 +41,12 @@ export type Project = {
   title: string;
   description: string;
   requirements: string;
+  deliverables: string;
+  evaluationCriteria: string;
+  milestonePlan: string;
+  hideApplicantIdentity: boolean;
+  requiredTrainingHours: number | null;
+  academicRequirements: string | null;
   location: string | null;
   workMode: WorkMode;
   experienceLevel: ExperienceLevel;
@@ -63,6 +72,12 @@ export type CreateProjectRequest = {
   title: string;
   description: string;
   requirements: string;
+  deliverables: string;
+  evaluationCriteria: string;
+  milestonePlan: string;
+  hideApplicantIdentity: boolean;
+  requiredTrainingHours?: number | null;
+  academicRequirements?: string | null;
   location?: string | null;
   workMode: WorkMode;
   experienceLevel: ExperienceLevel;
@@ -82,7 +97,13 @@ export type UpdateProjectRequest = CreateProjectRequest & {
 };
 
 export function getOpportunityTypeLabel(type: OpportunityType) {
-  return type === OpportunityTypes.Training ? "Training" : "Paid project";
+  if (type === OpportunityTypes.UniversityTraining) return "University training";
+  if (type === OpportunityTypes.FreelanceTask) return "Freelance task";
+  if (type === OpportunityTypes.SkillDevelopmentChallenge) {
+    return "Skill-development challenge";
+  }
+  if (type === OpportunityTypes.TeamProject) return "Team project";
+  return "Professional project";
 }
 
 export function getWorkModeLabel(workMode: WorkMode) {

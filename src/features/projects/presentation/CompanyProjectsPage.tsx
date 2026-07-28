@@ -15,6 +15,7 @@ import {
   MapPin,
   Plus,
   Search,
+  ShieldCheck,
   Trash2,
   UsersRound,
   Wrench,
@@ -60,6 +61,11 @@ type ProjectForm = {
   title: string;
   description: string;
   requirements: string;
+  deliverables: string;
+  evaluationCriteria: string;
+  milestonePlan: string;
+  requiredTrainingHours: string;
+  academicRequirements: string;
   location: string;
   workMode: WorkMode;
   experienceLevel: ExperienceLevel;
@@ -80,6 +86,11 @@ const emptyProjectForm: ProjectForm = {
   title: "",
   description: "",
   requirements: "",
+  deliverables: "",
+  evaluationCriteria: "",
+  milestonePlan: "",
+  requiredTrainingHours: "",
+  academicRequirements: "",
   location: "",
   workMode: WorkModes.Remote,
   experienceLevel: ExperienceLevels.Beginner,
@@ -87,7 +98,7 @@ const emptyProjectForm: ProjectForm = {
   applicationDeadline: "",
   budget: "",
   durationWeeks: "6",
-  type: OpportunityTypes.PaidProject,
+  type: OpportunityTypes.ProfessionalProject,
   requiredSkillNames: [],
   preferredSkillNames: [],
 };
@@ -238,6 +249,11 @@ export default function CompanyProjectsPage() {
       title: project.title,
       description: project.description,
       requirements: project.requirements,
+      deliverables: project.deliverables,
+      evaluationCriteria: project.evaluationCriteria,
+      milestonePlan: project.milestonePlan,
+      requiredTrainingHours: project.requiredTrainingHours?.toString() ?? "",
+      academicRequirements: project.academicRequirements ?? "",
       location: project.location ?? "",
       workMode: project.workMode,
       experienceLevel: project.experienceLevel,
@@ -293,8 +309,32 @@ export default function CompanyProjectsPage() {
       [preferredSkillInput],
     ).filter((name) => !requiredNames.has(name.toLowerCase()));
 
-    if (!form.title.trim() || !form.description.trim() || !form.requirements.trim()) {
-      setError("Title, description, and requirements are required.");
+    if (
+      !form.title.trim() ||
+      !form.description.trim() ||
+      !form.requirements.trim() ||
+      !form.deliverables.trim() ||
+      !form.evaluationCriteria.trim() ||
+      !form.milestonePlan.trim()
+    ) {
+      setError(
+        "Title, description, requirements, deliverables, milestone plan, and evaluation criteria are required.",
+      );
+      return;
+    }
+
+    const requiredTrainingHours = form.requiredTrainingHours
+      ? Number(form.requiredTrainingHours)
+      : null;
+    if (
+      form.type === OpportunityTypes.UniversityTraining &&
+      (!requiredTrainingHours ||
+        requiredTrainingHours < 1 ||
+        !form.academicRequirements.trim())
+    ) {
+      setError(
+        "University Training requires training hours and academic requirements.",
+      );
       return;
     }
 
@@ -331,6 +371,15 @@ export default function CompanyProjectsPage() {
           title: form.title.trim(),
           description: form.description.trim(),
           requirements: form.requirements.trim(),
+          deliverables: form.deliverables.trim(),
+          evaluationCriteria: form.evaluationCriteria.trim(),
+          milestonePlan: form.milestonePlan.trim(),
+          hideApplicantIdentity: true,
+          requiredTrainingHours,
+          academicRequirements:
+            form.type === OpportunityTypes.UniversityTraining
+              ? form.academicRequirements.trim()
+              : null,
           location: form.location.trim() || null,
           workMode: form.workMode,
           experienceLevel: form.experienceLevel,
@@ -348,6 +397,15 @@ export default function CompanyProjectsPage() {
           title: form.title.trim(),
           description: form.description.trim(),
           requirements: form.requirements.trim(),
+          deliverables: form.deliverables.trim(),
+          evaluationCriteria: form.evaluationCriteria.trim(),
+          milestonePlan: form.milestonePlan.trim(),
+          hideApplicantIdentity: true,
+          requiredTrainingHours,
+          academicRequirements:
+            form.type === OpportunityTypes.UniversityTraining
+              ? form.academicRequirements.trim()
+              : null,
           location: form.location.trim() || null,
           workMode: form.workMode,
           experienceLevel: form.experienceLevel,
@@ -554,8 +612,17 @@ export default function CompanyProjectsPage() {
           onChange={(event) => setTypeFilter(event.target.value)}
         >
           <option value="All">All types</option>
-          <option value={OpportunityTypes.PaidProject}>Paid projects</option>
-          <option value={OpportunityTypes.Training}>Training</option>
+          <option value={OpportunityTypes.ProfessionalProject}>
+            Professional projects
+          </option>
+          <option value={OpportunityTypes.UniversityTraining}>
+            University training
+          </option>
+          <option value={OpportunityTypes.FreelanceTask}>Freelance tasks</option>
+          <option value={OpportunityTypes.SkillDevelopmentChallenge}>
+            Skill-development challenges
+          </option>
+          <option value={OpportunityTypes.TeamProject}>Team projects</option>
         </select>
       </div>
 
@@ -774,14 +841,50 @@ export default function CompanyProjectsPage() {
                 />
               </label>
               <label className="field">
-                <span>Requirements and expected outcomes</span>
+                <span>Requirements</span>
                 <textarea
                   value={form.requirements}
                   maxLength={3000}
                   required
-                  placeholder="Required experience, responsibilities, and what successful completion looks like"
+                  placeholder="Experience, responsibilities, and other entry requirements"
                   onChange={(event) =>
                     setForm({ ...form, requirements: event.target.value })
+                  }
+                />
+              </label>
+              <label className="field">
+                <span>Expected deliverables</span>
+                <textarea
+                  value={form.deliverables}
+                  maxLength={3000}
+                  required
+                  placeholder="What must be submitted or completed"
+                  onChange={(event) =>
+                    setForm({ ...form, deliverables: event.target.value })
+                  }
+                />
+              </label>
+              <label className="field">
+                <span>Milestone plan</span>
+                <textarea
+                  value={form.milestonePlan}
+                  maxLength={3000}
+                  required
+                  placeholder="The main stages the accepted participant will follow"
+                  onChange={(event) =>
+                    setForm({ ...form, milestonePlan: event.target.value })
+                  }
+                />
+              </label>
+              <label className="field">
+                <span>Evaluation criteria</span>
+                <textarea
+                  value={form.evaluationCriteria}
+                  maxLength={3000}
+                  required
+                  placeholder="How the provider will decide whether the work is complete"
+                  onChange={(event) =>
+                    setForm({ ...form, evaluationCriteria: event.target.value })
                   }
                 />
               </label>
@@ -793,10 +896,62 @@ export default function CompanyProjectsPage() {
                     setForm({ ...form, type: Number(event.target.value) as OpportunityType })
                   }
                 >
-                  <option value={OpportunityTypes.PaidProject}>Paid project</option>
-                  <option value={OpportunityTypes.Training}>Training</option>
+                  <option value={OpportunityTypes.ProfessionalProject}>
+                    Professional project
+                  </option>
+                  <option value={OpportunityTypes.UniversityTraining}>
+                    University training
+                  </option>
+                  <option value={OpportunityTypes.FreelanceTask}>
+                    Freelance task
+                  </option>
+                  <option value={OpportunityTypes.SkillDevelopmentChallenge}>
+                    Skill-development challenge
+                  </option>
+                  <option value={OpportunityTypes.TeamProject}>
+                    Team project
+                  </option>
                 </select>
               </label>
+              <div className="workflow-policy-note" role="note">
+                <ShieldCheck aria-hidden="true" />
+                <span>
+                  The first review hides selected personal details so applications
+                  are assessed from their submitted evidence.
+                </span>
+              </div>
+              {form.type === OpportunityTypes.UniversityTraining ? (
+                <div className="company-form-grid">
+                  <Input
+                    label="Required training hours"
+                    type="number"
+                    min="1"
+                    max="2000"
+                    value={form.requiredTrainingHours}
+                    required
+                    onChange={(event) =>
+                      setForm({
+                        ...form,
+                        requiredTrainingHours: event.target.value,
+                      })
+                    }
+                  />
+                  <label className="field">
+                    <span>Academic requirements</span>
+                    <textarea
+                      value={form.academicRequirements}
+                      maxLength={2000}
+                      required
+                      onChange={(event) =>
+                        setForm({
+                          ...form,
+                          academicRequirements: event.target.value,
+                        })
+                      }
+                    />
+                  </label>
+                </div>
+              ) : null}
               <div className="company-form-grid">
                 <label className="field">
                   <span>Work mode</span>

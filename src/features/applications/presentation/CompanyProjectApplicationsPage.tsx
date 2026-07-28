@@ -180,6 +180,12 @@ export default function CompanyProjectApplicationsPage() {
     setSelectedApplication(application);
     setSelectedProfile(null);
     setProfileError("");
+
+    if (application.isIdentityHidden || application.jobSeekerId === null) {
+      setIsProfileLoading(false);
+      return;
+    }
+
     setIsProfileLoading(true);
 
     try {
@@ -265,7 +271,10 @@ export default function CompanyProjectApplicationsPage() {
 
   async function submitReview(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!reviewingApplication) return;
+    if (!reviewingApplication || reviewingApplication.jobSeekerId === null) {
+      setError("The participant identity is unavailable.");
+      return;
+    }
 
     setIsReviewSaving(true);
     setError("");
@@ -428,10 +437,18 @@ export default function CompanyProjectApplicationsPage() {
                       </span>
                       <span>
                         <strong>{application.jobSeekerName}</strong>
-                        <small>Applicant #{application.jobSeekerId}</small>
+                        <small>
+                          {application.isIdentityHidden
+                            ? "Identity hidden for first review"
+                            : `Application #${application.id}`}
+                        </small>
                       </span>
                     </button>
-                    <p>{application.coverLetter ?? "No cover letter provided."}</p>
+                    <p>
+                      {application.shortTaskResponse ??
+                        application.coverLetter ??
+                        "Work sample provided in the application."}
+                    </p>
                     <StatusBadge tone={getApplicationTone(application.status)}>
                       {getApplicationStatusLabel(application.status)}
                     </StatusBadge>

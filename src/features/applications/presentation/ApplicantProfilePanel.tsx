@@ -97,7 +97,7 @@ export default function ApplicantProfilePanel({
               {application.jobSeekerName.charAt(0).toUpperCase()}
             </span>
             <div>
-              <span>Applicant #{application.jobSeekerId}</span>
+              <span>Application #{application.id}</span>
               <h2 id="applicant-profile-title">{application.jobSeekerName}</h2>
               <p>{application.projectTitle}</p>
             </div>
@@ -120,6 +120,36 @@ export default function ApplicantProfilePanel({
           </StatusBadge>
           <span>Application #{application.id}</span>
           <span>Project #{application.projectId}</span>
+        </div>
+
+        <div className="company-applicant-content">
+          <section>
+            <h3>Application evidence</h3>
+            <p>{application.coverLetter ?? "No introduction provided."}</p>
+            {application.shortTaskResponse ? (
+              <>
+                <strong>Short task response</strong>
+                <p>{application.shortTaskResponse}</p>
+              </>
+            ) : null}
+            {application.workSampleUrl ? (
+              <a
+                className="button button-secondary"
+                href={application.workSampleUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <ExternalLink size={16} aria-hidden="true" />
+                Open work sample
+              </a>
+            ) : null}
+          </section>
+          {application.isIdentityHidden ? (
+            <div className="notice">
+              Personal details stay hidden during this first review. The
+              profile is revealed after the decision is recorded.
+            </div>
+          ) : null}
         </div>
 
         {isLoading ? <div className="notice">Loading profile...</div> : null}
@@ -165,11 +195,6 @@ export default function ApplicantProfilePanel({
               ) : (
                 <p>No skills added yet.</p>
               )}
-            </section>
-
-            <section>
-              <h3>Cover letter</h3>
-              <p>{application.coverLetter ?? "No cover letter provided."}</p>
             </section>
 
             <section className="company-applicant-portfolio">

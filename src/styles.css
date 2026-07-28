@@ -3665,7 +3665,7 @@ input {
 
 .landing-audience-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
   margin-top: 46px;
 }
@@ -3695,6 +3695,11 @@ input {
 .landing-audience-icon-jobseeker {
   background: #e8f7f1;
   color: var(--landing-green);
+}
+
+.landing-audience-icon-university {
+  background: #fff3cc;
+  color: #856400;
 }
 
 .landing-audience-grid article > span {
@@ -9024,6 +9029,11 @@ input {
   color: #5ce0b6;
 }
 
+[data-theme="dark"] .landing-audience-icon-university {
+  background: #3a3216;
+  color: #f3cd59;
+}
+
 [data-theme="dark"] .landing-cta {
   border-color: #21483d;
   background: #0e251f;
@@ -10551,6 +10561,344 @@ a,
   .jobseeker-related-opportunities > header {
     flex-direction: column;
   }
+}
+
+/* Evidence workflow */
+.workflow-policy-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.workflow-policy-note svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: var(--accent);
+}
+
+.work-progress-panel,
+.work-milestone-list,
+.work-milestone > div:last-child,
+.work-submission-copy,
+.work-inline-form,
+.work-add-milestone,
+.work-final-form,
+.work-final-review,
+.university-progress-form,
+.university-final-review,
+.university-approval-form,
+.portfolio-evidence-page,
+.evidence-card-list,
+.evidence-card,
+.university-training-record {
+  display: grid;
+  gap: 16px;
+}
+
+.work-record-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+}
+
+.work-record-tabs button,
+.university-training-list button {
+  min-height: 38px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--muted);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.work-record-tabs button {
+  white-space: nowrap;
+}
+
+.work-record-tabs button.active,
+.university-training-list button.active {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+  color: var(--blue-dark);
+}
+
+.work-record-heading,
+.work-milestone header,
+.evidence-card header,
+.evidence-card footer,
+.university-training-record > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.work-record-heading > div,
+.work-record-heading > span {
+  display: flex;
+  gap: 8px;
+}
+
+.work-record-heading > div {
+  flex-direction: column;
+}
+
+.work-record-heading > span {
+  align-items: center;
+  color: var(--green);
+  font-weight: 800;
+}
+
+.training-supervision-summary,
+.university-training-meta,
+.evidence-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--border);
+}
+
+.training-supervision-summary > div,
+.training-supervision-summary > label,
+.university-training-meta article,
+.evidence-card-grid section {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  margin: 0;
+  padding: 16px;
+  background: var(--surface);
+}
+
+.training-supervision-summary span,
+.university-training-meta span,
+.evidence-card-grid span,
+.evidence-card > header span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.work-milestone {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-soft);
+}
+
+.work-milestone-index,
+.evidence-card-mark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: var(--blue-soft);
+  color: var(--blue-dark);
+  font-weight: 900;
+}
+
+.work-milestone header > div {
+  display: grid;
+  gap: 3px;
+}
+
+.work-milestone p,
+.work-final-review p,
+.evidence-card p,
+.university-training-record p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.work-inline-form,
+.work-add-milestone,
+.work-final-form,
+.work-final-review,
+.university-progress-form,
+.university-final-review,
+.university-approval-form {
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.work-inline-form > div,
+.work-final-actions,
+.university-approval-form > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.work-empty-copy {
+  padding: 18px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 6px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.evidence-card {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.evidence-card > header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.evidence-card h2,
+.university-training-record h2 {
+  margin: 2px 0;
+  font-size: 1.15rem;
+}
+
+.evidence-card-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.evidence-card-skills,
+.evidence-card-rating {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.evidence-card-skills {
+  flex-wrap: wrap;
+}
+
+.evidence-card-skills span {
+  padding: 5px 9px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface-soft);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.evidence-card footer {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.evidence-card-rating {
+  color: var(--green);
+  font-weight: 800;
+}
+
+.university-training-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.32fr) minmax(0, 1fr);
+  gap: 18px;
+}
+
+.university-training-list {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+}
+
+.university-training-list button {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  text-align: left;
+}
+
+.university-training-list span,
+.university-training-list small {
+  color: var(--muted);
+}
+
+.university-training-record {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.university-training-meta {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.university-training-meta article svg {
+  color: var(--blue);
+}
+
+@media (max-width: 840px) {
+  .evidence-card-grid,
+  .university-training-meta {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .university-training-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .university-training-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .training-supervision-summary,
+  .evidence-card-grid,
+  .university-training-meta,
+  .university-training-list {
+    grid-template-columns: 1fr;
+  }
+
+  .work-record-heading,
+  .work-milestone header,
+  .university-training-record > header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .evidence-card > header {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .evidence-card > header .status-badge {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+}
+
+[data-theme="dark"] .work-record-tabs button.active,
+[data-theme="dark"] .university-training-list button.active,
+[data-theme="dark"] .work-milestone-index,
+[data-theme="dark"] .evidence-card-mark {
+  background: rgba(106, 100, 255, 0.18);
+  color: #c7c4ff;
 }
 
 @media (prefers-reduced-motion: reduce) {

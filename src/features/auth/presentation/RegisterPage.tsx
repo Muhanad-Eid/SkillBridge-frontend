@@ -4,7 +4,12 @@ import { getRoleHomePath, useAuth } from "../../../shared/auth/AuthContext";
 import Button from "../../../shared/components/Button";
 import BrandIcon from "../../../shared/components/BrandIcon";
 import Input from "../../../shared/components/Input";
-import { RegisterRoles, type RegisterRole } from "../domain/authTypes";
+import {
+  ProviderTypes,
+  RegisterRoles,
+  type ProviderType,
+  type RegisterRole,
+} from "../domain/authTypes";
 import { registerAsync } from "../infrastructure/authApi";
 
 export default function RegisterPage() {
@@ -14,6 +19,9 @@ export default function RegisterPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [companyName, setCompanyName] = useState("");
+  const [providerType, setProviderType] = useState<ProviderType>(
+    ProviderTypes.Company,
+  );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -46,6 +54,7 @@ export default function RegisterPage() {
         password,
         role,
         companyName: isCompany ? companyName.trim() : undefined,
+        providerType: isCompany ? providerType : undefined,
       });
 
       setAuth(user);
@@ -96,7 +105,7 @@ export default function RegisterPage() {
             onClick={() => setRole(RegisterRoles.Company)}
           >
             <strong>Company</strong>
-            <span>Post opportunities and train talent.</span>
+            <span>For companies and training providers.</span>
           </button>
         </div>
 
@@ -118,13 +127,29 @@ export default function RegisterPage() {
         </div>
 
         {isCompany ? (
-          <Input
-            label="Company name"
-            name="companyName"
-            value={companyName}
-            onChange={(event) => setCompanyName(event.target.value)}
-            required
-          />
+          <>
+            <label className="field">
+              <span>Organization type</span>
+              <select
+                value={providerType}
+                onChange={(event) =>
+                  setProviderType(Number(event.target.value) as ProviderType)
+                }
+              >
+                <option value={ProviderTypes.Company}>Company</option>
+                <option value={ProviderTypes.TrainingProvider}>
+                  Training provider
+                </option>
+              </select>
+            </label>
+            <Input
+              label="Organization name"
+              name="companyName"
+              value={companyName}
+              onChange={(event) => setCompanyName(event.target.value)}
+              required
+            />
+          </>
         ) : null}
 
         <Input

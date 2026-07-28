@@ -24,6 +24,9 @@ type UserForm = UpdateAdminUserRequest & {
   password: string;
   role: AdminUserRole;
   companyName: string;
+  providerType: 0 | 1;
+  universityName: string;
+  department: string;
 };
 
 const emptyForm: UserForm = {
@@ -33,6 +36,9 @@ const emptyForm: UserForm = {
   password: "",
   role: AdminUserRoles.JobSeeker,
   companyName: "",
+  providerType: 0,
+  universityName: "",
+  department: "",
 };
 
 export default function UsersPage() {
@@ -78,7 +84,9 @@ export default function UsersPage() {
         ? AdminUserRoles.Company
         : requestedRole === "Admin"
           ? AdminUserRoles.Admin
-          : AdminUserRoles.JobSeeker;
+          : requestedRole === "UniversitySupervisor"
+            ? AdminUserRoles.UniversitySupervisor
+            : AdminUserRoles.JobSeeker;
 
     const timeoutId = window.setTimeout(() => {
       setMode("create");
@@ -116,6 +124,7 @@ export default function UsersPage() {
         if (role === "Admin") stats.admins += 1;
         if (role === "Company") stats.companies += 1;
         if (role === "JobSeeker") stats.jobSeekers += 1;
+        if (role === "UniversitySupervisor") stats.universitySupervisors += 1;
 
         return stats;
       },
@@ -124,6 +133,7 @@ export default function UsersPage() {
         admins: 0,
         companies: 0,
         jobSeekers: 0,
+        universitySupervisors: 0,
       },
     );
   }, [users]);
@@ -171,6 +181,18 @@ export default function UsersPage() {
             form.role === AdminUserRoles.Company
               ? form.companyName.trim()
               : undefined,
+          providerType:
+            form.role === AdminUserRoles.Company
+              ? form.providerType
+              : undefined,
+          universityName:
+            form.role === AdminUserRoles.UniversitySupervisor
+              ? form.universityName.trim()
+              : undefined,
+          department:
+            form.role === AdminUserRoles.UniversitySupervisor
+              ? form.department.trim() || undefined
+              : undefined,
         };
 
         await createAdminUserAsync(request);
@@ -215,6 +237,8 @@ export default function UsersPage() {
   }
 
   const isCompanyForm = form.role === AdminUserRoles.Company;
+  const isUniversityForm =
+    form.role === AdminUserRoles.UniversitySupervisor;
 
   return (
     <section className="page admin-list-page">
@@ -243,6 +267,7 @@ export default function UsersPage() {
           <option value="Admin">Admins</option>
           <option value="Company">Companies</option>
           <option value="JobSeeker">Job seekers</option>
+          <option value="UniversitySupervisor">University supervisors</option>
         </select>
       </div>
 
@@ -262,6 +287,10 @@ export default function UsersPage() {
         <article>
           <span>Job seekers</span>
           <strong>{userStats.jobSeekers}</strong>
+        </article>
+        <article>
+          <span>University supervisors</span>
+          <strong>{userStats.universitySupervisors}</strong>
         </article>
       </div>
 
@@ -345,18 +374,26 @@ export default function UsersPage() {
                           Number(event.target.value) === AdminUserRoles.Company
                             ? current.companyName
                             : "",
+                        universityName:
+                          Number(event.target.value) ===
+                          AdminUserRoles.UniversitySupervisor
+                            ? current.universityName
+                            : "",
                       }))
                     }
                   >
                     <option value={AdminUserRoles.JobSeeker}>Job seeker</option>
                     <option value={AdminUserRoles.Company}>Company</option>
+                    <option value={AdminUserRoles.UniversitySupervisor}>
+                      University supervisor
+                    </option>
                     <option value={AdminUserRoles.Admin}>Admin</option>
                   </select>
                 </label>
                 {isCompanyForm ? (
                   <>
                     <label className="field">
-                      <span>Company name</span>
+                      <span>Organization name</span>
                       <input
                         value={form.companyName}
                         onChange={(event) =>
@@ -366,6 +403,50 @@ export default function UsersPage() {
                           }))
                         }
                         required
+                      />
+                    </label>
+                    <label className="field">
+                      <span>Organization type</span>
+                      <select
+                        value={form.providerType}
+                        onChange={(event) =>
+                          setForm((current) => ({
+                            ...current,
+                            providerType: Number(event.target.value) as 0 | 1,
+                          }))
+                        }
+                      >
+                        <option value={0}>Company</option>
+                        <option value={1}>Training provider</option>
+                      </select>
+                    </label>
+                  </>
+                ) : null}
+                {isUniversityForm ? (
+                  <>
+                    <label className="field">
+                      <span>University name</span>
+                      <input
+                        value={form.universityName}
+                        onChange={(event) =>
+                          setForm((current) => ({
+                            ...current,
+                            universityName: event.target.value,
+                          }))
+                        }
+                        required
+                      />
+                    </label>
+                    <label className="field">
+                      <span>Department</span>
+                      <input
+                        value={form.department}
+                        onChange={(event) =>
+                          setForm((current) => ({
+                            ...current,
+                            department: event.target.value,
+                          }))
+                        }
                       />
                     </label>
                   </>

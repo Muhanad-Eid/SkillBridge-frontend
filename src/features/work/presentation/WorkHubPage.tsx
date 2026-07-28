@@ -69,6 +69,7 @@ import {
   getJobSeekerReviewsAsync,
   getMyCompanyReviewsAsync,
 } from "../../reviews/infrastructure/reviewApi";
+import WorkProgressPanel from "./WorkProgressPanel";
 
 type WorkerRecord = {
   application: Application;
@@ -166,7 +167,7 @@ export default function WorkHubPage() {
               return {
                 application,
                 profile: await getPublicJobSeekerProfileAsync(
-                  application.jobSeekerId,
+                  application.jobSeekerId!,
                 ),
               };
             } catch {
@@ -553,7 +554,7 @@ export default function WorkHubPage() {
                             <div className="work-hub-worker-summary">
                               <strong>{application.jobSeekerName}</strong>
                               <span>
-                                Worker #{application.jobSeekerId}
+                                Application #{application.id}
                                 {profile?.city ? ` · ${profile.city}` : ""}
                               </span>
                               {profile?.skills.length ? (
@@ -694,6 +695,11 @@ export default function WorkHubPage() {
                   ))}
                 </div>
               </section>
+
+              <WorkProgressPanel
+                isCompany={isCompany}
+                projectId={project.id}
+              />
             </div>
 
             <aside className="work-hub-side">
@@ -848,24 +854,22 @@ export default function WorkHubPage() {
                 project.status === ProjectStatuses.Completed ? (
                   <>
                     <h2>
-                      {portfolioItem ? "Added to portfolio" : "Add your completed work"}
+                      {portfolioItem
+                        ? "Evidence card ready"
+                        : "Final approval required"}
                     </h2>
                     <p>
                       {portfolioItem
-                        ? "Your delivery is now part of your verified portfolio."
-                        : "Describe what you delivered and add the exact project or repository link."}
+                        ? "Choose whether this approved evidence is visible in your shared portfolio."
+                        : "Submit your completed work above. The evidence card is created after the provider approves it."}
                     </p>
                     <Button
-                      to={
-                        portfolioItem
-                          ? "/job-seeker/portfolio"
-                          : `/job-seeker/portfolio?projectId=${project.id}`
-                      }
-                      variant={portfolioItem ? "secondary" : "primary"}
+                      to="/job-seeker/portfolio"
+                      variant="secondary"
                       fullWidth
                     >
                       <FolderKanban size={17} aria-hidden="true" />
-                      {portfolioItem ? "View portfolio" : "Add to portfolio"}
+                      View Evidence Portfolio
                     </Button>
                   </>
                 ) : null}

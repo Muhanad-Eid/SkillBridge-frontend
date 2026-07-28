@@ -41,6 +41,7 @@ export default function CompanyProfilePage() {
   const [description, setDescription] = useState("");
   const [website, setWebsite] = useState("");
   const [city, setCity] = useState("");
+  const [providerType, setProviderType] = useState<0 | 1>(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -60,6 +61,7 @@ export default function CompanyProfilePage() {
     setDescription(data.description ?? "");
     setWebsite(data.website ?? "");
     setCity(data.city ?? "");
+    setProviderType(data.providerType ?? 0);
   }
 
   useEffect(() => {
@@ -120,6 +122,7 @@ export default function CompanyProfilePage() {
         description: trimmedDescription,
         website: website.trim() || undefined,
         city: trimmedCity,
+        providerType,
       });
 
       const refreshedProfile = await getMyCompanyProfileAsync();
@@ -283,6 +286,19 @@ export default function CompanyProfilePage() {
                   onChange={(event) => setCompanyName(event.target.value)}
                   readOnly={!isEditing}
                 />
+                <label className="field">
+                  <span>Organization type</span>
+                  <select
+                    value={providerType}
+                    disabled={!isEditing}
+                    onChange={(event) =>
+                      setProviderType(Number(event.target.value) as 0 | 1)
+                    }
+                  >
+                    <option value={0}>Company</option>
+                    <option value={1}>Training provider</option>
+                  </select>
+                </label>
                 <Input
                   label="City"
                   value={city}

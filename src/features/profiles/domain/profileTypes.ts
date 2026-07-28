@@ -33,6 +33,7 @@ export type CompanyProfile = {
   website: string | null;
   city: string | null;
   isVerified: boolean;
+  providerType: 0 | 1;
 };
 
 export function isCompanyProfileComplete(
@@ -53,4 +54,5 @@ export type UpdateCompanyProfileRequest = {
   description?: string;
   website?: string;
   city?: string;
+  providerType: 0 | 1;
 };
