@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { Search, Send } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../../../shared/auth/AuthContext";
 import Button from "../../../shared/components/Button";
@@ -56,6 +57,7 @@ export default function MessagesPage() {
   const [activeConversation, setActiveConversation] =
     useState<ActiveConversation | null>(null);
   const [content, setContent] = useState("");
+  const [conversationSearch, setConversationSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isConversationLoading, setIsConversationLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -282,6 +284,28 @@ export default function MessagesPage() {
     ];
   }, [activeConversation, currentUserId, messages]);
 
+  const visibleConversations = useMemo(() => {
+    const query = conversationSearch.trim().toLowerCase();
+
+    if (!query) {
+      return conversations;
+    }
+
+    return conversations.filter((conversation) => {
+      const searchableContent = [
+        conversation.receiverName,
+        conversation.projectTitle,
+        conversation.latestMessage?.content,
+        `Project ${conversation.projectId}`,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return searchableContent.includes(query);
+    });
+  }, [conversationSearch, conversations]);
+
   const selectConversation = useCallback(
     (conversation: ActiveConversation, updateUrl = true) => {
       setActiveConversation(conversation);
@@ -387,17 +411,35 @@ export default function MessagesPage() {
 
       <div className="messages-layout">
         <Card title="Conversations">
+          <label className="messages-thread-search">
+            <Search size={18} aria-hidden="true" />
+            <input
+              aria-label="Search conversations"
+              placeholder="Search people or opportunities"
+              value={conversationSearch}
+              onChange={(event) => setConversationSearch(event.target.value)}
+            />
+          </label>
+
           <DataState
             isLoading={isLoading}
             error={error}
-            empty={conversations.length === 0}
-            emptyTitle="No conversations yet"
-            emptyDescription="Open an applicant or company profile and choose Send message."
+            empty={visibleConversations.length === 0}
+            emptyTitle={
+              conversations.length === 0
+                ? "No conversations yet"
+                : "No conversations found"
+            }
+            emptyDescription={
+              conversations.length === 0
+                ? "Open an applicant or company profile and choose Send message."
+                : "Try a different person, opportunity, or message."
+            }
           />
 
-          {conversations.length > 0 ? (
+          {visibleConversations.length > 0 ? (
             <div className="conversation-list">
-              {conversations.map((conversation) => {
+              {visibleConversations.map((conversation) => {
                 const isActive =
                   activeConversation &&
                   getThreadKey(
@@ -419,20 +461,25 @@ export default function MessagesPage() {
                     type="button"
                     onClick={() => selectConversation(conversation)}
                   >
-                    <span>
-                      <strong>{conversation.receiverName}</strong>
-                      {conversation.unreadCount > 0 ? (
-                        <b>{conversation.unreadCount}</b>
-                      ) : null}
+                    <span className="conversation-avatar" aria-hidden="true">
+                      {conversation.receiverName.trim().charAt(0).toUpperCase()}
                     </span>
-                    <small>
-                      {conversation.projectTitle ??
-                        `Project ${conversation.projectId}`}
-                    </small>
-                    <p>
-                      {conversation.latestMessage?.content ??
-                        "No messages yet. Start the conversation."}
-                    </p>
+                    <span className="conversation-copy">
+                      <span>
+                        <strong>{conversation.receiverName}</strong>
+                        {conversation.unreadCount > 0 ? (
+                          <b>{conversation.unreadCount}</b>
+                        ) : null}
+                      </span>
+                      <small>
+                        {conversation.projectTitle ??
+                          `Project ${conversation.projectId}`}
+                      </small>
+                      <p>
+                        {conversation.latestMessage?.content ??
+                          "No messages yet. Start the conversation."}
+                      </p>
+                    </span>
                   </button>
                 );
               })}
@@ -508,6 +555,7 @@ export default function MessagesPage() {
                 ) : null}
                 <div className="compose-actions">
                   <Button type="submit" isLoading={isSending}>
+                    <Send size={17} aria-hidden="true" />
                     Send message
                   </Button>
                 </div>

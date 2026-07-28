@@ -176,24 +176,44 @@ export default function JobSeekerDashboardPage() {
 
       <div className="jobseeker-kpi-grid" aria-label="Career summary">
         <article>
-          <span>Applications</span>
-          <strong>{isLoading ? "-" : stats.total}</strong>
-          <small>{stats.pending} awaiting a decision</small>
+          <span className="jobseeker-kpi-icon kpi-indigo">
+            <FileCheck2 size={19} aria-hidden="true" />
+          </span>
+          <div>
+            <span>Applications</span>
+            <strong>{isLoading ? "-" : stats.total}</strong>
+            <small>{stats.pending} awaiting a decision</small>
+          </div>
         </article>
         <article>
-          <span>Accepted applications</span>
-          <strong>{isLoading ? "-" : stats.accepted}</strong>
-          <small>Applications accepted by companies</small>
+          <span className="jobseeker-kpi-icon kpi-green">
+            <CheckCircle2 size={19} aria-hidden="true" />
+          </span>
+          <div>
+            <span>Accepted applications</span>
+            <strong>{isLoading ? "-" : stats.accepted}</strong>
+            <small>Applications accepted by companies</small>
+          </div>
         </article>
         <article>
-          <span>Portfolio items</span>
-          <strong>{isLoading ? "-" : portfolioItems.length}</strong>
-          <small>{portfolioItems.filter((item) => item.projectUrl).length} with a project link</small>
+          <span className="jobseeker-kpi-icon kpi-amber">
+            <FolderKanban size={19} aria-hidden="true" />
+          </span>
+          <div>
+            <span>Portfolio items</span>
+            <strong>{isLoading ? "-" : portfolioItems.length}</strong>
+            <small>{portfolioItems.filter((item) => item.projectUrl).length} with a project link</small>
+          </div>
         </article>
         <article>
-          <span>Average rating</span>
-          <strong>{isLoading ? "-" : profile?.averageRating?.toFixed(1) ?? "New"}</strong>
-          <small>{stats.reviews} company review{stats.reviews === 1 ? "" : "s"}</small>
+          <span className="jobseeker-kpi-icon kpi-violet">
+            <Star size={19} aria-hidden="true" />
+          </span>
+          <div>
+            <span>Average rating</span>
+            <strong>{isLoading ? "-" : profile?.averageRating?.toFixed(1) ?? "New"}</strong>
+            <small>{stats.reviews} company review{stats.reviews === 1 ? "" : "s"}</small>
+          </div>
         </article>
       </div>
 

@@ -1,6 +1,7 @@
 import { type FormEvent, useEffect, useState } from "react";
 import {
   ArrowLeft,
+  ArrowRight,
   BriefcaseBusiness,
   CalendarDays,
   CheckCircle2,
@@ -36,12 +37,13 @@ import {
   isProjectAcceptingApplications,
   type Project,
 } from "../domain/projectTypes";
-import { getProjectAsync } from "../infrastructure/projectApi";
+import { getProjectAsync, getProjectsAsync } from "../infrastructure/projectApi";
 
 export default function ProjectDetailsPage() {
   const { projectId } = useParams();
   const { user } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
+  const [relatedProjects, setRelatedProjects] = useState<Project[]>([]);
   const [companyProfile, setCompanyProfile] = useState<CompanyProfile | null>(null);
   const [mySkills, setMySkills] = useState<Skill[]>([]);
   const [existingApplication, setExistingApplication] = useState<Application | null>(null);
@@ -58,10 +60,11 @@ export default function ProjectDetailsPage() {
     async function loadProject() {
       try {
         const projectData = await getProjectAsync(Number(projectId));
-        const [companyData, applicationData, skillData] = await Promise.all([
+        const [companyData, applicationData, skillData, projectDataList] = await Promise.all([
           getPublicCompanyProfileAsync(projectData.companyProfileId),
           isJobSeeker ? getMyApplicationsAsync() : Promise.resolve([]),
           isJobSeeker ? getMySkillsAsync() : Promise.resolve([]),
+          getProjectsAsync().catch(() => [] as Project[]),
         ]);
 
         if (isMounted) {
@@ -70,6 +73,23 @@ export default function ProjectDetailsPage() {
           setMySkills(skillData);
           setExistingApplication(
             applicationData.find((application) => application.projectId === projectData.id) ?? null,
+          );
+          const otherOpenProjects = projectDataList.filter(
+            (candidate) =>
+              candidate.id !== projectData.id &&
+              isProjectAcceptingApplications(candidate),
+          );
+          const companyProjects = otherOpenProjects.filter(
+            (candidate) =>
+              candidate.companyProfileId === projectData.companyProfileId,
+          );
+          const similarProjects = otherOpenProjects.filter(
+            (candidate) =>
+              candidate.companyProfileId !== projectData.companyProfileId &&
+              candidate.type === projectData.type,
+          );
+          setRelatedProjects(
+            [...companyProjects, ...similarProjects].slice(0, 3),
           );
         }
       } catch (caughtError) {
@@ -312,6 +332,57 @@ export default function ProjectDetailsPage() {
               )}
             </aside>
           </div>
+
+          {relatedProjects.length > 0 ? (
+            <section className="jobseeker-related-opportunities">
+              <header>
+                <div>
+                  <span>Keep exploring</span>
+                  <h2>Related opportunities</h2>
+                </div>
+                <Button
+                  to={isJobSeeker ? "/job-seeker/opportunities" : "/opportunities"}
+                  variant="ghost"
+                >
+                  View all
+                  <ArrowRight size={16} aria-hidden="true" />
+                </Button>
+              </header>
+              <div>
+                {relatedProjects.map((relatedProject) => (
+                  <article key={relatedProject.id}>
+                    <div className="jobseeker-opportunity-labels">
+                      <StatusBadge tone="blue">
+                        {getOpportunityTypeLabel(relatedProject.type)}
+                      </StatusBadge>
+                      {relatedProject.companyProfileId === project.companyProfileId ? (
+                        <StatusBadge tone="amber">Same company</StatusBadge>
+                      ) : null}
+                    </div>
+                    <h3>{relatedProject.title}</h3>
+                    <p>{relatedProject.companyName}</p>
+                    <div className="jobseeker-related-meta">
+                      <span>
+                        <Clock3 size={15} aria-hidden="true" />
+                        {relatedProject.durationWeeks} weeks
+                      </span>
+                      <span>
+                        <MapPin size={15} aria-hidden="true" />
+                        {getWorkModeLabel(relatedProject.workMode)}
+                      </span>
+                    </div>
+                    <Button
+                      to={`${isJobSeeker ? "/job-seeker/opportunities" : "/opportunities"}/${relatedProject.id}`}
+                      variant="secondary"
+                    >
+                      View details
+                      <ArrowRight size={16} aria-hidden="true" />
+                    </Button>
+                  </article>
+                ))}
+              </div>
+            </section>
+          ) : null}
         </>
       ) : null}
     </section>
