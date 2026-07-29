@@ -7,9 +7,11 @@ import StatusBadge from "../../../shared/components/StatusBadge";
 import {
   getOpportunityTypeLabel,
   getProjectStatusLabel,
+  FreelancePricingTypes,
   OpportunityTypes,
   ProjectStatuses,
   type OpportunityType,
+  type FreelancePricingType,
   type ProjectStatus,
 } from "../../projects/domain/projectTypes";
 import type { AdminCompany, AdminProject } from "../domain/adminTypes";
@@ -28,6 +30,9 @@ type ProjectForm = {
   title: string;
   description: string;
   budget: string;
+  freelancePricingType: FreelancePricingType;
+  freelanceDeliveryDays: string;
+  includedRevisions: string;
   durationWeeks: string;
   applicationTask: string;
   requiredTrainingHours: string;
@@ -41,6 +46,9 @@ const emptyProjectForm: ProjectForm = {
   title: "",
   description: "",
   budget: "",
+  freelancePricingType: FreelancePricingTypes.FixedPrice,
+  freelanceDeliveryDays: "14",
+  includedRevisions: "1",
   durationWeeks: "1",
   applicationTask: "",
   requiredTrainingHours: "",
@@ -174,6 +182,12 @@ export default function AdminProjectsPage() {
       title: project.title,
       description: project.description,
       budget: project.budget?.toString() ?? "",
+      freelancePricingType:
+        project.freelancePricingType ?? FreelancePricingTypes.FixedPrice,
+      freelanceDeliveryDays:
+        project.freelanceDeliveryDays?.toString() ?? "14",
+      includedRevisions:
+        project.includedRevisions?.toString() ?? "1",
       durationWeeks: project.durationWeeks.toString(),
       applicationTask: project.applicationTask,
       requiredTrainingHours: project.requiredTrainingHours?.toString() ?? "",
@@ -213,10 +227,40 @@ export default function AdminProjectsPage() {
         return;
       }
 
+      const budget = form.budget.trim() ? Number(form.budget) : null;
+      const freelanceDeliveryDays = Number(form.freelanceDeliveryDays);
+      const includedRevisions = Number(form.includedRevisions);
+      if (
+        form.type === OpportunityTypes.FreelanceTask &&
+        (budget === null ||
+          budget <= 0 ||
+          !Number.isInteger(freelanceDeliveryDays) ||
+          freelanceDeliveryDays < 1 ||
+          !Number.isInteger(includedRevisions) ||
+          includedRevisions < 0)
+      ) {
+        setError(
+          "Freelance Tasks require a budget, delivery time, and included revisions.",
+        );
+        return;
+      }
+
       const request = {
         title: form.title.trim(),
         description: form.description.trim(),
-        budget: form.budget.trim() ? Number(form.budget) : null,
+        budget,
+        freelancePricingType:
+          form.type === OpportunityTypes.FreelanceTask
+            ? form.freelancePricingType
+            : null,
+        freelanceDeliveryDays:
+          form.type === OpportunityTypes.FreelanceTask
+            ? freelanceDeliveryDays
+            : null,
+        includedRevisions:
+          form.type === OpportunityTypes.FreelanceTask
+            ? includedRevisions
+            : null,
         durationWeeks: Number(form.durationWeeks),
         applicationTask: form.applicationTask.trim() || null,
         requiredTrainingHours:
@@ -373,12 +417,18 @@ export default function AdminProjectsPage() {
               />
             </label>
             <label className="field">
-              <span>Budget</span>
+              <span>
+                {form.type === OpportunityTypes.FreelanceTask &&
+                form.freelancePricingType === FreelancePricingTypes.Hourly
+                  ? "Hourly rate"
+                  : "Budget"}
+              </span>
               <input
                 min="0"
                 step="1"
                 type="number"
                 value={form.budget}
+                required={form.type === OpportunityTypes.FreelanceTask}
                 onChange={(event) =>
                   setForm((current) => ({
                     ...current,
@@ -472,6 +522,63 @@ export default function AdminProjectsPage() {
                       setForm((current) => ({
                         ...current,
                         academicRequirements: event.target.value,
+                      }))
+                    }
+                    required
+                  />
+                </label>
+              </>
+            ) : null}
+            {form.type === OpportunityTypes.FreelanceTask ? (
+              <>
+                <label className="field">
+                  <span>Pricing</span>
+                  <select
+                    value={form.freelancePricingType}
+                    onChange={(event) =>
+                      setForm((current) => ({
+                        ...current,
+                        freelancePricingType: Number(
+                          event.target.value,
+                        ) as FreelancePricingType,
+                      }))
+                    }
+                  >
+                    <option value={FreelancePricingTypes.FixedPrice}>
+                      Fixed price
+                    </option>
+                    <option value={FreelancePricingTypes.Hourly}>
+                      Hourly
+                    </option>
+                  </select>
+                </label>
+                <label className="field">
+                  <span>Delivery days</span>
+                  <input
+                    min="1"
+                    max="365"
+                    type="number"
+                    value={form.freelanceDeliveryDays}
+                    onChange={(event) =>
+                      setForm((current) => ({
+                        ...current,
+                        freelanceDeliveryDays: event.target.value,
+                      }))
+                    }
+                    required
+                  />
+                </label>
+                <label className="field">
+                  <span>Included revisions</span>
+                  <input
+                    min="0"
+                    max="20"
+                    type="number"
+                    value={form.includedRevisions}
+                    onChange={(event) =>
+                      setForm((current) => ({
+                        ...current,
+                        includedRevisions: event.target.value,
                       }))
                     }
                     required

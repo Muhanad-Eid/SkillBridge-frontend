@@ -1,3 +1,9 @@
+import {
+  OpportunityTypes,
+  type FreelancePricingType,
+  type OpportunityType,
+} from "../../projects/domain/projectTypes";
+
 export const ApplicationStatuses = {
   Pending: 0,
   Accepted: 1,
@@ -17,17 +23,28 @@ export type Application = {
   coverLetter: string | null;
   workSampleUrl: string | null;
   shortTaskResponse: string | null;
+  hasCv: boolean;
+  cvFileName: string | null;
+  canViewCv: boolean;
+  opportunityType: OpportunityType;
+  freelancePricingType: FreelancePricingType | null;
+  proposedBudget: number | null;
+  proposedDeliveryDays: number | null;
+  isShortlisted: boolean;
   isIdentityHidden: boolean;
   submittedAt: string;
+  decisionNote: string | null;
+  decidedAt: string | null;
   workStatus: WorkSubmissionStatus;
   status: ApplicationStatus;
-  
 };
 
 export type CreateApplicationRequest = {
   coverLetter?: string;
   workSampleUrl?: string;
   shortTaskResponse?: string;
+  proposedBudget?: number;
+  proposedDeliveryDays?: number;
 };
 
 export const WorkSubmissionStatuses = {
@@ -43,6 +60,11 @@ export type WorkSubmissionStatus =
 
 export type UpdateApplicationStatusRequest = {
   status: ApplicationStatus;
+  decisionNote?: string;
+};
+
+export type UpdateApplicationShortlistRequest = {
+  isShortlisted: boolean;
 };
 
 export function getApplicationStatusLabel(status: ApplicationStatus) {
@@ -50,4 +72,18 @@ export function getApplicationStatusLabel(status: ApplicationStatus) {
   if (status === ApplicationStatuses.Rejected) return "Rejected";
   if (status === ApplicationStatuses.Withdrawn) return "Withdrawn";
   return "Pending";
+}
+
+export function getApplicationStatusLabelForOpportunity(
+  status: ApplicationStatus,
+  opportunityType: OpportunityType,
+) {
+  if (opportunityType !== OpportunityTypes.FreelanceTask) {
+    return getApplicationStatusLabel(status);
+  }
+
+  if (status === ApplicationStatuses.Accepted) return "Proposal accepted";
+  if (status === ApplicationStatuses.Rejected) return "Proposal declined";
+  if (status === ApplicationStatuses.Withdrawn) return "Proposal withdrawn";
+  return "Proposal sent";
 }

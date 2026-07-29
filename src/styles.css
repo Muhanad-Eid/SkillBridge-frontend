@@ -1746,6 +1746,52 @@
   line-height: 1.55;
 }
 
+.jobseeker-application-decision-note {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 10px;
+  border: 1px solid #f1d2d2;
+  border-radius: 7px;
+  background: #fff8f8;
+  color: #9b2c2c;
+  padding: 12px 14px;
+}
+
+.jobseeker-application-decision-note div {
+  min-width: 0;
+}
+
+.jobseeker-application-decision-note strong,
+.jobseeker-application-decision-note small {
+  display: block;
+}
+
+.jobseeker-application-decision-note p {
+  margin: 4px 0 6px;
+  color: #5f3434;
+  line-height: 1.5;
+}
+
+.jobseeker-application-decision-note small {
+  color: #8e6262;
+  font-size: 0.72rem;
+}
+
+[data-theme="dark"] .jobseeker-application-decision-note {
+  border-color: #713d42;
+  background: #2c2023;
+  color: #f2a6aa;
+}
+
+[data-theme="dark"] .jobseeker-application-decision-note p {
+  color: #f0d2d4;
+}
+
+[data-theme="dark"] .jobseeker-application-decision-note small {
+  color: #c99b9e;
+}
+
 .jobseeker-required-banner {
   display: grid;
   grid-template-columns: 22px minmax(0, 1fr);
@@ -2782,6 +2828,35 @@ body,
 body {
   margin: 0;
   overflow-x: hidden;
+}
+
+.app-route-loader {
+  min-height: 100vh;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.app-route-loader span {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: app-route-loader-spin 0.75s linear infinite;
+}
+
+.app-route-loader strong {
+  font-size: 0.85rem;
+}
+
+@keyframes app-route-loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 a {
@@ -11536,6 +11611,99 @@ a,
   }
 }
 
+/* Dedicated freelance workspace */
+.freelance-marketplace-page .jobseeker-discovery-toolbar {
+  grid-template-columns: minmax(0, 1fr) 180px auto;
+}
+
+.freelance-sort-select {
+  min-height: 44px;
+  border: 1px solid var(--border-strong);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 700;
+  padding: 0 12px;
+}
+
+.freelance-marketplace-page .jobseeker-opportunity-list {
+  grid-template-columns: 1fr;
+}
+
+.freelance-marketplace-page .freelance-task-card {
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-content: start;
+  min-height: 0;
+  border-left: 3px solid var(--blue);
+}
+
+.freelance-marketplace-page .freelance-task-card .jobseeker-opportunity-action {
+  grid-column: 3;
+  align-self: center;
+  justify-self: end;
+}
+
+.freelance-marketplace-page .freelance-task-card .jobseeker-opportunity-copy > p {
+  max-width: 850px;
+}
+
+.freelance-marketplace-page .empty-state {
+  width: 100%;
+  min-height: 170px;
+  gap: 8px;
+  padding: 24px;
+  box-shadow: none;
+}
+
+.freelance-marketplace-page .empty-state h1 {
+  font-size: 21px;
+}
+
+.freelance-marketplace-page .empty-state p {
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.company-freelance-page .company-list-toolbar {
+  grid-template-columns: minmax(260px, 1fr) 190px;
+}
+
+.company-freelance-page .company-opportunity-row {
+  border-left: 3px solid var(--blue);
+}
+
+.freelance-proposals-page .jobseeker-application-project > span {
+  background: var(--blue-soft);
+  color: var(--blue-dark);
+}
+
+@media (max-width: 760px) {
+  .freelance-marketplace-page .jobseeker-discovery-toolbar {
+    grid-template-columns: 1fr auto;
+  }
+
+  .freelance-marketplace-page .jobseeker-discovery-toolbar .jobseeker-search-field {
+    grid-column: 1 / -1;
+  }
+
+  .freelance-sort-select {
+    width: 100%;
+  }
+
+  .freelance-marketplace-page .freelance-task-card {
+    grid-template-columns: 44px minmax(0, 1fr);
+  }
+
+  .freelance-marketplace-page .freelance-task-card .jobseeker-opportunity-action {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .company-freelance-page .company-list-toolbar {
+    grid-template-columns: 1fr;
+  }
+}
+
 [data-theme="dark"] .work-record-tabs button.active,
 [data-theme="dark"] .university-training-list button.active,
 [data-theme="dark"] .work-milestone-index,
@@ -11695,6 +11863,278 @@ a,
   font-weight: 800;
 }
 
+.training-report-panel {
+  display: grid;
+  gap: 16px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.training-report-panel > header,
+.training-report-list > article > header,
+.training-report-form > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.training-report-panel > header > div:first-child,
+.training-report-form > header {
+  display: grid;
+  justify-content: start;
+  gap: 3px;
+}
+
+.training-report-panel > header span,
+.training-report-form > header span,
+.training-supervisor-card > header > span {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.training-report-panel h3 {
+  margin: 0;
+}
+
+.training-report-counts {
+  display: grid;
+  justify-items: end;
+}
+
+.training-report-counts strong {
+  color: var(--blue-dark);
+  font-size: 1.65rem;
+}
+
+.training-report-counts span {
+  text-transform: none;
+}
+
+.training-report-overview,
+.university-training-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.training-report-overview article,
+.university-training-kpis article {
+  display: grid;
+  align-content: center;
+  gap: 5px;
+  min-height: 88px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-soft);
+  padding: 14px;
+}
+
+.training-report-overview svg {
+  color: var(--blue);
+}
+
+.training-report-overview span,
+.university-training-kpis span {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.training-report-overview strong,
+.university-training-kpis strong {
+  font-size: 1.2rem;
+}
+
+.training-supervisor-card {
+  display: grid;
+  gap: 14px;
+  border-left: 3px solid var(--blue);
+  background: var(--surface-soft);
+  padding: 14px 16px;
+}
+
+.training-supervisor-card > header {
+  display: grid;
+  gap: 3px;
+}
+
+.training-supervisor-card .company-form-grid {
+  align-items: end;
+}
+
+.training-supervisor-card .button {
+  align-self: end;
+}
+
+.training-report-list {
+  display: grid;
+  gap: 12px;
+}
+
+.training-report-list > article {
+  display: grid;
+  gap: 13px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.training-report-list > article > header > div {
+  display: grid;
+  gap: 3px;
+}
+
+.training-report-list > article > header span {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.training-report-list dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.training-report-list dl > div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.training-report-list dt {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.training-report-list dd {
+  margin: 0;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.training-report-list > article > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  color: var(--blue-dark);
+  font-weight: 800;
+}
+
+.training-report-review,
+.training-report-form {
+  display: grid;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.training-report-review > div,
+.training-report-form > div:last-child {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.university-training-page {
+  max-width: 1500px;
+}
+
+.university-training-kpis {
+  margin-bottom: 12px;
+}
+
+.university-training-toolbar {
+  min-height: 46px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  padding: 0 14px;
+}
+
+.university-training-toolbar svg {
+  color: var(--muted);
+}
+
+.university-training-toolbar input {
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  outline: 0;
+}
+
+.training-academic-confirmation {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-soft);
+  padding: 13px 14px;
+  font-weight: 700;
+}
+
+.training-academic-confirmation input {
+  margin-top: 3px;
+}
+
+@media (max-width: 700px) {
+  .training-report-overview,
+  .university-training-kpis,
+  .training-report-list dl {
+    grid-template-columns: 1fr;
+  }
+
+  .training-report-panel > header,
+  .training-report-list > article > header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .training-report-counts {
+    justify-items: start;
+  }
+}
+
+@media print {
+  .university-portal .company-sidebar,
+  .university-portal .page-header,
+  .university-training-kpis,
+  .university-training-toolbar,
+  .university-training-list,
+  .university-training-contact-actions,
+  .university-progress-form,
+  .university-approval-form,
+  .training-report-review,
+  .portal-content-menu-button {
+    display: none !important;
+  }
+
+  .university-portal,
+  .university-portal .company-workspace,
+  .university-portal .company-content,
+  .university-training-layout {
+    display: block;
+    background: #ffffff;
+  }
+
+  .university-training-record {
+    border: 0;
+    padding: 0;
+  }
+}
+
 .university-milestone-summary article > div {
   display: grid;
   gap: 5px;
@@ -11713,10 +12153,863 @@ a,
   color: var(--muted);
 }
 
+.freelance-terms-fields {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.company-field-readout {
+  min-height: 78px;
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-soft);
+  padding: 11px 13px;
+}
+
+.company-field-readout > span,
+.company-field-readout > small {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.company-field-readout > strong {
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.application-cv-upload {
+  position: relative;
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 7px;
+  background: var(--surface-soft);
+  padding: 13px 14px;
+  cursor: pointer;
+}
+
+.application-cv-upload:hover {
+  border-color: var(--blue);
+}
+
+.application-cv-upload:focus-within {
+  outline: 3px solid color-mix(in srgb, var(--blue) 24%, transparent);
+  outline-offset: 2px;
+}
+
+.application-cv-upload > input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.application-cv-copy,
+.application-cv-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.application-cv-copy > svg {
+  flex: 0 0 auto;
+  color: var(--blue);
+}
+
+.application-cv-copy > span {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.application-cv-copy small {
+  color: var(--muted);
+}
+
+.application-cv-picker {
+  max-width: min(48%, 310px);
+  color: var(--blue);
+  font-size: 0.82rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.application-cv-picker svg {
+  flex: 0 0 auto;
+}
+
+.freelance-terms-fields legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 7px;
+  font-weight: 800;
+}
+
+.freelance-proposal-fields,
+.freelance-proposal-summary,
+.freelance-proposal-inline {
+  display: grid;
+  gap: 10px;
+}
+
+.freelance-proposal-fields {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.freelance-brief-reference {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--border);
+}
+
+.freelance-brief-reference > span {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  background: var(--surface-soft);
+  padding: 11px 12px;
+}
+
+.freelance-brief-reference small {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.freelance-brief-reference strong {
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font-size: 0.88rem;
+}
+
+.freelance-proposal-terms {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 12px;
+}
+
+.freelance-proposal-terms legend {
+  padding: 0 6px;
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.freelance-proposal-review {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 3px 12px;
+  border-left: 3px solid var(--blue);
+  background: var(--surface-soft);
+  padding: 11px 13px;
+}
+
+.freelance-proposal-review span,
+.freelance-proposal-review small {
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.freelance-proposal-review strong {
+  grid-row: 1 / 3;
+  grid-column: 2;
+  color: var(--text);
+}
+
+.freelance-proposal-summary {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-block: 1px solid var(--border);
+  padding-block: 12px;
+}
+
+.freelance-proposal-summary > div {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 3px 8px;
+  min-width: 0;
+}
+
+.freelance-proposal-summary > div svg {
+  grid-row: 1 / 3;
+  color: var(--blue);
+}
+
+.freelance-proposal-summary span {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.freelance-proposal-inline {
+  grid-template-columns: repeat(2, minmax(0, max-content));
+  align-items: center;
+  color: var(--muted);
+}
+
+.freelance-proposal-inline > span {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 2px 7px;
+  min-width: 0;
+}
+
+.freelance-proposal-inline svg {
+  grid-row: 1 / 3;
+  color: var(--blue);
+}
+
+.freelance-proposal-inline small {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.freelance-proposal-inline strong {
+  color: var(--text);
+  font-size: 0.82rem;
+}
+
+.freelance-opportunity-terms {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.company-freelance-brief {
+  display: grid;
+  grid-template-columns: minmax(150px, 1.2fr) repeat(3, minmax(130px, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--border);
+}
+
+.company-freelance-brief > div {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 3px 9px;
+  min-width: 0;
+  padding: 14px 16px;
+  background: var(--surface);
+}
+
+.company-freelance-brief > div:first-child {
+  grid-template-columns: 1fr;
+}
+
+.company-freelance-brief svg {
+  grid-row: 1 / 3;
+  color: var(--blue);
+}
+
+.company-freelance-brief span {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.company-team-controls {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.company-proposal-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.company-proposal-controls > button {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--muted);
+  padding: 0 11px;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.company-proposal-controls > button:hover,
+.company-proposal-controls > button.active {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.company-proposal-controls > button strong {
+  min-width: 20px;
+  border-radius: 4px;
+  background: var(--surface-soft);
+  padding: 2px 5px;
+  color: inherit;
+  text-align: center;
+}
+
+.company-proposal-sort {
+  min-height: 42px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  padding: 0 10px;
+}
+
+.company-proposal-sort svg {
+  color: var(--muted);
+}
+
+.company-proposal-sort select {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+}
+
+.company-freelance-proposal-row > .freelance-proposal-inline {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.company-freelance-proposal-row > p {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+
+.company-freelance-proposal-row > .company-proposal-statuses {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+.company-proposal-statuses {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.company-freelance-proposal-row > .company-team-actions {
+  grid-column: 4;
+  grid-row: 1;
+}
+
+.company-freelance-proposal-row.is-shortlisted {
+  box-shadow: inset 3px 0 0 var(--blue);
+}
+
+.company-freelance-proposal-row.is-compared {
+  background: color-mix(in srgb, var(--blue) 6%, var(--surface));
+}
+
+.company-view-proposal {
+  min-width: 126px;
+}
+
+.company-proposal-compare-tray {
+  position: sticky;
+  bottom: 14px;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14);
+  padding: 11px 12px;
+}
+
+.company-proposal-compare-tray > div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.company-proposal-compare-tray > div:first-child svg {
+  color: var(--blue);
+}
+
+.company-proposal-compare-tray small {
+  color: var(--muted);
+}
+
+.company-proposal-compare-dialog {
+  width: min(calc(100% - 32px), 1120px);
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  align-self: center;
+  margin: auto;
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.22);
+  overflow: hidden;
+}
+
+.company-proposal-compare-dialog > header,
+.company-proposal-compare-dialog > footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+}
+
+.company-proposal-compare-dialog > header {
+  border-bottom: 1px solid var(--border);
+}
+
+.company-proposal-compare-dialog > footer {
+  border-top: 1px solid var(--border);
+}
+
+.company-proposal-compare-dialog > header span {
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.company-proposal-compare-dialog h2 {
+  margin: 3px 0 0;
+  font-size: 1.25rem;
+}
+
+.company-proposal-compare-dialog > footer small {
+  max-width: 680px;
+  color: var(--muted);
+}
+
+.company-proposal-compare-table {
+  overflow: auto;
+}
+
+.company-proposal-compare-table table {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+}
+
+.company-proposal-compare-table th,
+.company-proposal-compare-table td {
+  border-bottom: 1px solid var(--border);
+  padding: 12px 14px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.company-proposal-compare-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+
+.company-proposal-compare-table td {
+  color: var(--text);
+  font-size: 0.84rem;
+}
+
+.company-proposal-compare-table td > strong,
+.company-proposal-compare-table td > small {
+  display: block;
+}
+
+.company-proposal-compare-table td > small {
+  margin-top: 3px;
+  color: var(--muted);
+}
+
+.company-proposal-compare-table td > p {
+  max-width: 320px;
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: var(--muted);
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.company-proposal-accept-dialog {
+  width: min(calc(100% - 32px), 620px);
+  align-self: center;
+  margin: auto;
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.22);
+  overflow: hidden;
+}
+
+.company-proposal-accept-dialog > header,
+.company-proposal-accept-dialog > footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 18px;
+}
+
+.company-proposal-accept-dialog > header {
+  border-bottom: 1px solid var(--border);
+}
+
+.company-proposal-accept-dialog > header span,
+.company-proposal-accept-terms span {
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.company-proposal-accept-dialog h2 {
+  margin: 3px 0 0;
+  font-size: 1.25rem;
+}
+
+.company-proposal-accept-dialog > p {
+  margin: 0;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  padding: 14px 18px;
+}
+
+.company-proposal-accept-dialog > footer {
+  justify-content: flex-end;
+  border-top: 1px solid var(--border);
+}
+
+.company-proposal-accept-terms {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.company-proposal-accept-terms > div {
+  display: grid;
+  gap: 4px;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 18px;
+}
+
+.company-proposal-accept-terms > div:nth-child(2n) {
+  border-right: 0;
+}
+
+.company-proposal-accept-terms > div:nth-last-child(-n + 2) {
+  border-bottom: 0;
+}
+
+.company-application-decision-dialog {
+  width: min(calc(100% - 32px), 620px);
+  align-self: center;
+  margin: auto;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.22);
+}
+
+.company-application-decision-dialog > header,
+.company-application-decision-dialog form > footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 18px;
+}
+
+.company-application-decision-dialog > header {
+  border-bottom: 1px solid var(--border);
+}
+
+.company-application-decision-dialog > header span,
+.company-application-decision-summary span,
+.company-application-decision-dialog .company-proposal-accept-terms span {
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.company-application-decision-dialog h2 {
+  margin: 3px 0 0;
+  font-size: 1.25rem;
+}
+
+.company-application-decision-dialog form {
+  display: grid;
+}
+
+.company-application-decision-dialog form > p,
+.company-application-decision-dialog form > .field,
+.company-application-decision-summary {
+  margin: 0;
+  padding: 16px 18px;
+}
+
+.company-application-decision-summary {
+  display: grid;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.company-application-decision-dialog form > p {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.company-application-decision-dialog form > footer {
+  justify-content: flex-end;
+  border-top: 1px solid var(--border);
+}
+
+.company-application-decision-dialog .company-proposal-accept-terms {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.company-application-decision-dialog .company-proposal-accept-terms > div {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+}
+
+.company-application-decision-dialog .company-proposal-accept-terms svg {
+  grid-row: 1 / 3;
+  color: var(--blue);
+}
+
+.company-decision-reject-confirm {
+  border-color: #c94444;
+  background: #c94444;
+  color: #ffffff;
+}
+
+.company-decision-reject-confirm:hover:not(:disabled) {
+  border-color: #a93636;
+  background: #a93636;
+}
+
+.jobseeker-application-table .freelance-proposal-inline {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.freelance-agreement {
+  display: grid;
+  gap: 14px;
+  border-block: 1px solid var(--border);
+  padding-block: 16px;
+}
+
+.freelance-agreement > header {
+  display: grid;
+  gap: 3px;
+}
+
+.freelance-agreement > header span,
+.freelance-agreement article span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.freelance-agreement > div {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--border);
+}
+
+.freelance-agreement article {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 5px 9px;
+  min-width: 0;
+  padding: 14px;
+  background: var(--surface);
+}
+
+.freelance-agreement article small {
+  grid-column: 2;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.freelance-agreement article svg {
+  grid-row: 1 / 3;
+  color: var(--blue);
+}
+
+.freelance-agreement > small {
+  color: var(--muted);
+}
+
 @media (max-width: 600px) {
+  .freelance-proposal-fields,
+  .freelance-proposal-summary,
+  .freelance-brief-reference,
+  .freelance-opportunity-terms,
+  .freelance-agreement > div {
+    grid-template-columns: 1fr;
+  }
+
+  .freelance-proposal-inline,
+  .company-team-controls,
+  .company-freelance-brief {
+    grid-template-columns: 1fr;
+  }
+
+  .company-freelance-proposal-row > .freelance-proposal-inline,
+  .company-freelance-proposal-row > p,
+  .company-freelance-proposal-row > .company-proposal-statuses,
+  .company-freelance-proposal-row > .company-team-actions {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .application-cv-upload {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .application-cv-picker {
+    max-width: 100%;
+  }
+
+  .company-proposal-controls,
+  .company-proposal-compare-tray,
+  .company-proposal-compare-tray > div,
+  .company-proposal-compare-dialog > footer,
+  .company-proposal-accept-dialog > footer,
+  .company-application-decision-dialog form > footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .company-proposal-controls > button,
+  .company-proposal-sort,
+  .company-proposal-compare-tray .button {
+    width: 100%;
+  }
+
+  .company-proposal-compare-dialog {
+    width: calc(100% - 16px);
+    max-height: calc(100vh - 16px);
+  }
+
+  .company-proposal-accept-dialog {
+    width: calc(100% - 16px);
+  }
+
+  .company-proposal-accept-terms,
+  .company-application-decision-dialog .company-proposal-accept-terms {
+    grid-template-columns: 1fr;
+  }
+
+  .company-application-decision-dialog {
+    width: calc(100% - 16px);
+  }
+
+  .company-proposal-accept-terms > div,
+  .company-proposal-accept-terms > div:nth-child(2n),
+  .company-proposal-accept-terms > div:nth-last-child(-n + 2) {
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .company-proposal-accept-terms > div:last-child {
+    border-bottom: 0;
+  }
+
   .university-milestone-summary article header {
     align-items: flex-start;
     flex-direction: column;
+  }
+}
+
+@media (max-width: 960px) {
+  .company-freelance-proposal-row > .freelance-proposal-inline,
+  .company-freelance-proposal-row > p,
+  .company-freelance-proposal-row > .company-proposal-statuses,
+  .company-freelance-proposal-row > .company-team-actions {
+    grid-column: auto;
+    grid-row: auto;
+  }
+}
+
+@media (min-width: 961px) and (max-width: 1180px) {
+  .company-freelance-proposal-row {
+    grid-template-columns: minmax(190px, 1fr) minmax(220px, 1fr) auto;
+  }
+
+  .company-freelance-proposal-row > .freelance-proposal-inline {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .company-freelance-proposal-row > .company-proposal-statuses {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .company-freelance-proposal-row > .company-team-actions {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .company-freelance-proposal-row > p {
+    grid-column: 1 / -1;
+    grid-row: 3;
   }
 }
 
@@ -11728,5 +13021,888 @@ a,
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+}
+
+/* Evidence Portfolio */
+.portfolio-manager-page {
+  gap: 20px;
+}
+
+.portfolio-header-actions,
+.portfolio-manager-meta,
+.public-portfolio-profile-meta,
+.public-portfolio-links,
+.public-portfolio-skill-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.portfolio-header-actions {
+  gap: 8px;
+}
+
+.portfolio-manager-page .portfolio-summary-grid {
+  border-color: var(--border);
+  background: var(--surface);
+}
+
+.portfolio-manager-page .portfolio-summary-grid article {
+  border-color: var(--border);
+}
+
+.portfolio-manager-page .portfolio-summary-grid span {
+  color: var(--muted);
+}
+
+.portfolio-manager-page .portfolio-summary-grid strong {
+  color: var(--text);
+}
+
+.portfolio-toolbar,
+.public-portfolio-toolbar {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(160px, 220px) minmax(190px, 260px);
+  gap: 10px;
+}
+
+.public-portfolio-toolbar {
+  grid-template-columns: minmax(260px, 1fr) minmax(200px, 280px);
+}
+
+.portfolio-toolbar label,
+.public-portfolio-toolbar label,
+.portfolio-cover-input {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--muted);
+  padding: 0 12px;
+}
+
+.portfolio-toolbar input,
+.public-portfolio-toolbar input,
+.portfolio-cover-input input {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+}
+
+.portfolio-toolbar label:focus-within,
+.public-portfolio-toolbar label:focus-within,
+.portfolio-cover-input:focus-within {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px var(--blue-soft);
+}
+
+.portfolio-toolbar select,
+.public-portfolio-toolbar select {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 0 36px 0 12px;
+  font: inherit;
+}
+
+.portfolio-manager-list {
+  display: grid;
+  gap: 8px;
+}
+
+.portfolio-manager-list > article {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 124px minmax(0, 1fr) auto;
+  align-items: stretch;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.portfolio-manager-list > article.featured {
+  border-left: 3px solid var(--blue);
+}
+
+.portfolio-manager-cover {
+  width: 124px;
+  min-height: 118px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 0;
+  border-right: 1px solid var(--border);
+  background: var(--surface-soft);
+  color: var(--blue);
+  cursor: pointer;
+  padding: 0;
+}
+
+.portfolio-manager-list > article.featured .portfolio-manager-cover {
+  width: 121px;
+}
+
+.portfolio-manager-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.portfolio-manager-cover:hover {
+  background: var(--blue-soft);
+}
+
+.portfolio-manager-content {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  gap: 10px;
+  padding: 16px 18px;
+}
+
+.portfolio-manager-content > header {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.portfolio-manager-content > header > div:first-child {
+  min-width: 0;
+}
+
+.portfolio-manager-content > header > div:last-child {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.portfolio-manager-content header span:first-child {
+  color: var(--blue-dark);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.portfolio-manager-content h2,
+.portfolio-manager-content header p,
+.portfolio-manager-content > p {
+  margin: 0;
+}
+
+.portfolio-manager-content h2 {
+  margin-top: 3px;
+  color: var(--text);
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.portfolio-manager-content header p,
+.portfolio-manager-content > p {
+  color: var(--muted);
+}
+
+.portfolio-manager-content header p {
+  margin-top: 4px;
+  font-size: 0.8rem;
+}
+
+.portfolio-manager-content > p {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.portfolio-manager-meta {
+  gap: 6px 12px;
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.portfolio-manager-meta > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.portfolio-manager-meta > .skill,
+.portfolio-skill-list > span,
+.evidence-dialog-skills > span,
+.public-portfolio-skill-strip > span {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--text);
+  font-weight: 700;
+}
+
+.portfolio-manager-meta > .skill {
+  padding: 3px 7px;
+}
+
+.portfolio-manager-actions {
+  width: 52px;
+  display: grid;
+  align-content: center;
+  gap: 4px;
+  border-left: 1px solid var(--border);
+  padding: 8px;
+}
+
+.portfolio-manager-actions .button,
+.portfolio-card-actions .button,
+.public-portfolio-links a {
+  width: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+}
+
+.portfolio-edit-dialog,
+.evidence-dialog {
+  width: min(calc(100% - 32px), 720px);
+  max-height: min(88vh, 820px);
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.evidence-dialog {
+  width: min(calc(100% - 32px), 860px);
+}
+
+.evidence-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  overflow-y: auto;
+  background: rgba(15, 18, 29, 0.62);
+  padding: 24px 0;
+}
+
+.portfolio-edit-dialog > header,
+.portfolio-edit-dialog > footer,
+.evidence-dialog > header,
+.evidence-dialog > footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+}
+
+.portfolio-edit-dialog > header,
+.evidence-dialog > header {
+  align-items: flex-start;
+  border-bottom: 1px solid var(--border);
+}
+
+.portfolio-edit-dialog > footer,
+.evidence-dialog > footer {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--border);
+}
+
+.portfolio-edit-dialog > header span,
+.portfolio-edit-dialog > header h2,
+.evidence-dialog > header h2,
+.evidence-dialog > header p {
+  margin: 0;
+}
+
+.portfolio-edit-dialog > header span {
+  color: var(--blue-dark);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.portfolio-edit-dialog > header h2 {
+  margin-top: 3px;
+  font-size: 1.05rem;
+}
+
+.portfolio-edit-dialog > .field {
+  margin: 18px 20px 0;
+}
+
+.portfolio-edit-dialog textarea {
+  min-height: 132px;
+  resize: vertical;
+}
+
+.portfolio-edit-dialog .field > small {
+  justify-self: end;
+  color: var(--muted);
+}
+
+.portfolio-edit-toggles {
+  display: grid;
+  gap: 1px;
+  margin: 18px 20px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--border);
+}
+
+.portfolio-edit-toggles label {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  padding: 11px 13px;
+  font-weight: 700;
+}
+
+.portfolio-edit-toggles input {
+  width: 18px;
+  height: 18px;
+}
+
+.evidence-portfolio-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.portfolio-evidence-card {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: 150px minmax(0, 1fr);
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  padding: 0;
+}
+
+.portfolio-evidence-card.featured {
+  border-top: 3px solid var(--blue);
+}
+
+.portfolio-evidence-cover {
+  width: 100%;
+  height: 150px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-soft);
+  color: var(--blue);
+  cursor: pointer;
+  padding: 0;
+}
+
+.portfolio-evidence-card.featured .portfolio-evidence-cover {
+  height: 147px;
+}
+
+.portfolio-evidence-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 180ms ease;
+}
+
+.portfolio-evidence-cover:hover img {
+  transform: scale(1.025);
+}
+
+.portfolio-evidence-cover.placeholder:hover {
+  background: var(--blue-soft);
+}
+
+.portfolio-evidence-body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+.portfolio-evidence-body > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.portfolio-evidence-body > header > div:first-child {
+  min-width: 0;
+}
+
+.portfolio-evidence-body h3,
+.portfolio-evidence-body header p,
+.portfolio-evidence-body > p {
+  margin: 0;
+}
+
+.portfolio-evidence-body h3 {
+  margin-top: 8px;
+  color: var(--text);
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.portfolio-evidence-body header p {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.portfolio-evidence-description {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.portfolio-skill-list {
+  gap: 5px;
+}
+
+.portfolio-skill-list > span,
+.evidence-dialog-skills > span,
+.public-portfolio-skill-strip > span {
+  padding: 5px 8px;
+  font-size: 0.7rem;
+}
+
+.portfolio-evidence-body > footer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.portfolio-evidence-body > footer > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.portfolio-evidence-body > footer .button {
+  margin-left: auto;
+}
+
+.company-applicant-portfolio .evidence-portfolio-grid,
+.portfolio-viewer-drawer .evidence-portfolio-grid {
+  grid-template-columns: 1fr;
+}
+
+.evidence-dialog > header h2 {
+  margin-top: 9px;
+  color: var(--text);
+  font-size: 1.2rem;
+}
+
+.evidence-dialog > header p {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  color: var(--muted);
+}
+
+.evidence-dialog-cover {
+  width: 100%;
+  max-height: 320px;
+  display: block;
+  border-bottom: 1px solid var(--border);
+  object-fit: cover;
+}
+
+.evidence-dialog-owner-summary,
+.evidence-dialog-verification,
+.evidence-dialog-grid,
+.evidence-dialog-skills,
+.evidence-dialog-review {
+  margin: 18px 20px 0;
+}
+
+.evidence-dialog-owner-summary {
+  display: grid;
+  gap: 5px;
+}
+
+.evidence-dialog-owner-summary > span,
+.evidence-dialog-grid span {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.evidence-dialog-owner-summary p,
+.evidence-dialog-grid p,
+.evidence-dialog-review p {
+  margin: 0;
+  color: var(--text);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.evidence-dialog-verification {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border-left: 3px solid var(--green);
+  background: color-mix(in srgb, var(--green) 8%, var(--surface));
+  color: var(--green);
+  padding: 12px 14px;
+}
+
+.evidence-dialog-verification svg {
+  flex: 0 0 auto;
+}
+
+.evidence-dialog-verification div {
+  display: grid;
+  gap: 3px;
+}
+
+.evidence-dialog-verification span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.evidence-dialog-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--border);
+}
+
+.evidence-dialog-grid > section {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  background: var(--surface);
+  padding: 14px;
+}
+
+.evidence-dialog-grid section p {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: var(--muted);
+}
+
+.evidence-dialog-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.evidence-dialog-review {
+  display: grid;
+  gap: 7px;
+  border-left: 3px solid var(--amber);
+  background: var(--amber-soft);
+  padding: 12px 14px;
+}
+
+.evidence-dialog-review strong {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--amber-dark);
+}
+
+.public-portfolio-page {
+  width: 100%;
+  min-width: 0;
+  padding: clamp(28px, 5vw, 64px) clamp(16px, 5vw, 72px);
+}
+
+.public-portfolio-shell {
+  width: min(100%, 1180px);
+  display: grid;
+  gap: 26px;
+  margin: 0 auto;
+}
+
+.public-portfolio-profile {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 18px;
+  border-block: 1px solid var(--border);
+  padding: 24px 0;
+}
+
+.public-portfolio-avatar {
+  width: 62px;
+  height: 62px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--blue);
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+
+.public-portfolio-identity {
+  min-width: 0;
+}
+
+.public-portfolio-identity > span,
+.public-portfolio-section > header span {
+  color: var(--blue-dark);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.public-portfolio-identity h1,
+.public-portfolio-identity > p,
+.public-portfolio-section > header h2 {
+  margin: 0;
+}
+
+.public-portfolio-identity h1 {
+  margin-top: 4px;
+  color: var(--text);
+  font-size: clamp(1.55rem, 3vw, 2.15rem);
+  overflow-wrap: anywhere;
+}
+
+.public-portfolio-identity > p {
+  max-width: 720px;
+  margin-top: 8px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.public-portfolio-profile-meta {
+  gap: 7px 16px;
+  margin-top: 13px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.public-portfolio-profile-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.public-portfolio-links {
+  gap: 7px;
+}
+
+.public-portfolio-links a {
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.public-portfolio-links a:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.public-portfolio-skill-strip {
+  gap: 6px;
+}
+
+.public-portfolio-section {
+  min-width: 0;
+  display: grid;
+  gap: 14px;
+}
+
+.public-portfolio-section > header {
+  display: grid;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+}
+
+.public-portfolio-section > header h2 {
+  color: var(--text);
+  font-size: 1.15rem;
+}
+
+.public-portfolio-section .empty-state {
+  width: 100%;
+  min-height: 160px;
+  display: grid;
+  align-content: center;
+  gap: 7px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 8px;
+  background: transparent;
+  box-shadow: none;
+  padding: 32px;
+}
+
+.public-portfolio-section .empty-state h1,
+.public-portfolio-section .empty-state p {
+  margin: 0;
+}
+
+.public-portfolio-section .empty-state h1 {
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.public-portfolio-section .empty-state p {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+@media (max-width: 980px) {
+  .evidence-portfolio-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .portfolio-toolbar,
+  .public-portfolio-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .portfolio-manager-list > article {
+    grid-template-columns: 96px minmax(0, 1fr);
+  }
+
+  .portfolio-manager-cover {
+    width: 96px;
+  }
+
+  .portfolio-manager-list > article.featured .portfolio-manager-cover {
+    width: 93px;
+  }
+
+  .portfolio-manager-actions {
+    width: auto;
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(4, 36px);
+    justify-content: end;
+    border-top: 1px solid var(--border);
+    border-left: 0;
+  }
+
+  .public-portfolio-profile {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .public-portfolio-links {
+    grid-column: 2;
+  }
+}
+
+@media (max-width: 600px) {
+  .portfolio-header-actions {
+    width: 100%;
+  }
+
+  .portfolio-header-actions .button {
+    flex: 1 1 0;
+  }
+
+  .portfolio-manager-page .portfolio-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .portfolio-manager-page .portfolio-summary-grid article {
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .portfolio-manager-page .portfolio-summary-grid article:last-child {
+    border-bottom: 0;
+  }
+
+  .portfolio-manager-list > article {
+    grid-template-columns: 1fr;
+  }
+
+  .portfolio-manager-cover,
+  .portfolio-manager-list > article.featured .portfolio-manager-cover {
+    width: 100%;
+    height: 150px;
+    min-height: 150px;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .portfolio-manager-content > header {
+    flex-direction: column;
+  }
+
+  .portfolio-manager-content > header > div:last-child {
+    justify-content: flex-start;
+  }
+
+  .evidence-portfolio-grid,
+  .evidence-dialog-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .public-portfolio-page {
+    padding: 24px 14px 40px;
+  }
+
+  .public-portfolio-profile {
+    grid-template-columns: 1fr;
+  }
+
+  .public-portfolio-links {
+    grid-column: 1;
+  }
+
+  .portfolio-edit-dialog,
+  .evidence-dialog {
+    width: min(calc(100% - 20px), 860px);
+    max-height: 92vh;
   }
 }

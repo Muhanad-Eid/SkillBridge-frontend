@@ -18,6 +18,7 @@ import {
   getCompanyApplicationsAsync,
   updateApplicationStatusAsync,
 } from "../infrastructure/applicationApi";
+import ApplicationDecisionDialog from "./ApplicationDecisionDialog";
 
 const pipelineTabs: Array<{ label: string; value: "All" | ApplicationStatus }> = [
   { label: "All", value: "All" },
@@ -52,6 +53,12 @@ export default function CompanyApplicationsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isProfileLoading, setIsProfileLoading] = useState(false);
   const [busyApplicationId, setBusyApplicationId] = useState<number | null>(null);
+  const [decision, setDecision] = useState<{
+    application: Application;
+    status:
+      | typeof ApplicationStatuses.Accepted
+      | typeof ApplicationStatuses.Rejected;
+  } | null>(null);
   const [error, setError] = useState("");
   const [profileError, setProfileError] = useState("");
   const [actionMessage, setActionMessage] = useState("");
@@ -201,13 +208,17 @@ export default function CompanyApplicationsPage() {
   async function handleStatus(
     application: Application,
     status: typeof ApplicationStatuses.Accepted | typeof ApplicationStatuses.Rejected,
+    decisionNote?: string,
   ) {
     setBusyApplicationId(application.id);
     setError("");
     setActionMessage("");
 
     try {
-      await updateApplicationStatusAsync(application.id, { status });
+      await updateApplicationStatusAsync(application.id, {
+        status,
+        decisionNote,
+      });
       const updatedApplication = { ...application, status };
       setSelectedApplication((current) =>
         current?.id === application.id ? updatedApplication : current,
@@ -218,6 +229,7 @@ export default function CompanyApplicationsPage() {
         } for ${application.projectTitle}.`,
       );
       await loadApplications();
+      setDecision(null);
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -343,7 +355,10 @@ export default function CompanyApplicationsPage() {
                         aria-label={`Accept ${application.jobSeekerName}`}
                         title="Accept applicant"
                         onClick={() =>
-                          handleStatus(application, ApplicationStatuses.Accepted)
+                          setDecision({
+                            application,
+                            status: ApplicationStatuses.Accepted,
+                          })
                         }
                       >
                         <Check size={17} aria-hidden="true" />
@@ -356,7 +371,10 @@ export default function CompanyApplicationsPage() {
                         aria-label={`Reject ${application.jobSeekerName}`}
                         title="Reject applicant"
                         onClick={() =>
-                          handleStatus(application, ApplicationStatuses.Rejected)
+                          setDecision({
+                            application,
+                            status: ApplicationStatuses.Rejected,
+                          })
                         }
                       >
                         <X size={17} aria-hidden="true" />
@@ -395,9 +413,13 @@ export default function CompanyApplicationsPage() {
                   type="button"
                   className="button-with-icon"
                   disabled={busyApplicationId === selectedApplication.id}
-                  onClick={() =>
-                    handleStatus(selectedApplication, ApplicationStatuses.Accepted)
-                  }
+                  onClick={() => {
+                    setDecision({
+                      application: selectedApplication,
+                      status: ApplicationStatuses.Accepted,
+                    });
+                    closeApplicantProfile();
+                  }}
                 >
                   <Check size={17} aria-hidden="true" />
                   Accept
@@ -407,15 +429,35 @@ export default function CompanyApplicationsPage() {
                   variant="secondary"
                   className="button-with-icon company-reject-text-button"
                   disabled={busyApplicationId === selectedApplication.id}
-                  onClick={() =>
-                    handleStatus(selectedApplication, ApplicationStatuses.Rejected)
-                  }
+                  onClick={() => {
+                    setDecision({
+                      application: selectedApplication,
+                      status: ApplicationStatuses.Rejected,
+                    });
+                    closeApplicantProfile();
+                  }}
                 >
                   <X size={17} aria-hidden="true" />
                   Reject
                 </Button>
               </>
             ) : null
+          }
+        />
+      ) : null}
+
+      {decision ? (
+        <ApplicationDecisionDialog
+          application={decision.application}
+          isLoading={busyApplicationId === decision.application.id}
+          status={decision.status}
+          onCancel={() => setDecision(null)}
+          onConfirm={(decisionNote) =>
+            handleStatus(
+              decision.application,
+              decision.status,
+              decisionNote,
+            )
           }
         />
       ) : null}

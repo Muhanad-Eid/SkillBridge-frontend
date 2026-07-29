@@ -3,6 +3,7 @@ import {
   Bell,
   BriefcaseBusiness,
   Building2,
+  CircleDollarSign,
   ClipboardList,
   KeyRound,
   LayoutDashboard,
@@ -47,6 +48,7 @@ type CompanyNavItem = {
 const companyNavItems: CompanyNavItem[] = [
   { label: "Overview", to: "/company/dashboard", icon: LayoutDashboard },
   { label: "Opportunities", to: "/company/projects", icon: BriefcaseBusiness },
+  { label: "Freelance", to: "/company/freelance", icon: CircleDollarSign },
   { label: "Applications", to: "/company/applications", icon: ClipboardList },
   { label: "Find talent", to: "/company/talent", icon: UserRoundSearch },
   {

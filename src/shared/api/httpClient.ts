@@ -23,7 +23,13 @@ export async function httpClient<T>(
 ): Promise<T> {
   const headers = new Headers(options.headers);
 
-  headers.set("Content-Type", "application/json");
+  const isFormData =
+    typeof FormData !== "undefined" &&
+    options.body instanceof FormData;
+
+  if (!isFormData && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
 
   if (!options.skipAuth) {
     const auth = getStoredAuth();
@@ -66,6 +72,46 @@ export async function httpClient<T>(
   }
 
   return data as T;
+}
+
+export async function httpDownload(endpoint: string) {
+  const headers = new Headers();
+  const auth = getStoredAuth();
+
+  if (auth?.token) {
+    headers.set("Authorization", `Bearer ${auth.token}`);
+  }
+
+  let response: Response;
+
+  try {
+    response = await fetch(
+      `${API_BASE_URL.replace(/\/$/, "")}${endpoint}`,
+      { headers },
+    );
+  } catch (caughtError) {
+    throw new Error(
+      caughtError instanceof Error
+        ? "The API service is unavailable. Start the API and try again."
+        : "Unable to reach the API.",
+      { cause: caughtError },
+    );
+  }
+
+  if (!response.ok) {
+    const data = await readResponse(response);
+
+    if (SESSION_LOST_STATUSES.has(response.status)) {
+      expireAuthSession();
+    }
+
+    throw new Error(getErrorMessage(data, response.status));
+  }
+
+  return {
+    blob: await response.blob(),
+    fileName: getDownloadFileName(response.headers.get("Content-Disposition")),
+  };
 }
 
 export function saveAuth(auth: AuthResponse) {
@@ -151,6 +197,21 @@ async function readResponse(response: Response) {
   } catch {
     return text;
   }
+}
+
+function getDownloadFileName(contentDisposition: string | null) {
+  if (!contentDisposition) {
+    return "CV.pdf";
+  }
+
+  const encodedName = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
+
+  if (encodedName?.[1]) {
+    return decodeURIComponent(encodedName[1]);
+  }
+
+  const plainName = contentDisposition.match(/filename="?([^";]+)"?/i);
+  return plainName?.[1] ?? "CV.pdf";
 }
 
 function getErrorMessage(data: unknown, status: number) {

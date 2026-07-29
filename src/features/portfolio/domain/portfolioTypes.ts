@@ -15,11 +15,15 @@ export type PortfolioItem = {
   skills: PortfolioSkill[];
   description: string | null;
   projectUrl: string | null;
+  ownerSummary: string | null;
+  coverImageUrl: string | null;
   contribution: string | null;
   evaluationResult: string | null;
   evaluatorName: string | null;
   approvedAt: string | null;
   isVisible: boolean;
+  isFeatured: boolean;
+  updatedAt: string;
   isEvidenceCard: boolean;
   reviewRating: number | null;
   reviewComment: string | null;
@@ -41,5 +45,8 @@ export type CreatePortfolioItemRequest = {
 export type UpdatePortfolioItemRequest = {
   description?: string;
   projectUrl?: string;
+  ownerSummary?: string;
+  coverImageUrl?: string;
   isVisible: boolean;
+  isFeatured: boolean;
 };

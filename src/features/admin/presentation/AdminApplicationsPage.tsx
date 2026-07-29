@@ -13,7 +13,6 @@ import type { AdminApplication } from "../domain/adminTypes";
 import {
   deleteApplicationAsync,
   getAdminApplicationsAsync,
-  updateAdminApplicationStatusAsync,
 } from "../infrastructure/adminApi";
 
 function getApplicationTone(status: ApplicationStatus) {
@@ -88,24 +87,6 @@ export default function AdminApplicationsPage() {
       ).length,
     };
   }, [applications]);
-
-  async function updateStatus(
-    application: AdminApplication,
-    status: ApplicationStatus,
-  ) {
-    setError("");
-
-    try {
-      await updateAdminApplicationStatusAsync(application.id, { status });
-      await loadApplications();
-    } catch (caughtError) {
-      setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Unable to update application.",
-      );
-    }
-  }
 
   async function handleDelete(application: AdminApplication) {
     const confirmed = window.confirm(
@@ -200,24 +181,6 @@ export default function AdminApplicationsPage() {
               <span>Application #{application.id}</span>
             </div>
             <div className="admin-row-actions">
-              <Button
-                variant="secondary"
-                disabled={application.status === ApplicationStatuses.Accepted}
-                onClick={() =>
-                  updateStatus(application, ApplicationStatuses.Accepted)
-                }
-              >
-                Accept
-              </Button>
-              <Button
-                variant="secondary"
-                disabled={application.status === ApplicationStatuses.Rejected}
-                onClick={() =>
-                  updateStatus(application, ApplicationStatuses.Rejected)
-                }
-              >
-                Reject
-              </Button>
               <Button
                 variant="secondary"
                 className="button-danger"

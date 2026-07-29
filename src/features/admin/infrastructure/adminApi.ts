@@ -11,7 +11,6 @@ import type {
   CreateAdminSkillRequest,
   CreateAdminUserRequest,
   UpdateAdminCompanyRequest,
-  UpdateAdminApplicationStatusRequest,
   UpdateAdminJobSeekerRequest,
   UpdateAdminProjectRequest,
   UpdateAdminReviewRequest,
@@ -103,16 +102,6 @@ export function updateAdminProjectAsync(
   request: UpdateAdminProjectRequest,
 ) {
   return httpClient<void>(`/api/admin/projects/${projectId}`, {
-    method: "PUT",
-    body: JSON.stringify(request),
-  });
-}
-
-export function updateAdminApplicationStatusAsync(
-  applicationId: number,
-  request: UpdateAdminApplicationStatusRequest,
-) {
-  return httpClient<void>(`/api/admin/applications/${applicationId}/status`, {
     method: "PUT",
     body: JSON.stringify(request),
   });

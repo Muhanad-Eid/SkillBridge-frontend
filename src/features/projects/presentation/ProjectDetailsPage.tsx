@@ -1,24 +1,34 @@
-import { type FormEvent, useEffect, useState } from "react";
+import {
+  type ChangeEvent,
+  type FormEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   ArrowLeft,
   ArrowRight,
   BriefcaseBusiness,
   CalendarDays,
   CheckCircle2,
+  CircleDollarSign,
   Clock3,
+  FileText,
   MapPin,
   MessageSquare,
+  RotateCcw,
   ShieldCheck,
+  Upload,
   UsersRound,
   Wrench,
 } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { useAuth } from "../../../shared/auth/AuthContext";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import StatusBadge from "../../../shared/components/StatusBadge";
 import {
-  getApplicationStatusLabel,
+  getApplicationStatusLabelForOpportunity,
   type Application,
 } from "../../applications/domain/applicationTypes";
 import {
@@ -31,7 +41,9 @@ import type { Skill } from "../../skills/domain/skillTypes";
 import { getMySkillsAsync } from "../../skills/infrastructure/skillApi";
 import {
   calculateProjectMatch,
+  FreelancePricingTypes,
   getExperienceLevelLabel,
+  getFreelancePricingLabel,
   getOpportunityTypeLabel,
   getWorkModeLabel,
   isProjectAcceptingApplications,
@@ -40,8 +52,11 @@ import {
 } from "../domain/projectTypes";
 import { getProjectAsync, getProjectsAsync } from "../infrastructure/projectApi";
 
+const MAX_CV_SIZE = 5 * 1024 * 1024;
+
 export default function ProjectDetailsPage() {
   const { projectId } = useParams();
+  const location = useLocation();
   const { user } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
   const [relatedProjects, setRelatedProjects] = useState<Project[]>([]);
@@ -51,11 +66,23 @@ export default function ProjectDetailsPage() {
   const [coverLetter, setCoverLetter] = useState("");
   const [workSampleUrl, setWorkSampleUrl] = useState("");
   const [shortTaskResponse, setShortTaskResponse] = useState("");
+  const [proposedBudget, setProposedBudget] = useState("");
+  const [proposedDeliveryDays, setProposedDeliveryDays] = useState("");
+  const [cvFile, setCvFile] = useState<File | null>(null);
+  const cvInputRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isApplying, setIsApplying] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const isJobSeeker = user?.role === "JobSeeker";
+  const isFreelanceRoute = location.pathname.includes("/freelance/");
+  const browsePath = isJobSeeker
+    ? isFreelanceRoute
+      ? "/job-seeker/freelance"
+      : "/job-seeker/opportunities"
+    : isFreelanceRoute
+      ? "/freelance"
+      : "/opportunities";
 
   useEffect(() => {
     let isMounted = true;
@@ -80,7 +107,10 @@ export default function ProjectDetailsPage() {
           const otherOpenProjects = projectDataList.filter(
             (candidate) =>
               candidate.id !== projectData.id &&
-              isProjectAcceptingApplications(candidate),
+              isProjectAcceptingApplications(candidate) &&
+              (projectData.type === OpportunityTypes.FreelanceTask
+                ? candidate.type === OpportunityTypes.FreelanceTask
+                : candidate.type !== OpportunityTypes.FreelanceTask),
           );
           const companyProjects = otherOpenProjects.filter(
             (candidate) =>
@@ -113,7 +143,7 @@ export default function ProjectDetailsPage() {
     return () => {
       isMounted = false;
     };
-  }, [isJobSeeker, projectId]);
+  }, [isFreelanceRoute, isJobSeeker, projectId]);
 
   const companyMessagePath =
     project && companyProfile
@@ -131,12 +161,65 @@ export default function ProjectDetailsPage() {
     ? isProjectAcceptingApplications(project)
     : false;
 
+  function handleCvChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.currentTarget.files?.[0] ?? null;
+    setMessage("");
+
+    if (!file) {
+      setCvFile(null);
+      return;
+    }
+
+    const isPdf =
+      file.name.toLowerCase().endsWith(".pdf") &&
+      (!file.type || file.type === "application/pdf");
+
+    if (!isPdf) {
+      setCvFile(null);
+      event.currentTarget.value = "";
+      setMessage("Choose a PDF file for your CV.");
+      return;
+    }
+
+    if (file.size > MAX_CV_SIZE) {
+      setCvFile(null);
+      event.currentTarget.value = "";
+      setMessage("The CV must be 5 MB or smaller.");
+      return;
+    }
+
+    setCvFile(file);
+  }
+
   async function handleApply(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!project || !isAcceptingApplications || existingApplication) return;
 
+    if (
+      project.type === OpportunityTypes.FreelanceTask &&
+      coverLetter.trim().length < 40
+    ) {
+      setMessage(
+        "Write a short proposal explaining how you will complete the work.",
+      );
+      return;
+    }
+
     if (!workSampleUrl.trim() && !shortTaskResponse.trim()) {
       setMessage("Add a work sample or complete the short application task.");
+      return;
+    }
+
+    const proposalBudget = Number(proposedBudget);
+    const proposalDeliveryDays = Number(proposedDeliveryDays);
+    if (
+      project.type === OpportunityTypes.FreelanceTask &&
+      ((!Number.isFinite(proposalBudget) || proposalBudget <= 0) ||
+        !Number.isInteger(proposalDeliveryDays) ||
+        proposalDeliveryDays < 1 ||
+        proposalDeliveryDays > 365)
+    ) {
+      setMessage("Add a valid price and delivery time to your proposal.");
       return;
     }
 
@@ -144,16 +227,38 @@ export default function ProjectDetailsPage() {
     setMessage("");
 
     try {
-      const application = await applyToProjectAsync(project.id, {
-        coverLetter: coverLetter.trim() || undefined,
-        workSampleUrl: workSampleUrl.trim() || undefined,
-        shortTaskResponse: shortTaskResponse.trim() || undefined,
-      });
+      const application = await applyToProjectAsync(
+        project.id,
+        {
+          coverLetter: coverLetter.trim() || undefined,
+          workSampleUrl: workSampleUrl.trim() || undefined,
+          shortTaskResponse: shortTaskResponse.trim() || undefined,
+          proposedBudget:
+            project.type === OpportunityTypes.FreelanceTask
+              ? proposalBudget
+              : undefined,
+          proposedDeliveryDays:
+            project.type === OpportunityTypes.FreelanceTask
+              ? proposalDeliveryDays
+              : undefined,
+        },
+        cvFile,
+      );
       setExistingApplication(application);
       setCoverLetter("");
       setWorkSampleUrl("");
       setShortTaskResponse("");
-      setMessage("Application submitted successfully.");
+      setProposedBudget("");
+      setProposedDeliveryDays("");
+      setCvFile(null);
+      if (cvInputRef.current) {
+        cvInputRef.current.value = "";
+      }
+      setMessage(
+        project.type === OpportunityTypes.FreelanceTask
+          ? "Proposal sent successfully."
+          : "Application submitted successfully.",
+      );
     } catch (caughtError) {
       setMessage(
         caughtError instanceof Error ? caughtError.message : "Unable to apply.",
@@ -176,12 +281,12 @@ export default function ProjectDetailsPage() {
       {project ? (
         <>
           <Button
-            to={isJobSeeker ? "/job-seeker/opportunities" : "/opportunities"}
+            to={browsePath}
             variant="ghost"
             className="jobseeker-back-link"
           >
             <ArrowLeft size={17} aria-hidden="true" />
-            Back to opportunities
+            {isFreelanceRoute ? "Back to freelance tasks" : "Back to opportunities"}
           </Button>
 
           <header className="jobseeker-opportunity-header">
@@ -248,6 +353,39 @@ export default function ProjectDetailsPage() {
                 </section>
               ) : null}
 
+              {project.type === OpportunityTypes.FreelanceTask ? (
+                <section>
+                  <h2>Freelance terms</h2>
+                  <div className="jobseeker-opportunity-facts freelance-opportunity-terms">
+                    <article>
+                      <CircleDollarSign size={19} aria-hidden="true" />
+                      <span>{getFreelancePricingLabel(project.freelancePricingType)}</span>
+                      <strong>
+                        {project.budget ? `$${project.budget}` : "Not set"}
+                        {project.freelancePricingType ===
+                          FreelancePricingTypes.Hourly && project.budget
+                          ? " / hour"
+                          : ""}
+                      </strong>
+                    </article>
+                    <article>
+                      <Clock3 size={19} aria-hidden="true" />
+                      <span>Expected delivery</span>
+                      <strong>
+                        {project.freelanceDeliveryDays ??
+                          project.durationWeeks * 7}{" "}
+                        days
+                      </strong>
+                    </article>
+                    <article>
+                      <RotateCcw size={19} aria-hidden="true" />
+                      <span>Included revisions</span>
+                      <strong>{project.includedRevisions ?? 1}</strong>
+                    </article>
+                  </div>
+                </section>
+              ) : null}
+
               {project.milestones.length > 0 ||
               project.milestonePlan?.trim() ? (
                 <section>
@@ -294,13 +432,31 @@ export default function ProjectDetailsPage() {
               <section>
                 <h2>Commitment and details</h2>
                 <div className="jobseeker-opportunity-facts">
-                  <article><Clock3 size={19} /><span>Duration</span><strong>{project.durationWeeks} weeks</strong></article>
+                  <article>
+                    <Clock3 size={19} />
+                    <span>
+                      {project.type === OpportunityTypes.FreelanceTask
+                        ? "Delivery window"
+                        : "Duration"}
+                    </span>
+                    <strong>
+                      {project.type === OpportunityTypes.FreelanceTask
+                        ? `${project.freelanceDeliveryDays ?? project.durationWeeks * 7} days`
+                        : `${project.durationWeeks} weeks`}
+                    </strong>
+                  </article>
                   <article>
                     <BriefcaseBusiness size={19} />
                     <span>Budget</span>
                     <strong>
                       {project.budget
-                        ? `$${project.budget}`
+                        ? `$${project.budget}${
+                            project.type === OpportunityTypes.FreelanceTask &&
+                            project.freelancePricingType ===
+                              FreelancePricingTypes.Hourly
+                              ? " / hour"
+                              : ""
+                          }`
                         : project.type === OpportunityTypes.UniversityTraining
                           ? "Unpaid training"
                           : "No payment listed"}
@@ -357,11 +513,33 @@ export default function ProjectDetailsPage() {
               {existingApplication ? (
                 <div className="jobseeker-applied-state">
                   <CheckCircle2 size={30} aria-hidden="true" />
-                  <span>Application submitted</span>
-                  <h2>{getApplicationStatusLabel(existingApplication.status)}</h2>
-                  <p>Your application was sent to the provider. Follow its status from Applications.</p>
-                  <Button to="/job-seeker/applications" variant="primary">
-                    Track application
+                  <span>
+                    {project.type === OpportunityTypes.FreelanceTask
+                      ? "Proposal sent"
+                      : "Application submitted"}
+                  </span>
+                  <h2>
+                    {getApplicationStatusLabelForOpportunity(
+                      existingApplication.status,
+                      existingApplication.opportunityType,
+                    )}
+                  </h2>
+                  <p>
+                    {project.type === OpportunityTypes.FreelanceTask
+                      ? "The provider can now review your proposed price, delivery time, and evidence."
+                      : "Your application was sent to the provider. Follow its status from Applications."}
+                  </p>
+                  <Button
+                    to={
+                      project.type === OpportunityTypes.FreelanceTask
+                        ? "/job-seeker/freelance/proposals"
+                        : "/job-seeker/applications"
+                    }
+                    variant="primary"
+                  >
+                    {project.type === OpportunityTypes.FreelanceTask
+                      ? "Track proposal"
+                      : "Track application"}
                   </Button>
                 </div>
               ) : !isAcceptingApplications ? (
@@ -375,21 +553,120 @@ export default function ProjectDetailsPage() {
                 </div>
               ) : isJobSeeker ? (
                 <form onSubmit={handleApply}>
-                  <span>Apply to this opportunity</span>
-                  <h2>Introduce your fit</h2>
-                  <p>Write a focused note connecting your skills and interests to this work.</p>
+                  <span>
+                    {project.type === OpportunityTypes.FreelanceTask
+                      ? "Freelance proposal"
+                      : "Apply to this opportunity"}
+                  </span>
+                  <h2>
+                    {project.type === OpportunityTypes.FreelanceTask
+                      ? "Send your proposal"
+                      : "Introduce your fit"}
+                  </h2>
+                  <p>
+                    {project.type === OpportunityTypes.FreelanceTask
+                      ? "Send clear terms and show the provider how you plan to deliver the requested result."
+                      : "Write a focused note connecting your skills and interests to this work."}
+                  </p>
+                  {project.type === OpportunityTypes.FreelanceTask ? (
+                    <div className="freelance-brief-reference">
+                      <span>
+                        <small>Client budget</small>
+                        <strong>
+                          {project.budget
+                            ? `$${project.budget}${
+                                project.freelancePricingType ===
+                                FreelancePricingTypes.Hourly
+                                  ? " / hour"
+                                  : ""
+                              }`
+                            : "Not set"}
+                        </strong>
+                      </span>
+                      <span>
+                        <small>Target delivery</small>
+                        <strong>
+                          {project.freelanceDeliveryDays ??
+                            project.durationWeeks * 7}{" "}
+                          days
+                        </strong>
+                      </span>
+                      <span>
+                        <small>Revision rounds</small>
+                        <strong>{project.includedRevisions ?? 1}</strong>
+                      </span>
+                    </div>
+                  ) : null}
                   <label className="field">
-                    <span>Cover letter</span>
+                    <span>
+                      {project.type === OpportunityTypes.FreelanceTask
+                        ? "How you will deliver the work"
+                        : "Cover letter"}
+                    </span>
                     <textarea
                       value={coverLetter}
                       onChange={(event) => setCoverLetter(event.target.value)}
-                      placeholder="What can you contribute, and what do you want to learn?"
+                      placeholder={
+                        project.type === OpportunityTypes.FreelanceTask
+                          ? "Describe your approach, what you will deliver, and any important assumptions."
+                          : "What can you contribute, and what do you want to learn?"
+                      }
+                      required={
+                        project.type === OpportunityTypes.FreelanceTask
+                      }
+                      minLength={
+                        project.type === OpportunityTypes.FreelanceTask
+                          ? 40
+                          : undefined
+                      }
                       maxLength={1500}
                     />
                     <small>{coverLetter.length}/1500 characters</small>
                   </label>
+                  {project.type === OpportunityTypes.FreelanceTask ? (
+                    <fieldset className="freelance-proposal-terms">
+                      <legend>Your offer</legend>
+                      <div className="freelance-proposal-fields">
+                        <label className="field">
+                          <span>
+                            {project.freelancePricingType ===
+                            FreelancePricingTypes.Hourly
+                              ? "Hourly rate (USD)"
+                              : "Total price (USD)"}
+                          </span>
+                          <input
+                            type="number"
+                            min="0.01"
+                            step="0.01"
+                            value={proposedBudget}
+                            onChange={(event) =>
+                              setProposedBudget(event.target.value)
+                            }
+                            required
+                          />
+                        </label>
+                        <label className="field">
+                          <span>Delivery time (days)</span>
+                          <input
+                            type="number"
+                            min="1"
+                            max="365"
+                            value={proposedDeliveryDays}
+                            onChange={(event) =>
+                              setProposedDeliveryDays(event.target.value)
+                            }
+                            required
+                          />
+                        </label>
+                      </div>
+                    </fieldset>
+                  ) : null}
                   <label className="field">
-                    <span>Work sample link</span>
+                    <span>
+                      {project.type === OpportunityTypes.FreelanceTask
+                        ? "Relevant work link"
+                        : "Work sample link"}
+                    </span>
                     <input
                       type="url"
                       value={workSampleUrl}
@@ -397,6 +674,25 @@ export default function ProjectDetailsPage() {
                       placeholder="https://github.com/you/project"
                       maxLength={500}
                     />
+                  </label>
+                  <label className="application-cv-upload">
+                    <span className="application-cv-copy">
+                      <FileText size={20} aria-hidden="true" />
+                      <span>
+                        <strong>CV (optional)</strong>
+                        <small>PDF only, up to 5 MB</small>
+                      </span>
+                    </span>
+                    <input
+                      ref={cvInputRef}
+                      type="file"
+                      accept=".pdf,application/pdf"
+                      onChange={handleCvChange}
+                    />
+                    <span className="application-cv-picker">
+                      <Upload size={16} aria-hidden="true" />
+                      {cvFile?.name ?? "Choose PDF"}
+                    </span>
                   </label>
                   <label className="field">
                     <span>Short application task</span>
@@ -417,12 +713,29 @@ export default function ProjectDetailsPage() {
                     </small>
                   </label>
                   {message ? <div className="notice">{message}</div> : null}
+                  {project.type === OpportunityTypes.FreelanceTask &&
+                  proposedBudget &&
+                  proposedDeliveryDays ? (
+                    <div className="freelance-proposal-review">
+                      <span>Proposal total</span>
+                      <strong>
+                        ${Number(proposedBudget).toLocaleString()}
+                        {project.freelancePricingType ===
+                        FreelancePricingTypes.Hourly
+                          ? " / hour"
+                          : ""}
+                      </strong>
+                      <small>{proposedDeliveryDays} days to deliver</small>
+                    </div>
+                  ) : null}
                   <Button
                     type="submit"
                     isLoading={isApplying}
                     disabled={!isAcceptingApplications}
                   >
-                    Submit application
+                    {project.type === OpportunityTypes.FreelanceTask
+                      ? "Send proposal"
+                      : "Submit application"}
                   </Button>
                   <small>
                     Selected personal details stay hidden during the first review.
@@ -452,7 +765,7 @@ export default function ProjectDetailsPage() {
                   <h2>Related opportunities</h2>
                 </div>
                 <Button
-                  to={isJobSeeker ? "/job-seeker/opportunities" : "/opportunities"}
+                  to={browsePath}
                   variant="ghost"
                 >
                   View all
@@ -483,7 +796,7 @@ export default function ProjectDetailsPage() {
                       </span>
                     </div>
                     <Button
-                      to={`${isJobSeeker ? "/job-seeker/opportunities" : "/opportunities"}/${relatedProject.id}`}
+                      to={`${browsePath}/${relatedProject.id}`}
                       variant="secondary"
                     >
                       View details

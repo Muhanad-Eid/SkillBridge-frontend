@@ -1,7 +1,9 @@
 import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import {
   Check,
+  CircleDollarSign,
   ClipboardCheck,
+  Clock3,
   ExternalLink,
   Plus,
   RotateCcw,
@@ -13,6 +15,8 @@ import DataState from "../../../shared/components/DataState";
 import StatusBadge from "../../../shared/components/StatusBadge";
 import { WorkSubmissionStatuses } from "../../applications/domain/applicationTypes";
 import {
+  FreelancePricingTypes,
+  getFreelancePricingLabel,
   OpportunityTypes,
   ProjectStatuses,
 } from "../../projects/domain/projectTypes";
@@ -20,6 +24,7 @@ import {
   getMilestoneStatusLabel,
   getWorkSubmissionStatusLabel,
   MilestoneStatuses,
+  TrainingReportStatuses,
   type UniversitySupervisor,
   type WorkRecord,
 } from "../domain/workTypes";
@@ -34,6 +39,7 @@ import {
   submitMilestoneAsync,
   updateContributionResponsibilitiesAsync,
 } from "../infrastructure/workApi";
+import TrainingReportsPanel from "./TrainingReportsPanel";
 
 type WorkProgressPanelProps = {
   isCompany: boolean;
@@ -225,7 +231,13 @@ export default function WorkProgressPanel({
     canEditMilestones &&
     record.milestones.every(
       (milestone) => milestone.status === MilestoneStatuses.Approved,
-    );
+    ) &&
+    (record.opportunityType !== OpportunityTypes.UniversityTraining ||
+      (record.trainingReports.every(
+        (report) => report.status === TrainingReportStatuses.Approved,
+      ) &&
+        record.completedTrainingHours >=
+          (record.requiredTrainingHours ?? 0)));
   const eligibleSupervisors = supervisors.filter(
     (supervisor) =>
       record.studentUniversityName &&
@@ -236,6 +248,10 @@ export default function WorkProgressPanel({
     responsibilityDrafts[record.applicationId] ??
     record.assignedResponsibilities ??
     "";
+  const freelanceRevisionsRemaining = Math.max(
+    0,
+    (record.agreedRevisions ?? 1) - record.revisionRequestsUsed,
+  );
 
   return (
     <section className="work-hub-panel work-progress-panel">
@@ -292,8 +308,49 @@ export default function WorkProgressPanel({
         ) : null}
       </div>
 
+      {record.opportunityType === OpportunityTypes.FreelanceTask ? (
+        <section className="freelance-agreement">
+          <header>
+            <span>Accepted proposal</span>
+            <strong>Agreed work terms</strong>
+          </header>
+          <div>
+            <article>
+              <CircleDollarSign size={18} aria-hidden="true" />
+              <span>
+                {getFreelancePricingLabel(record.freelancePricingType)}
+              </span>
+              <strong>
+                {record.agreedBudget ? `$${record.agreedBudget}` : "Not set"}
+                {record.freelancePricingType ===
+                FreelancePricingTypes.Hourly
+                  ? " / hour"
+                  : ""}
+              </strong>
+            </article>
+            <article>
+              <Clock3 size={18} aria-hidden="true" />
+              <span>Delivery</span>
+              <strong>{record.agreedDeliveryDays} days</strong>
+            </article>
+            <article>
+              <RotateCcw size={18} aria-hidden="true" />
+              <span>Revision rounds</span>
+              <strong>{freelanceRevisionsRemaining} remaining</strong>
+              <small>
+                {record.revisionRequestsUsed} of {record.agreedRevisions ?? 1} used
+              </small>
+            </article>
+          </div>
+          <small>
+            SkillBridge records these terms but does not process payments.
+          </small>
+        </section>
+      ) : null}
+
       {record.opportunityType === OpportunityTypes.UniversityTraining ? (
-        <section className="training-supervision-summary">
+        <>
+          <section className="training-supervision-summary">
           <div>
             <span>Student university</span>
             <strong>{record.studentUniversityName ?? "Not provided"}</strong>
@@ -309,12 +366,15 @@ export default function WorkProgressPanel({
             <small>{record.universityName ?? "Select a supervisor below"}</small>
           </div>
           <div>
-            <span>Training hours</span>
+            <span>Academic status</span>
             <strong>
-              {record.completedTrainingHours} /{" "}
-              {record.requiredTrainingHours ?? "—"}
+              {record.academicRequirementsMet
+                ? "Requirements confirmed"
+                : "Awaiting university confirmation"}
             </strong>
-            <small>{record.universityProgressNotes ?? "No progress note yet"}</small>
+            <small>
+              {record.universityProgressNotes ?? "No progress note yet"}
+            </small>
           </div>
           {isCompany ? (
             <label className="field">
@@ -353,7 +413,13 @@ export default function WorkProgressPanel({
               <strong>{record.academicRequirements}</strong>
             </div>
           ) : null}
-        </section>
+          </section>
+          <TrainingReportsPanel
+            mode={isCompany ? "company" : "student"}
+            record={record}
+            onUpdated={load}
+          />
+        </>
       ) : null}
 
       {record.opportunityType === OpportunityTypes.TeamProject ? (

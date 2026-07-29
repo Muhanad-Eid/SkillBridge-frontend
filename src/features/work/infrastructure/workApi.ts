@@ -3,9 +3,13 @@ import type {
   ApproveFinalWorkRequest,
   CreateWorkMilestoneRequest,
   ReviewMilestoneRequest,
+  ReviewTrainingReportRequest,
   SubmitFinalWorkRequest,
   SubmitMilestoneRequest,
+  SubmitTrainingReportRequest,
+  TrainingReport,
   UpdateContributionResponsibilitiesRequest,
+  UpdateTrainingSupervisionRequest,
   UniversitySupervisor,
   WorkMilestone,
   WorkRecord,
@@ -114,12 +118,66 @@ export function updateTrainingProgressAsync(
   applicationId: number,
   completedHours: number,
   progressNotes: string,
+  academicRequirementsMet: boolean,
 ) {
   return httpClient<void>(
     `/api/work/applications/${applicationId}/training-progress`,
     {
       method: "PUT",
-      body: JSON.stringify({ completedHours, progressNotes }),
+      body: JSON.stringify({
+        completedHours,
+        progressNotes,
+        academicRequirementsMet,
+      }),
+    },
+  );
+}
+
+export function submitTrainingReportAsync(
+  applicationId: number,
+  request: SubmitTrainingReportRequest,
+) {
+  return httpClient<TrainingReport>(
+    `/api/work/applications/${applicationId}/training-reports`,
+    {
+      method: "POST",
+      body: JSON.stringify(request),
+    },
+  );
+}
+
+export function reviseTrainingReportAsync(
+  reportId: number,
+  request: SubmitTrainingReportRequest,
+) {
+  return httpClient<void>(`/api/work/training-reports/${reportId}`, {
+    method: "PUT",
+    body: JSON.stringify(request),
+  });
+}
+
+export function reviewTrainingReportAsync(
+  reportId: number,
+  request: ReviewTrainingReportRequest,
+) {
+  return httpClient<void>(
+    `/api/work/training-reports/${reportId}/review`,
+    {
+      method: "PUT",
+      body: JSON.stringify(request),
+    },
+  );
+}
+
+export function updateTrainingSupervisionAsync(
+  applicationId: number,
+  request: UpdateTrainingSupervisionRequest,
+) {
+  return httpClient<void>(
+    `/api/work/applications/${applicationId}/training-supervision`,
+    {
+      method: "PUT",
+      body: JSON.stringify(request),
     },
   );
 }

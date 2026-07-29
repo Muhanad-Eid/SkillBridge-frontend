@@ -1,4 +1,5 @@
 import type {
+  FreelancePricingType,
   OpportunityType,
   ProjectStatus,
 } from "../../projects/domain/projectTypes";
@@ -34,6 +35,31 @@ export type WorkSkill = {
   name: string;
 };
 
+export const TrainingReportStatuses = {
+  Submitted: 0,
+  ChangesRequested: 1,
+  Approved: 2,
+} as const;
+
+export type TrainingReportStatus =
+  (typeof TrainingReportStatuses)[keyof typeof TrainingReportStatuses];
+
+export type TrainingReport = {
+  id: number;
+  projectApplicationId: number;
+  periodStart: string;
+  periodEnd: string;
+  hours: number;
+  tasksCompleted: string;
+  learningOutcomes: string;
+  challenges: string | null;
+  evidenceUrl: string | null;
+  status: TrainingReportStatus;
+  companyFeedback: string | null;
+  submittedAt: string;
+  reviewedAt: string | null;
+};
+
 export type WorkRecord = {
   applicationId: number;
   projectId: number;
@@ -41,6 +67,11 @@ export type WorkRecord = {
   deliverables: string;
   evaluationCriteria: string;
   opportunityType: OpportunityType;
+  freelancePricingType: FreelancePricingType | null;
+  agreedBudget: number | null;
+  agreedDeliveryDays: number | null;
+  agreedRevisions: number | null;
+  revisionRequestsUsed: number;
   projectStatus: ProjectStatus;
   jobSeekerId: number;
   jobSeekerUserId: string;
@@ -57,6 +88,9 @@ export type WorkRecord = {
   academicRequirements: string | null;
   completedTrainingHours: number;
   universityProgressNotes: string | null;
+  academicRequirementsMet: boolean;
+  companySupervisorName: string | null;
+  companySupervisorEmail: string | null;
   assignedResponsibilities: string | null;
   contributionSummary: string | null;
   finalSubmissionNote: string | null;
@@ -72,6 +106,7 @@ export type WorkRecord = {
   availableSkills: WorkSkill[];
   demonstratedSkills: WorkSkill[];
   milestones: WorkMilestone[];
+  trainingReports: TrainingReport[];
 };
 
 export type UniversitySupervisor = {
@@ -115,6 +150,26 @@ export type UpdateContributionResponsibilitiesRequest = {
   responsibilities: string;
 };
 
+export type SubmitTrainingReportRequest = {
+  periodStart: string;
+  periodEnd: string;
+  hours: number;
+  tasksCompleted: string;
+  learningOutcomes: string;
+  challenges?: string;
+  evidenceUrl?: string;
+};
+
+export type ReviewTrainingReportRequest = {
+  isApproved: boolean;
+  feedback?: string;
+};
+
+export type UpdateTrainingSupervisionRequest = {
+  supervisorName: string;
+  supervisorEmail?: string;
+};
+
 export function getMilestoneStatusLabel(status: MilestoneStatus) {
   if (status === MilestoneStatuses.Submitted) return "Submitted";
   if (status === MilestoneStatuses.ChangesRequested) return "Needs changes";
@@ -128,4 +183,12 @@ export function getWorkSubmissionStatusLabel(status: WorkSubmissionStatus) {
   if (status === 3) return "University approval";
   if (status === 4) return "Approved";
   return "Not submitted";
+}
+
+export function getTrainingReportStatusLabel(status: TrainingReportStatus) {
+  if (status === TrainingReportStatuses.Approved) return "Approved";
+  if (status === TrainingReportStatuses.ChangesRequested) {
+    return "Needs changes";
+  }
+  return "Awaiting company review";
 }

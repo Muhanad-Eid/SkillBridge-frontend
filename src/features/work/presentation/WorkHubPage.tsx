@@ -342,8 +342,9 @@ export default function WorkHubPage() {
         icon: Star,
       },
       {
-        label: "Portfolio",
-        detail: "Document the result and link to the work you delivered.",
+        label: "Evidence Card",
+        detail:
+          "Approved final work is added to your Evidence Portfolio automatically.",
         done: Boolean(portfolioItem),
         icon: FolderKanban,
       },
@@ -363,7 +364,7 @@ export default function WorkHubPage() {
     if (
       status === ProjectStatuses.Completed &&
       !window.confirm(
-        `Mark "${project.title}" complete? This enables reviews and portfolio items.`,
+        `Mark "${project.title}" complete? Final work is already approved, and reviews can be added next.`,
       )
     ) {
       return;

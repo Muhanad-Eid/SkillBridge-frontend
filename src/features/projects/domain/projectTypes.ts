@@ -9,6 +9,14 @@ export const OpportunityTypes = {
 export type OpportunityType =
   (typeof OpportunityTypes)[keyof typeof OpportunityTypes];
 
+export const FreelancePricingTypes = {
+  FixedPrice: 1,
+  Hourly: 2,
+} as const;
+
+export type FreelancePricingType =
+  (typeof FreelancePricingTypes)[keyof typeof FreelancePricingTypes];
+
 export const WorkModes = {
   Remote: 0,
   Hybrid: 1,
@@ -54,6 +62,9 @@ export type Project = {
   positionsAvailable: number;
   applicationDeadline: string | null;
   budget: number | null;
+  freelancePricingType: FreelancePricingType | null;
+  freelanceDeliveryDays: number | null;
+  includedRevisions: number | null;
   durationWeeks: number;
   type: OpportunityType;
   status: ProjectStatus;
@@ -101,6 +112,9 @@ export type CreateProjectRequest = {
   positionsAvailable: number;
   applicationDeadline?: string | null;
   budget?: number | null;
+  freelancePricingType?: FreelancePricingType | null;
+  freelanceDeliveryDays?: number | null;
+  includedRevisions?: number | null;
   durationWeeks: number;
   type: OpportunityType;
   requiredSkillIds?: number[];
@@ -122,6 +136,14 @@ export function getOpportunityTypeLabel(type: OpportunityType) {
   }
   if (type === OpportunityTypes.TeamProject) return "Team project";
   return "Professional project";
+}
+
+export function getFreelancePricingLabel(
+  pricingType: FreelancePricingType | null | undefined,
+) {
+  return pricingType === FreelancePricingTypes.Hourly
+    ? "Hourly"
+    : "Fixed price";
 }
 
 export function getWorkModeLabel(workMode: WorkMode) {

@@ -28,6 +28,7 @@ export default function PublicLayout() {
             About
           </NavLink>
           <NavLink to="/opportunities">Opportunities</NavLink>
+          <NavLink to="/freelance">Freelance</NavLink>
           {!user ? (
             <>
               <NavLink to="/portal/login">Log in</NavLink>

@@ -2,9 +2,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
   BriefcaseBusiness,
+  CircleDollarSign,
   ChevronDown,
   Clock3,
   MapPin,
+  RotateCcw,
   Search,
   ShieldCheck,
   SlidersHorizontal,
@@ -29,6 +31,7 @@ import {
   calculateProjectMatch,
   ExperienceLevels,
   getExperienceLevelLabel,
+  getFreelancePricingLabel,
   getOpportunityTypeLabel,
   getWorkModeLabel,
   OpportunityTypes,
@@ -37,6 +40,10 @@ import {
   type Project,
 } from "../domain/projectTypes";
 import { getProjectsAsync } from "../infrastructure/projectApi";
+
+type ProjectsPageProps = {
+  mode?: "opportunities" | "freelance";
+};
 
 function getApplicationTone(
   status: ApplicationStatus,
@@ -47,7 +54,9 @@ function getApplicationTone(
   return "neutral";
 }
 
-export default function ProjectsPage() {
+export default function ProjectsPage({
+  mode = "opportunities",
+}: ProjectsPageProps) {
   const { user } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
@@ -60,11 +69,14 @@ export default function ProjectsPage() {
   const [experienceFilter, setExperienceFilter] = useState("all");
   const [skillFilter, setSkillFilter] = useState("all");
   const [matchFilter, setMatchFilter] = useState("all");
+  const [pricingFilter, setPricingFilter] = useState("all");
+  const [sort, setSort] = useState("recommended");
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const filterControlRef = useRef<HTMLDivElement>(null);
   const isJobSeeker = user?.role === "JobSeeker";
+  const isFreelanceView = mode === "freelance";
 
   useEffect(() => {
     if (!isFiltersOpen) return;
@@ -129,25 +141,38 @@ export default function ProjectsPage() {
     [applications],
   );
 
+  const scopedProjects = useMemo(
+    () =>
+      projects.filter((project) =>
+        isFreelanceView
+          ? project.type === OpportunityTypes.FreelanceTask
+          : project.type !== OpportunityTypes.FreelanceTask,
+      ),
+    [isFreelanceView, projects],
+  );
+
   const matchByProject = useMemo(() => {
     const skillIds = mySkills.map((skill) => skill.id);
     return new Map(
-      projects.map((project) => [project.id, calculateProjectMatch(project, skillIds)]),
+      scopedProjects.map((project) => [
+        project.id,
+        calculateProjectMatch(project, skillIds),
+      ]),
     );
-  }, [mySkills, projects]);
+  }, [mySkills, scopedProjects]);
 
   const availableProjectSkills = useMemo(() => {
     const skills = new Map<number, string>();
-    projects.forEach((project) => {
+    scopedProjects.forEach((project) => {
       project.skills.forEach((skill) => skills.set(skill.id, skill.name));
     });
     return [...skills.entries()].sort((left, right) => left[1].localeCompare(right[1]));
-  }, [projects]);
+  }, [scopedProjects]);
 
   const filteredProjects = useMemo(() => {
     const searchValue = search.trim().toLowerCase();
 
-    return projects.filter((project) => {
+    return scopedProjects.filter((project) => {
       const matchesSearch =
         !searchValue ||
         project.title.toLowerCase().includes(searchValue) ||
@@ -156,14 +181,24 @@ export default function ProjectsPage() {
         project.requirements.toLowerCase().includes(searchValue) ||
         project.skills.some((skill) => skill.name.toLowerCase().includes(searchValue));
       const matchesType =
-        typeFilter === "all" || project.type === Number(typeFilter);
+        isFreelanceView ||
+        typeFilter === "all" ||
+        project.type === Number(typeFilter);
       const matchesDuration =
         durationFilter === "all" ||
-        (durationFilter === "short" && project.durationWeeks <= 4) ||
-        (durationFilter === "medium" &&
-          project.durationWeeks > 4 &&
-          project.durationWeeks <= 8) ||
-        (durationFilter === "long" && project.durationWeeks > 8);
+        (isFreelanceView
+          ? (durationFilter === "short" &&
+              (project.freelanceDeliveryDays ?? project.durationWeeks * 7) <= 7) ||
+            (durationFilter === "medium" &&
+              (project.freelanceDeliveryDays ?? project.durationWeeks * 7) > 7 &&
+              (project.freelanceDeliveryDays ?? project.durationWeeks * 7) <= 30) ||
+            (durationFilter === "long" &&
+              (project.freelanceDeliveryDays ?? project.durationWeeks * 7) > 30)
+          : (durationFilter === "short" && project.durationWeeks <= 4) ||
+            (durationFilter === "medium" &&
+              project.durationWeeks > 4 &&
+              project.durationWeeks <= 8) ||
+            (durationFilter === "long" && project.durationWeeks > 8));
       const hasApplied = applicationByProject.has(project.id);
       const match = matchByProject.get(project.id);
       const matchesApplication =
@@ -182,44 +217,66 @@ export default function ProjectsPage() {
         matchFilter === "all" ||
         (matchFilter === "strong" && (match?.score ?? 0) >= 70) ||
         (matchFilter === "complete" && match?.missingRequiredSkills.length === 0);
+      const matchesPricing =
+        !isFreelanceView ||
+        pricingFilter === "all" ||
+        project.freelancePricingType === Number(pricingFilter);
 
       return matchesSearch && matchesType && matchesDuration && matchesApplication &&
-        matchesWorkMode && matchesExperience && matchesSkill && matchesFit;
-    }).sort((left, right) =>
-      isJobSeeker
+        matchesWorkMode && matchesExperience && matchesSkill && matchesFit &&
+        matchesPricing;
+    }).sort((left, right) => {
+      if (isFreelanceView && sort === "budget") {
+        return (right.budget ?? 0) - (left.budget ?? 0);
+      }
+      if (isFreelanceView && sort === "delivery") {
+        return (
+          (left.freelanceDeliveryDays ?? left.durationWeeks * 7) -
+          (right.freelanceDeliveryDays ?? right.durationWeeks * 7)
+        );
+      }
+      return isJobSeeker
         ? (matchByProject.get(right.id)?.score ?? 0) -
-          (matchByProject.get(left.id)?.score ?? 0)
-        : 0,
-    );
+            (matchByProject.get(left.id)?.score ?? 0)
+        : 0;
+    });
   }, [
     applicationByProject,
     applicationFilter,
     durationFilter,
     experienceFilter,
+    isFreelanceView,
     isJobSeeker,
     matchByProject,
     matchFilter,
-    projects,
+    pricingFilter,
+    scopedProjects,
     search,
     skillFilter,
+    sort,
     typeFilter,
     workModeFilter,
   ]);
 
   const detailsBasePath = isJobSeeker
-    ? "/job-seeker/opportunities"
-    : "/opportunities";
-  const openCount = projects.filter(
+    ? isFreelanceView
+      ? "/job-seeker/freelance"
+      : "/job-seeker/opportunities"
+    : isFreelanceView
+      ? "/freelance"
+      : "/opportunities";
+  const openCount = scopedProjects.filter(
     (project) => project.status === ProjectStatuses.Open,
   ).length;
   const activeFilterCount = [
-    typeFilter,
+    ...(isFreelanceView ? [] : [typeFilter]),
     durationFilter,
     applicationFilter,
     workModeFilter,
     experienceFilter,
     skillFilter,
     matchFilter,
+    ...(isFreelanceView ? [pricingFilter] : []),
   ].filter((value) => value !== "all").length;
 
   function clearFilters() {
@@ -230,16 +287,28 @@ export default function ProjectsPage() {
     setExperienceFilter("all");
     setSkillFilter("all");
     setMatchFilter("all");
+    setPricingFilter("all");
   }
 
   return (
-    <section className={`page marketplace-page ${isJobSeeker ? "jobseeker-discovery-page" : ""}`}>
+    <section
+      className={`page marketplace-page ${
+        isJobSeeker ? "jobseeker-discovery-page" : ""
+      } ${isFreelanceView ? "freelance-marketplace-page" : ""}`}
+    >
       <PageHeader
-        title="Opportunities"
+        title={isFreelanceView ? "Freelance tasks" : "Opportunities"}
         actions={
           isJobSeeker ? (
-            <Button to="/job-seeker/applications" variant="secondary">
-              My applications
+            <Button
+              to={
+                isFreelanceView
+                  ? "/job-seeker/freelance/proposals"
+                  : "/job-seeker/applications"
+              }
+              variant="secondary"
+            >
+              {isFreelanceView ? "My proposals" : "My applications"}
             </Button>
           ) : (
             <Button to="/register" variant="primary">Create profile</Button>
@@ -250,16 +319,46 @@ export default function ProjectsPage() {
       {isJobSeeker ? (
         <div className="jobseeker-discovery-summary">
           <article>
-            <BriefcaseBusiness size={19} aria-hidden="true" />
-            <div><strong>{openCount}</strong><span>Open opportunities</span></div>
+            {isFreelanceView ? (
+              <CircleDollarSign size={19} aria-hidden="true" />
+            ) : (
+              <BriefcaseBusiness size={19} aria-hidden="true" />
+            )}
+            <div>
+              <strong>{openCount}</strong>
+              <span>{isFreelanceView ? "Open tasks" : "Open opportunities"}</span>
+            </div>
           </article>
           <article>
             <ShieldCheck size={19} aria-hidden="true" />
             <div><strong>Verified</strong><span>Providers shown here</span></div>
           </article>
           <article>
-            <FileApplicationCount count={applications.length} />
-            <div><strong>{applications.length}</strong><span>Your applications</span></div>
+            <FileApplicationCount
+              count={
+                applications.filter((application) =>
+                  isFreelanceView
+                    ? application.opportunityType ===
+                      OpportunityTypes.FreelanceTask
+                    : application.opportunityType !==
+                      OpportunityTypes.FreelanceTask,
+                ).length
+              }
+            />
+            <div>
+              <strong>
+                {
+                  applications.filter((application) =>
+                    isFreelanceView
+                      ? application.opportunityType ===
+                        OpportunityTypes.FreelanceTask
+                      : application.opportunityType !==
+                        OpportunityTypes.FreelanceTask,
+                  ).length
+                }
+              </strong>
+              <span>{isFreelanceView ? "Your proposals" : "Your applications"}</span>
+            </div>
           </article>
         </div>
       ) : null}
@@ -268,12 +367,28 @@ export default function ProjectsPage() {
         <label className="jobseeker-search-field">
           <Search size={18} aria-hidden="true" />
           <input
-            aria-label="Search opportunities"
-            placeholder="Search title, provider, or keyword"
+            aria-label={isFreelanceView ? "Search freelance tasks" : "Search opportunities"}
+            placeholder={
+              isFreelanceView
+                ? "Search tasks, clients, or skills"
+                : "Search title, provider, or keyword"
+            }
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
         </label>
+        {isFreelanceView ? (
+          <select
+            className="freelance-sort-select"
+            aria-label="Sort freelance tasks"
+            value={sort}
+            onChange={(event) => setSort(event.target.value)}
+          >
+            <option value="recommended">Best match</option>
+            <option value="budget">Highest budget</option>
+            <option value="delivery">Fastest delivery</option>
+          </select>
+        ) : null}
         <div className="jobseeker-filter-control" ref={filterControlRef}>
           <Button
             type="button"
@@ -314,30 +429,41 @@ export default function ProjectsPage() {
               </header>
 
               <div className="jobseeker-filter-grid">
-                <label>
-                  <span>Opportunity type</span>
-                  <select
-                    value={typeFilter}
-                    onChange={(event) => setTypeFilter(event.target.value)}
-                  >
-                    <option value="all">All types</option>
-                    <option value={OpportunityTypes.ProfessionalProject}>
-                      Professional projects
-                    </option>
-                    <option value={OpportunityTypes.UniversityTraining}>
-                      University training
-                    </option>
-                    <option value={OpportunityTypes.FreelanceTask}>
-                      Freelance tasks
-                    </option>
-                    <option value={OpportunityTypes.SkillDevelopmentChallenge}>
-                      Skill-development challenges
-                    </option>
-                    <option value={OpportunityTypes.TeamProject}>
-                      Team projects
-                    </option>
-                  </select>
-                </label>
+                {!isFreelanceView ? (
+                  <label>
+                    <span>Opportunity type</span>
+                    <select
+                      value={typeFilter}
+                      onChange={(event) => setTypeFilter(event.target.value)}
+                    >
+                      <option value="all">All types</option>
+                      <option value={OpportunityTypes.ProfessionalProject}>
+                        Professional projects
+                      </option>
+                      <option value={OpportunityTypes.UniversityTraining}>
+                        University training
+                      </option>
+                      <option value={OpportunityTypes.SkillDevelopmentChallenge}>
+                        Skill-development challenges
+                      </option>
+                      <option value={OpportunityTypes.TeamProject}>
+                        Team projects
+                      </option>
+                    </select>
+                  </label>
+                ) : (
+                  <label>
+                    <span>Pricing</span>
+                    <select
+                      value={pricingFilter}
+                      onChange={(event) => setPricingFilter(event.target.value)}
+                    >
+                      <option value="all">Any pricing</option>
+                      <option value="0">Fixed price</option>
+                      <option value="1">Hourly</option>
+                    </select>
+                  </label>
+                )}
                 <label>
                   <span>Work mode</span>
                   <select
@@ -381,9 +507,15 @@ export default function ProjectsPage() {
                     onChange={(event) => setDurationFilter(event.target.value)}
                   >
                     <option value="all">Any duration</option>
-                    <option value="short">Up to 4 weeks</option>
-                    <option value="medium">5 to 8 weeks</option>
-                    <option value="long">More than 8 weeks</option>
+                    <option value="short">
+                      {isFreelanceView ? "Up to 7 days" : "Up to 4 weeks"}
+                    </option>
+                    <option value="medium">
+                      {isFreelanceView ? "8 to 30 days" : "5 to 8 weeks"}
+                    </option>
+                    <option value="long">
+                      {isFreelanceView ? "More than 30 days" : "More than 8 weeks"}
+                    </option>
                   </select>
                 </label>
                 {isJobSeeker ? (
@@ -435,7 +567,11 @@ export default function ProjectsPage() {
       <div className="jobseeker-results-heading">
         <div>
           <strong>{filteredProjects.length} result{filteredProjects.length === 1 ? "" : "s"}</strong>
-          <span>Only opportunities from verified providers are listed.</span>
+          <span>
+            {isFreelanceView
+              ? "Every task is posted by a verified client."
+              : "Only opportunities from verified providers are listed."}
+          </span>
         </div>
       </div>
 
@@ -443,8 +579,12 @@ export default function ProjectsPage() {
         isLoading={isLoading}
         error={error}
         empty={filteredProjects.length === 0}
-        emptyTitle="No opportunities found"
-        emptyDescription="Change a filter or check back when companies publish new work."
+        emptyTitle={isFreelanceView ? "No freelance tasks found" : "No opportunities found"}
+        emptyDescription={
+          isFreelanceView
+            ? "Change a filter or check back when verified clients publish new tasks."
+            : "Change a filter or check back when companies publish new work."
+        }
       />
 
       <div className="jobseeker-opportunity-list">
@@ -453,7 +593,10 @@ export default function ProjectsPage() {
           const match = matchByProject.get(project.id);
 
           return (
-            <article key={project.id}>
+            <article
+              className={isFreelanceView ? "freelance-task-card" : undefined}
+              key={project.id}
+            >
               <div className="jobseeker-opportunity-mark" aria-hidden="true">
                 {project.companyName.trim().charAt(0).toUpperCase()}
               </div>
@@ -483,15 +626,35 @@ export default function ProjectsPage() {
                 <strong>{project.companyName}</strong>
                 <p>{project.description}</p>
                 <div className="jobseeker-opportunity-meta">
-                  <span><Clock3 size={15} />{project.durationWeeks} weeks</span>
+                  <span>
+                    <Clock3 size={15} />
+                    {project.type === OpportunityTypes.FreelanceTask
+                      ? `${project.freelanceDeliveryDays ?? project.durationWeeks * 7} days delivery`
+                      : `${project.durationWeeks} weeks`}
+                  </span>
                   <span>
                     <BriefcaseBusiness size={15} />
                     {project.budget
-                      ? `$${project.budget}`
+                      ? `$${project.budget}${
+                          project.type === OpportunityTypes.FreelanceTask
+                            ? ` · ${getFreelancePricingLabel(
+                                project.freelancePricingType,
+                              ).toLowerCase()}`
+                            : ""
+                        }`
                       : project.type === OpportunityTypes.UniversityTraining
                         ? "Unpaid training"
                         : "No payment listed"}
                   </span>
+                  {project.type === OpportunityTypes.FreelanceTask ? (
+                    <span>
+                      <RotateCcw size={15} />
+                      {project.includedRevisions ?? 1} included{" "}
+                      {(project.includedRevisions ?? 1) === 1
+                        ? "revision"
+                        : "revisions"}
+                    </span>
+                  ) : null}
                   <span><MapPin size={15} />{getWorkModeLabel(project.workMode)}{project.location ? ` - ${project.location}` : ""}</span>
                   <span><Wrench size={15} />{getExperienceLevelLabel(project.experienceLevel)}</span>
                   <span><ShieldCheck size={15} />Verified provider</span>
@@ -506,7 +669,7 @@ export default function ProjectsPage() {
               </div>
               <div className="jobseeker-opportunity-action">
                 <Button to={`${detailsBasePath}/${project.id}`} variant="secondary">
-                  View details
+                  {isFreelanceView ? "View task" : "View details"}
                   <ArrowRight size={16} aria-hidden="true" />
                 </Button>
               </div>

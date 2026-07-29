@@ -1,6 +1,7 @@
 import type { AuthRole } from "../../auth/domain/authTypes";
 import type { ApplicationStatus } from "../../applications/domain/applicationTypes";
 import type {
+  FreelancePricingType,
   OpportunityType,
   ProjectStatus,
 } from "../../projects/domain/projectTypes";
@@ -53,6 +54,9 @@ export type AdminProject = {
   type: OpportunityType;
   status: ProjectStatus;
   budget: number | null;
+  freelancePricingType: FreelancePricingType | null;
+  freelanceDeliveryDays: number | null;
+  includedRevisions: number | null;
   durationWeeks: number;
   applicationTask: string;
   requiredTrainingHours: number | null;
@@ -69,6 +73,8 @@ export type AdminApplication = {
   jobSeekerId: number;
   jobSeekerName: string;
   coverLetter: string | null;
+  proposedBudget: number | null;
+  proposedDeliveryDays: number | null;
   status: ApplicationStatus;
 };
 
@@ -119,6 +125,9 @@ export type CreateAdminProjectRequest = {
   title: string;
   description: string;
   budget?: number | null;
+  freelancePricingType?: FreelancePricingType | null;
+  freelanceDeliveryDays?: number | null;
+  includedRevisions?: number | null;
   durationWeeks: number;
   type: OpportunityType;
   status: ProjectStatus;
@@ -159,16 +168,15 @@ export type UpdateAdminProjectRequest = {
   title: string;
   description: string;
   budget?: number | null;
+  freelancePricingType?: FreelancePricingType | null;
+  freelanceDeliveryDays?: number | null;
+  includedRevisions?: number | null;
   durationWeeks: number;
   type: OpportunityType;
   status: ProjectStatus;
   applicationTask?: string | null;
   requiredTrainingHours?: number | null;
   academicRequirements?: string | null;
-};
-
-export type UpdateAdminApplicationStatusRequest = {
-  status: ApplicationStatus;
 };
 
 export type UpdateAdminReviewRequest = {

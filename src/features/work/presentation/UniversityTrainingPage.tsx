@@ -12,7 +12,9 @@ import {
   ExternalLink,
   GraduationCap,
   MessageSquare,
+  Printer,
   RotateCcw,
+  Search,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Button from "../../../shared/components/Button";
@@ -25,6 +27,7 @@ import {
   getMilestoneStatusLabel,
   getWorkSubmissionStatusLabel,
   MilestoneStatuses,
+  TrainingReportStatuses,
   type WorkRecord,
 } from "../domain/workTypes";
 import {
@@ -32,15 +35,18 @@ import {
   reviewFinalWorkByUniversityAsync,
   updateTrainingProgressAsync,
 } from "../infrastructure/workApi";
+import TrainingReportsPanel from "./TrainingReportsPanel";
 
 export default function UniversityTrainingPage() {
   const navigate = useNavigate();
   const [records, setRecords] = useState<WorkRecord[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [completedHours, setCompletedHours] = useState("");
   const [progressNotes, setProgressNotes] = useState("");
+  const [academicRequirementsMet, setAcademicRequirementsMet] =
+    useState(false);
   const [evaluation, setEvaluation] = useState("");
   const [feedback, setFeedback] = useState("");
+  const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [busyAction, setBusyAction] = useState("");
   const [error, setError] = useState("");
@@ -56,8 +62,10 @@ export default function UniversityTrainingPage() {
         data.find((item) => item.applicationId === selectedId) ?? data[0] ?? null;
       setSelectedId(selectedRecord?.applicationId ?? null);
       if (selectedRecord) {
-        setCompletedHours(String(selectedRecord.completedTrainingHours));
         setProgressNotes(selectedRecord.universityProgressNotes ?? "");
+        setAcademicRequirementsMet(
+          selectedRecord.academicRequirementsMet,
+        );
         setEvaluation(selectedRecord.universityEvaluation ?? "");
         setFeedback("");
       }
@@ -81,14 +89,35 @@ export default function UniversityTrainingPage() {
     () => records.find((item) => item.applicationId === selectedId) ?? null,
     [records, selectedId],
   );
+  const visibleRecords = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return records;
+    return records.filter((item) =>
+      [
+        item.jobSeekerName,
+        item.projectTitle,
+        item.companyName,
+        item.studentNumber ?? "",
+      ].some((value) => value.toLowerCase().includes(query)),
+    );
+  }, [records, search]);
+  const pendingReportCount = records.reduce(
+    (total, item) =>
+      total +
+      item.trainingReports.filter(
+        (report) =>
+          report.status === TrainingReportStatuses.Submitted,
+      ).length,
+    0,
+  );
   const canUpdateProgress =
     record?.projectStatus === ProjectStatuses.InProgress &&
     record.workStatus !== WorkSubmissionStatuses.Approved;
 
   function selectRecord(item: WorkRecord) {
     setSelectedId(item.applicationId);
-    setCompletedHours(String(item.completedTrainingHours));
     setProgressNotes(item.universityProgressNotes ?? "");
+    setAcademicRequirementsMet(item.academicRequirementsMet);
     setEvaluation(item.universityEvaluation ?? "");
     setFeedback("");
   }
@@ -118,8 +147,9 @@ export default function UniversityTrainingPage() {
     await runAction("progress", () =>
       updateTrainingProgressAsync(
         record.applicationId,
-        Number(completedHours),
+        record.completedTrainingHours,
         progressNotes.trim(),
+        academicRequirementsMet,
       ),
     );
   }
@@ -141,7 +171,21 @@ export default function UniversityTrainingPage() {
 
   return (
     <section className="page university-training-page">
-      <PageHeader title="Supervised training" />
+      <PageHeader
+        title="Supervised training"
+        actions={
+          record ? (
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => window.print()}
+            >
+              <Printer size={17} aria-hidden="true" />
+              Print training record
+            </Button>
+          ) : null
+        }
+      />
 
       {message ? <div className="notice notice-success">{message}</div> : null}
       {error && records.length > 0 ? (
@@ -157,9 +201,41 @@ export default function UniversityTrainingPage() {
       />
 
       {record ? (
-        <div className="university-training-layout">
+        <>
+          <section className="university-training-kpis">
+            <article>
+              <span>Assigned students</span>
+              <strong>{records.length}</strong>
+            </article>
+            <article>
+              <span>Reports awaiting company review</span>
+              <strong>{pendingReportCount}</strong>
+            </article>
+            <article>
+              <span>Awaiting university approval</span>
+              <strong>
+                {
+                  records.filter(
+                    (item) =>
+                      item.workStatus ===
+                      WorkSubmissionStatuses.AwaitingUniversityApproval,
+                  ).length
+                }
+              </strong>
+            </article>
+          </section>
+          <div className="university-training-toolbar">
+            <Search size={17} aria-hidden="true" />
+            <input
+              type="search"
+              placeholder="Search students, companies, or training"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
+          </div>
+          <div className="university-training-layout">
           <aside className="university-training-list">
-            {records.map((item) => (
+            {visibleRecords.map((item) => (
               <button
                 type="button"
                 className={item.applicationId === record.applicationId ? "active" : ""}
@@ -171,6 +247,9 @@ export default function UniversityTrainingPage() {
                 <small>{item.companyName}</small>
               </button>
             ))}
+            {visibleRecords.length === 0 ? (
+              <p>No training records match this search.</p>
+            ) : null}
           </aside>
 
           <main className="university-training-record">
@@ -288,6 +367,12 @@ export default function UniversityTrainingPage() {
               )}
             </section>
 
+            <TrainingReportsPanel
+              mode="university"
+              record={record}
+              onUpdated={load}
+            />
+
             <div className="university-training-contact-actions">
               <Button
                 type="button"
@@ -322,19 +407,7 @@ export default function UniversityTrainingPage() {
             </div>
 
             <form className="university-progress-form" onSubmit={saveProgress}>
-              <h3>Progress monitoring</h3>
-              <label className="field">
-                <span>Completed training hours</span>
-                <input
-                  type="number"
-                  min="0"
-                  max={record.requiredTrainingHours ?? 2000}
-                  value={completedHours}
-                  required
-                  disabled={!canUpdateProgress}
-                  onChange={(event) => setCompletedHours(event.target.value)}
-                />
-              </label>
+              <h3>Academic monitoring</h3>
               <label className="field">
                 <span>Progress and academic notes</span>
                 <textarea
@@ -344,6 +417,19 @@ export default function UniversityTrainingPage() {
                   disabled={!canUpdateProgress}
                   onChange={(event) => setProgressNotes(event.target.value)}
                 />
+              </label>
+              <label className="training-academic-confirmation">
+                <input
+                  type="checkbox"
+                  checked={academicRequirementsMet}
+                  disabled={!canUpdateProgress}
+                  onChange={(event) =>
+                    setAcademicRequirementsMet(event.target.checked)
+                  }
+                />
+                <span>
+                  Academic requirements and learning outcomes have been met
+                </span>
               </label>
               <Button
                 type="submit"
@@ -380,6 +466,14 @@ export default function UniversityTrainingPage() {
             WorkSubmissionStatuses.AwaitingUniversityApproval ? (
               <section className="university-approval-form">
                 <h3>University approval</h3>
+                {!record.academicRequirementsMet ||
+                record.completedTrainingHours <
+                  (record.requiredTrainingHours ?? 0) ? (
+                  <div className="notice notice-error">
+                    Confirm the academic requirements and required approved
+                    hours before final approval.
+                  </div>
+                ) : null}
                 <label className="field">
                   <span>Academic evaluation</span>
                   <textarea
@@ -399,7 +493,12 @@ export default function UniversityTrainingPage() {
                 <div>
                   <Button
                     type="button"
-                    disabled={evaluation.trim().length < 10}
+                    disabled={
+                      evaluation.trim().length < 10 ||
+                      !record.academicRequirementsMet ||
+                      record.completedTrainingHours <
+                        (record.requiredTrainingHours ?? 0)
+                    }
                     isLoading={busyAction === "approve"}
                     onClick={() =>
                       void runAction("approve", () =>
@@ -438,6 +537,7 @@ export default function UniversityTrainingPage() {
             ) : null}
           </main>
         </div>
+        </>
       ) : null}
     </section>
   );

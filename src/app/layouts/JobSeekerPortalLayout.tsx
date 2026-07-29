@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   Bell,
   BriefcaseBusiness,
+  CircleDollarSign,
   FileCheck2,
   FolderKanban,
   KeyRound,
@@ -49,6 +50,7 @@ type JobSeekerNavItem = {
 const jobSeekerNavItems: JobSeekerNavItem[] = [
   { label: "Overview", to: "/job-seeker/dashboard", icon: LayoutDashboard },
   { label: "Discover", to: "/job-seeker/opportunities", icon: Search },
+  { label: "Freelance", to: "/job-seeker/freelance", icon: CircleDollarSign },
   { label: "Applications", to: "/job-seeker/applications", icon: FileCheck2 },
   { label: "Skills", to: "/job-seeker/skills", icon: Wrench },
   { label: "Portfolio", to: "/job-seeker/portfolio", icon: FolderKanban },

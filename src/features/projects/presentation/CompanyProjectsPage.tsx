@@ -14,6 +14,7 @@ import {
   FolderKanban,
   MapPin,
   Plus,
+  RotateCcw,
   Search,
   ShieldCheck,
   Trash2,
@@ -31,7 +32,9 @@ import type { Skill } from "../../skills/domain/skillTypes";
 import { getSkillsAsync } from "../../skills/infrastructure/skillApi";
 import {
   ExperienceLevels,
+  FreelancePricingTypes,
   getExperienceLevelLabel,
+  getFreelancePricingLabel,
   getOpportunityTypeLabel,
   getProjectDisplayStatusLabel,
   getProjectStatusLabel,
@@ -42,6 +45,7 @@ import {
   ProjectStatuses,
   WorkModes,
   type ExperienceLevel,
+  type FreelancePricingType,
   type OpportunityType,
   type Project,
   type ProjectMilestoneInput,
@@ -79,6 +83,9 @@ type ProjectForm = {
   positionsAvailable: string;
   applicationDeadline: string;
   budget: string;
+  freelancePricingType: FreelancePricingType;
+  freelanceDeliveryDays: string;
+  includedRevisions: string;
   durationWeeks: string;
   type: OpportunityType;
   requiredSkillNames: string[];
@@ -88,6 +95,10 @@ type ProjectForm = {
 type CompanyPortalContext = {
   isCompanyVerified: boolean;
   isTrainingProvider: boolean;
+};
+
+type CompanyProjectsPageProps = {
+  mode?: "opportunities" | "freelance";
 };
 
 const emptyProjectForm: ProjectForm = {
@@ -113,11 +124,26 @@ const emptyProjectForm: ProjectForm = {
   positionsAvailable: "1",
   applicationDeadline: "",
   budget: "",
+  freelancePricingType: FreelancePricingTypes.FixedPrice,
+  freelanceDeliveryDays: "14",
+  includedRevisions: "1",
   durationWeeks: "6",
   type: OpportunityTypes.ProfessionalProject,
   requiredSkillNames: [],
   preferredSkillNames: [],
 };
+
+function createEmptyProjectForm(isFreelanceView: boolean): ProjectForm {
+  return {
+    ...emptyProjectForm,
+    milestones: emptyProjectForm.milestones.map((milestone) => ({
+      ...milestone,
+    })),
+    type: isFreelanceView
+      ? OpportunityTypes.FreelanceTask
+      : OpportunityTypes.ProfessionalProject,
+  };
+}
 
 function mergeSkillNames(...groups: string[][]) {
   const names = new Map<string, string>();
@@ -148,11 +174,14 @@ function getStatusTone(
   return "neutral";
 }
 
-export default function CompanyProjectsPage() {
+export default function CompanyProjectsPage({
+  mode: pageMode = "opportunities",
+}: CompanyProjectsPageProps) {
   const { isCompanyVerified, isTrainingProvider } =
     useOutletContext<CompanyPortalContext>();
   const [searchParams, setSearchParams] = useSearchParams();
   const createRequested = searchParams.get("create") === "1";
+  const isFreelanceView = pageMode === "freelance";
   const [projects, setProjects] = useState<Project[]>([]);
   const [availableSkills, setAvailableSkills] = useState<Skill[]>([]);
   const [requiredSkillInput, setRequiredSkillInput] = useState("");
@@ -165,7 +194,9 @@ export default function CompanyProjectsPage() {
   );
   const [mode, setMode] = useState<FormMode>("create");
   const [editingProject, setEditingProject] = useState<Project | null>(null);
-  const [form, setForm] = useState<ProjectForm>(emptyProjectForm);
+  const [form, setForm] = useState<ProjectForm>(() =>
+    createEmptyProjectForm(isFreelanceView),
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [busyProjectId, setBusyProjectId] = useState<number | null>(null);
@@ -203,10 +234,20 @@ export default function CompanyProjectsPage() {
     return () => window.clearTimeout(timeoutId);
   }, []);
 
+  const scopedProjects = useMemo(
+    () =>
+      projects.filter((project) =>
+        isFreelanceView
+          ? project.type === OpportunityTypes.FreelanceTask
+          : project.type !== OpportunityTypes.FreelanceTask,
+      ),
+    [isFreelanceView, projects],
+  );
+
   const filteredProjects = useMemo(() => {
     const value = search.trim().toLowerCase();
 
-    return projects.filter((project) => {
+    return scopedProjects.filter((project) => {
       const matchesStatus =
         statusFilter === "All" ||
         (statusFilter === "ApplicationsClosed"
@@ -215,7 +256,10 @@ export default function CompanyProjectsPage() {
           : Number(statusFilter) === ProjectStatuses.Open
             ? isProjectAcceptingApplications(project)
             : project.status === Number(statusFilter));
-      const matchesType = typeFilter === "All" || project.type === Number(typeFilter);
+      const matchesType =
+        isFreelanceView ||
+        typeFilter === "All" ||
+        project.type === Number(typeFilter);
       const matchesSearch =
         !value ||
         project.title.toLowerCase().includes(value) ||
@@ -225,21 +269,21 @@ export default function CompanyProjectsPage() {
 
       return matchesStatus && matchesType && matchesSearch;
     });
-  }, [projects, search, statusFilter, typeFilter]);
+  }, [isFreelanceView, scopedProjects, search, statusFilter, typeFilter]);
 
   const stats = useMemo(
     () => ({
-      total: projects.length,
-      open: projects.filter(isProjectAcceptingApplications).length,
-      active: projects.filter(
+      total: scopedProjects.length,
+      open: scopedProjects.filter(isProjectAcceptingApplications).length,
+      active: scopedProjects.filter(
         (project) => project.status === ProjectStatuses.InProgress,
       ).length,
-      applications: projects.reduce(
+      applications: scopedProjects.reduce(
         (total, project) => total + project.applicationsCount,
         0,
       ),
     }),
-    [projects],
+    [scopedProjects],
   );
 
   function openCreateForm() {
@@ -253,7 +297,7 @@ export default function CompanyProjectsPage() {
 
     setMode("create");
     setEditingProject(null);
-    setForm(emptyProjectForm);
+    setForm(createEmptyProjectForm(isFreelanceView));
     setRequiredSkillInput("");
     setPreferredSkillInput("");
     setIsFormOpen(true);
@@ -293,6 +337,12 @@ export default function CompanyProjectsPage() {
       positionsAvailable: project.positionsAvailable.toString(),
       applicationDeadline: project.applicationDeadline ?? "",
       budget: project.budget?.toString() ?? "",
+      freelancePricingType:
+        project.freelancePricingType ?? FreelancePricingTypes.FixedPrice,
+      freelanceDeliveryDays:
+        project.freelanceDeliveryDays?.toString() ?? "14",
+      includedRevisions:
+        project.includedRevisions?.toString() ?? "1",
       durationWeeks: project.durationWeeks.toString(),
       type: project.type,
       requiredSkillNames: project.skills
@@ -313,7 +363,7 @@ export default function CompanyProjectsPage() {
     setIsFormOpen(false);
     setMode("create");
     setEditingProject(null);
-    setForm(emptyProjectForm);
+    setForm(createEmptyProjectForm(isFreelanceView));
     setRequiredSkillInput("");
     setPreferredSkillInput("");
 
@@ -327,9 +377,21 @@ export default function CompanyProjectsPage() {
     setMessage("");
     setError("");
 
-    const durationWeeks = Number(form.durationWeeks);
+    const enteredDurationWeeks = Number(form.durationWeeks);
     const positionsAvailable = Number(form.positionsAvailable);
     const budget = form.budget.trim() ? Number(form.budget) : null;
+    const freelanceDeliveryDays = Number(form.freelanceDeliveryDays);
+    const includedRevisions = Number(form.includedRevisions);
+    const durationWeeks =
+      form.type === OpportunityTypes.FreelanceTask &&
+      Number.isInteger(freelanceDeliveryDays) &&
+      freelanceDeliveryDays > 0
+        ? Math.max(1, Math.ceil(freelanceDeliveryDays / 7))
+        : enteredDurationWeeks;
+    const workWindowDays =
+      form.type === OpportunityTypes.FreelanceTask
+        ? freelanceDeliveryDays
+        : durationWeeks * 7;
     const milestones = form.milestones.map((milestone) => ({
       title: milestone.title.trim(),
       description: milestone.description.trim() || null,
@@ -397,8 +459,28 @@ export default function CompanyProjectsPage() {
       return;
     }
 
-    if (!Number.isInteger(durationWeeks) || durationWeeks < 1) {
+    if (
+      form.type !== OpportunityTypes.FreelanceTask &&
+      (!Number.isInteger(durationWeeks) || durationWeeks < 1)
+    ) {
       setError("Duration must be at least one full week.");
+      return;
+    }
+
+    if (
+      form.type === OpportunityTypes.FreelanceTask &&
+      (budget === null ||
+        budget <= 0 ||
+        !Number.isInteger(freelanceDeliveryDays) ||
+        freelanceDeliveryDays < 1 ||
+        freelanceDeliveryDays > 365 ||
+        !Number.isInteger(includedRevisions) ||
+        includedRevisions < 0 ||
+        includedRevisions > 20)
+    ) {
+      setError(
+        "Add a valid budget, delivery time, and number of revision rounds.",
+      );
       return;
     }
 
@@ -409,11 +491,11 @@ export default function CompanyProjectsPage() {
           !milestone.title ||
           !Number.isInteger(milestone.dueAfterDays) ||
           milestone.dueAfterDays < 1 ||
-          milestone.dueAfterDays > durationWeeks * 7,
+          milestone.dueAfterDays > workWindowDays,
       )
     ) {
       setError(
-        `Add at least one milestone and set each due day between 1 and ${durationWeeks * 7}.`,
+        `Add at least one milestone and set each due day between 1 and ${workWindowDays}.`,
       );
       return;
     }
@@ -448,6 +530,18 @@ export default function CompanyProjectsPage() {
           positionsAvailable,
           applicationDeadline: form.applicationDeadline || null,
           budget,
+          freelancePricingType:
+            form.type === OpportunityTypes.FreelanceTask
+              ? form.freelancePricingType
+              : null,
+          freelanceDeliveryDays:
+            form.type === OpportunityTypes.FreelanceTask
+              ? freelanceDeliveryDays
+              : null,
+          includedRevisions:
+            form.type === OpportunityTypes.FreelanceTask
+              ? includedRevisions
+              : null,
           durationWeeks,
           type: form.type,
           requiredSkillNames,
@@ -476,6 +570,18 @@ export default function CompanyProjectsPage() {
           positionsAvailable,
           applicationDeadline: form.applicationDeadline || null,
           budget,
+          freelancePricingType:
+            form.type === OpportunityTypes.FreelanceTask
+              ? form.freelancePricingType
+              : null,
+          freelanceDeliveryDays:
+            form.type === OpportunityTypes.FreelanceTask
+              ? freelanceDeliveryDays
+              : null,
+          includedRevisions:
+            form.type === OpportunityTypes.FreelanceTask
+              ? includedRevisions
+              : null,
           durationWeeks,
           type: form.type,
           requiredSkillNames,
@@ -601,19 +707,29 @@ export default function CompanyProjectsPage() {
   }
 
   return (
-    <section className="page company-opportunities-page">
+    <section
+      className={`page company-opportunities-page ${
+        isFreelanceView ? "company-freelance-page" : ""
+      }`}
+    >
       <PageHeader
-        title="Opportunities"
+        title={isFreelanceView ? "Freelance tasks" : "Opportunities"}
         actions={
           <Button
             type="button"
             onClick={openCreateForm}
             disabled={!isCompanyVerified}
             className="button-with-icon"
-            title={isCompanyVerified ? "Create opportunity" : "Verification required"}
+            title={
+              isCompanyVerified
+                ? isFreelanceView
+                  ? "Create freelance task"
+                  : "Create opportunity"
+                : "Verification required"
+            }
           >
             <Plus size={17} aria-hidden="true" />
-            New opportunity
+            {isFreelanceView ? "New freelance task" : "New opportunity"}
           </Button>
         }
       />
@@ -644,7 +760,10 @@ export default function CompanyProjectsPage() {
           <span className="company-kpi-icon kpi-amber">
             <UsersRound size={19} aria-hidden="true" />
           </span>
-          <div><span>Applications</span><strong>{stats.applications}</strong></div>
+          <div>
+            <span>{isFreelanceView ? "Proposals" : "Applications"}</span>
+            <strong>{stats.applications}</strong>
+          </div>
         </article>
       </div>
 
@@ -652,8 +771,12 @@ export default function CompanyProjectsPage() {
         <label className="company-search-field">
           <Search size={17} aria-hidden="true" />
           <input
-            aria-label="Search company opportunities"
-            placeholder="Search opportunities"
+            aria-label={
+              isFreelanceView
+                ? "Search company freelance tasks"
+                : "Search company opportunities"
+            }
+            placeholder={isFreelanceView ? "Search freelance tasks" : "Search opportunities"}
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
@@ -670,36 +793,39 @@ export default function CompanyProjectsPage() {
           <option value={ProjectStatuses.Completed}>Completed</option>
           <option value={ProjectStatuses.Cancelled}>Cancelled</option>
         </select>
-        <select
-          aria-label="Filter opportunities by type"
-          value={typeFilter}
-          onChange={(event) => setTypeFilter(event.target.value)}
-        >
-          <option value="All">All types</option>
-          <option value={OpportunityTypes.ProfessionalProject}>
-            Professional projects
-          </option>
-          {!isTrainingProvider ? (
-            <option value={OpportunityTypes.UniversityTraining}>
-              University training
+        {!isFreelanceView ? (
+          <select
+            aria-label="Filter opportunities by type"
+            value={typeFilter}
+            onChange={(event) => setTypeFilter(event.target.value)}
+          >
+            <option value="All">All types</option>
+            <option value={OpportunityTypes.ProfessionalProject}>
+              Professional projects
             </option>
-          ) : null}
-          <option value={OpportunityTypes.FreelanceTask}>Freelance tasks</option>
-          <option value={OpportunityTypes.SkillDevelopmentChallenge}>
-            Skill-development challenges
-          </option>
-          <option value={OpportunityTypes.TeamProject}>Team projects</option>
-        </select>
+            {!isTrainingProvider ? (
+              <option value={OpportunityTypes.UniversityTraining}>
+                University training
+              </option>
+            ) : null}
+            <option value={OpportunityTypes.SkillDevelopmentChallenge}>
+              Skill-development challenges
+            </option>
+            <option value={OpportunityTypes.TeamProject}>Team projects</option>
+          </select>
+        ) : null}
       </div>
 
       <DataState
         isLoading={isLoading}
         error=""
         empty={!isLoading && filteredProjects.length === 0}
-        emptyTitle="No opportunities found"
+        emptyTitle={isFreelanceView ? "No freelance tasks found" : "No opportunities found"}
         emptyDescription={
-          projects.length === 0
-            ? "Create your first opportunity after company verification."
+          scopedProjects.length === 0
+            ? isFreelanceView
+              ? "Create your first freelance task after company verification."
+              : "Create your first opportunity after company verification."
             : "Adjust the search or filters."
         }
       />
@@ -727,8 +853,18 @@ export default function CompanyProjectsPage() {
                 </div>
                 <p>{project.description}</p>
                 <div className="company-opportunity-facts">
-                  <span><UsersRound size={16} /> {project.applicationsCount} applications</span>
-                  <span><Clock3 size={16} /> {project.durationWeeks} weeks</span>
+                  <span>
+                    <UsersRound size={16} /> {project.applicationsCount}{" "}
+                    {project.type === OpportunityTypes.FreelanceTask
+                      ? "proposals"
+                      : "applications"}
+                  </span>
+                  <span>
+                    <Clock3 size={16} />{" "}
+                    {project.type === OpportunityTypes.FreelanceTask
+                      ? `${project.freelanceDeliveryDays ?? project.durationWeeks * 7} days delivery`
+                      : `${project.durationWeeks} weeks`}
+                  </span>
                   <span><MapPin size={16} /> {getWorkModeLabel(project.workMode)}</span>
                   <span><Wrench size={16} /> {getExperienceLevelLabel(project.experienceLevel)}</span>
                   {project.applicationDeadline ? (
@@ -741,7 +877,21 @@ export default function CompanyProjectsPage() {
                   <span>
                     <CircleDollarSign size={16} />
                     {project.budget !== null ? `$${project.budget}` : "No budget"}
+                    {project.type === OpportunityTypes.FreelanceTask
+                      ? ` · ${getFreelancePricingLabel(
+                          project.freelancePricingType,
+                        ).toLowerCase()}`
+                      : ""}
                   </span>
+                  {project.type === OpportunityTypes.FreelanceTask ? (
+                    <span>
+                      <RotateCcw size={16} />
+                      {project.includedRevisions ?? 1} included{" "}
+                      {(project.includedRevisions ?? 1) === 1
+                        ? "revision"
+                        : "revisions"}
+                    </span>
+                  ) : null}
                 </div>
                 <div className="project-skill-tags">
                   {project.skills.slice(0, 6).map((skill) => (
@@ -773,7 +923,13 @@ export default function CompanyProjectsPage() {
                   className="button-with-icon"
                 >
                   <UsersRound size={17} aria-hidden="true" />
-                  {project.status === ProjectStatuses.Open ? "Applicants" : "Team & applicants"}
+                  {project.type === OpportunityTypes.FreelanceTask
+                    ? project.status === ProjectStatuses.Open
+                      ? "Proposals"
+                      : "Work & proposals"
+                    : project.status === ProjectStatuses.Open
+                      ? "Applicants"
+                      : "Team & applicants"}
                 </Button>
 
                 {project.status === ProjectStatuses.Open ? (
@@ -872,7 +1028,13 @@ export default function CompanyProjectsPage() {
               <div>
                 <span>{mode === "create" ? "New listing" : `Project #${editingProject?.id}`}</span>
                 <h2 id="company-opportunity-form-title">
-                  {mode === "create" ? "Create opportunity" : "Edit opportunity"}
+                  {mode === "create"
+                    ? isFreelanceView
+                      ? "Create freelance task"
+                      : "Create opportunity"
+                    : isFreelanceView
+                      ? "Edit freelance task"
+                      : "Edit opportunity"}
                 </h2>
               </div>
               <Button
@@ -1074,33 +1236,33 @@ export default function CompanyProjectsPage() {
                   }
                 />
               </label>
-              <label className="field">
-                <span>Opportunity type</span>
-                <select
-                  value={form.type}
-                  onChange={(event) =>
-                    setForm({ ...form, type: Number(event.target.value) as OpportunityType })
-                  }
-                >
-                  <option value={OpportunityTypes.ProfessionalProject}>
-                    Professional project
-                  </option>
-                  {!isTrainingProvider ? (
-                    <option value={OpportunityTypes.UniversityTraining}>
-                      University training
+              {!isFreelanceView ? (
+                <label className="field">
+                  <span>Opportunity type</span>
+                  <select
+                    value={form.type}
+                    onChange={(event) =>
+                      setForm({
+                        ...form,
+                        type: Number(event.target.value) as OpportunityType,
+                      })
+                    }
+                  >
+                    <option value={OpportunityTypes.ProfessionalProject}>
+                      Professional project
                     </option>
-                  ) : null}
-                  <option value={OpportunityTypes.FreelanceTask}>
-                    Freelance task
-                  </option>
-                  <option value={OpportunityTypes.SkillDevelopmentChallenge}>
-                    Skill-development challenge
-                  </option>
-                  <option value={OpportunityTypes.TeamProject}>
-                    Team project
-                  </option>
-                </select>
-              </label>
+                    {!isTrainingProvider ? (
+                      <option value={OpportunityTypes.UniversityTraining}>
+                        University training
+                      </option>
+                    ) : null}
+                    <option value={OpportunityTypes.SkillDevelopmentChallenge}>
+                      Skill-development challenge
+                    </option>
+                    <option value={OpportunityTypes.TeamProject}>Team project</option>
+                  </select>
+                </label>
+              ) : null}
               <div className="workflow-policy-note" role="note">
                 <ShieldCheck aria-hidden="true" />
                 <span>
@@ -1139,6 +1301,83 @@ export default function CompanyProjectsPage() {
                     />
                   </label>
                 </div>
+              ) : null}
+              {form.type === OpportunityTypes.FreelanceTask ? (
+                <fieldset className="freelance-terms-fields">
+                  <legend>
+                    <CircleDollarSign size={16} aria-hidden="true" />
+                    Freelance terms
+                  </legend>
+                  <div className="company-form-grid">
+                    <label className="field">
+                      <span>Pricing</span>
+                      <select
+                        value={form.freelancePricingType}
+                        onChange={(event) =>
+                          setForm({
+                            ...form,
+                            freelancePricingType: Number(
+                              event.target.value,
+                            ) as FreelancePricingType,
+                          })
+                        }
+                      >
+                        <option value={FreelancePricingTypes.FixedPrice}>
+                          Fixed price
+                        </option>
+                        <option value={FreelancePricingTypes.Hourly}>
+                          Hourly
+                        </option>
+                      </select>
+                    </label>
+                    <Input
+                      label={
+                        form.freelancePricingType ===
+                        FreelancePricingTypes.Hourly
+                          ? "Suggested hourly rate"
+                          : "Budget"
+                      }
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      value={form.budget}
+                      required
+                      onChange={(event) =>
+                        setForm({ ...form, budget: event.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="company-form-grid">
+                    <Input
+                      label="Expected delivery days"
+                      type="number"
+                      min="1"
+                      max="365"
+                      value={form.freelanceDeliveryDays}
+                      required
+                      onChange={(event) =>
+                        setForm({
+                          ...form,
+                          freelanceDeliveryDays: event.target.value,
+                        })
+                      }
+                    />
+                    <Input
+                      label="Included revisions"
+                      type="number"
+                      min="0"
+                      max="20"
+                      value={form.includedRevisions}
+                      required
+                      onChange={(event) =>
+                        setForm({
+                          ...form,
+                          includedRevisions: event.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                </fieldset>
               ) : null}
               <div className="company-form-grid">
                 <label className="field">
@@ -1183,25 +1422,44 @@ export default function CompanyProjectsPage() {
                 onChange={(event) => setForm({ ...form, location: event.target.value })}
               />
               <div className="company-form-grid">
-                <Input
-                  label="Duration in weeks"
-                  type="number"
-                  min="1"
-                  max="104"
-                  value={form.durationWeeks}
-                  required
-                  onChange={(event) =>
-                    setForm({ ...form, durationWeeks: event.target.value })
-                  }
-                />
-                <Input
-                  label="Budget (optional)"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={form.budget}
-                  onChange={(event) => setForm({ ...form, budget: event.target.value })}
-                />
+                {form.type === OpportunityTypes.FreelanceTask ? (
+                  <div className="company-field-readout">
+                    <span>Work window</span>
+                    <strong>
+                      {Number(form.freelanceDeliveryDays) > 0
+                        ? `${form.freelanceDeliveryDays} days`
+                        : "Set delivery above"}
+                    </strong>
+                    <small>
+                      The project duration is calculated from the delivery
+                      target.
+                    </small>
+                  </div>
+                ) : (
+                  <Input
+                    label="Duration in weeks"
+                    type="number"
+                    min="1"
+                    max="104"
+                    value={form.durationWeeks}
+                    required
+                    onChange={(event) =>
+                      setForm({ ...form, durationWeeks: event.target.value })
+                    }
+                  />
+                )}
+                {form.type !== OpportunityTypes.FreelanceTask ? (
+                  <Input
+                    label="Budget (optional)"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={form.budget}
+                    onChange={(event) =>
+                      setForm({ ...form, budget: event.target.value })
+                    }
+                  />
+                ) : null}
               </div>
               <div className="company-form-grid">
                 <Input

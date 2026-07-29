@@ -1,9 +1,13 @@
 import { type ReactNode, useEffect, useState } from "react";
 import {
   BriefcaseBusiness,
+  CircleDollarSign,
+  Clock3,
   ExternalLink,
+  FileDown,
   MapPin,
   MessageSquare,
+  RotateCcw,
   Star,
   X,
 } from "lucide-react";
@@ -14,9 +18,14 @@ import type { PortfolioItem } from "../../portfolio/domain/portfolioTypes";
 import { getPublicPortfolioAsync } from "../../portfolio/infrastructure/portfolioApi";
 import PortfolioGallery from "../../portfolio/presentation/PortfolioGallery";
 import {
-  getApplicationStatusLabel,
+  getFreelancePricingLabel,
+  OpportunityTypes,
+} from "../../projects/domain/projectTypes";
+import {
+  getApplicationStatusLabelForOpportunity,
   type Application,
 } from "../domain/applicationTypes";
+import { downloadApplicationCvAsync } from "../infrastructure/applicationApi";
 
 type ApplicantProfilePanelProps = {
   application: Application;
@@ -24,6 +33,7 @@ type ApplicantProfilePanelProps = {
   isLoading: boolean;
   onClose: () => void;
   profile: JobSeekerProfile | null;
+  includedRevisions?: number | null;
   actions?: ReactNode;
 };
 
@@ -47,11 +57,31 @@ export default function ApplicantProfilePanel({
   isLoading,
   onClose,
   profile,
+  includedRevisions,
   actions,
 }: ApplicantProfilePanelProps) {
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
   const [portfolioError, setPortfolioError] = useState("");
   const [isPortfolioLoading, setIsPortfolioLoading] = useState(false);
+  const [isCvDownloading, setIsCvDownloading] = useState(false);
+  const [cvError, setCvError] = useState("");
+
+  async function downloadCv() {
+    setIsCvDownloading(true);
+    setCvError("");
+
+    try {
+      await downloadApplicationCvAsync(application.id);
+    } catch (caughtError) {
+      setCvError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Unable to download the CV.",
+      );
+    } finally {
+      setIsCvDownloading(false);
+    }
+  }
 
   useEffect(() => {
     if (!profile) return;
@@ -115,8 +145,14 @@ export default function ApplicantProfilePanel({
         </header>
 
         <div className="company-applicant-status-row">
+          {application.isShortlisted ? (
+            <StatusBadge tone="blue">Shortlisted</StatusBadge>
+          ) : null}
           <StatusBadge>
-            {getApplicationStatusLabel(application.status)}
+            {getApplicationStatusLabelForOpportunity(
+              application.status,
+              application.opportunityType,
+            )}
           </StatusBadge>
           <span>Application #{application.id}</span>
           <span>Project #{application.projectId}</span>
@@ -124,8 +160,39 @@ export default function ApplicantProfilePanel({
 
         <div className="company-applicant-content">
           <section>
-            <h3>Application evidence</h3>
+            <h3>
+              {application.opportunityType === OpportunityTypes.FreelanceTask
+                ? "Proposal and evidence"
+                : "Application evidence"}
+            </h3>
             <p>{application.coverLetter ?? "No introduction provided."}</p>
+            {application.opportunityType === OpportunityTypes.FreelanceTask ? (
+              <div className="freelance-proposal-summary">
+                <div>
+                  <CircleDollarSign size={18} aria-hidden="true" />
+                  <span>
+                    {getFreelancePricingLabel(
+                      application.freelancePricingType,
+                    )}
+                  </span>
+                  <strong>
+                    {application.proposedBudget
+                      ? `$${application.proposedBudget}`
+                      : "Not set"}
+                  </strong>
+                </div>
+                <div>
+                  <Clock3 size={18} aria-hidden="true" />
+                  <span>Delivery</span>
+                  <strong>{application.proposedDeliveryDays} days</strong>
+                </div>
+                <div>
+                  <RotateCcw size={18} aria-hidden="true" />
+                  <span>Included revisions</span>
+                  <strong>{includedRevisions ?? 1}</strong>
+                </div>
+              </div>
+            ) : null}
             {application.shortTaskResponse ? (
               <>
                 <strong>Short task response</strong>
@@ -142,6 +209,26 @@ export default function ApplicantProfilePanel({
                 <ExternalLink size={16} aria-hidden="true" />
                 Open work sample
               </a>
+            ) : null}
+            {application.hasCv && application.canViewCv ? (
+              <Button
+                type="button"
+                variant="secondary"
+                className="button-with-icon"
+                isLoading={isCvDownloading}
+                onClick={downloadCv}
+              >
+                <FileDown size={16} aria-hidden="true" />
+                Download CV
+              </Button>
+            ) : null}
+            {application.hasCv && !application.canViewCv ? (
+              <div className="notice">
+                The CV stays hidden during the initial blind review.
+              </div>
+            ) : null}
+            {cvError ? (
+              <div className="notice notice-error">{cvError}</div>
             ) : null}
           </section>
           {application.isIdentityHidden ? (

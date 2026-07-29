@@ -19,6 +19,7 @@ export function getEligiblePortfolioProjectsAsync() {
 export function getPublicPortfolioAsync(jobSeekerId: number) {
   return httpClient<PortfolioItem[]>(
     `/api/portfolio/job-seekers/${jobSeekerId}`,
+    { skipAuth: true },
   );
 }
 

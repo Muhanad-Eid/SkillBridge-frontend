@@ -1,18 +1,33 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, FileCheck2, FolderKanban, Search, XCircle } from "lucide-react";
+import {
+  ArrowRight,
+  CircleDollarSign,
+  Clock3,
+  FileDown,
+  FileCheck2,
+  FolderKanban,
+  MessageSquareText,
+  Search,
+  XCircle,
+} from "lucide-react";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
 import StatusBadge from "../../../shared/components/StatusBadge";
-import type { Project } from "../../projects/domain/projectTypes";
+import {
+  getFreelancePricingLabel,
+  OpportunityTypes,
+  type Project,
+} from "../../projects/domain/projectTypes";
 import { getProjectsAsync } from "../../projects/infrastructure/projectApi";
 import {
   ApplicationStatuses,
-  getApplicationStatusLabel,
+  getApplicationStatusLabelForOpportunity,
   type Application,
   type ApplicationStatus,
 } from "../domain/applicationTypes";
 import {
+  downloadApplicationCvAsync,
   getMyApplicationsAsync,
   withdrawApplicationAsync,
 } from "../infrastructure/applicationApi";
@@ -32,15 +47,24 @@ function getApplicationTone(status: ApplicationStatus) {
   return "amber";
 }
 
-export default function MyApplicationsPage() {
+type MyApplicationsPageProps = {
+  mode?: "applications" | "freelance";
+};
+
+export default function MyApplicationsPage({
+  mode = "applications",
+}: MyApplicationsPageProps) {
   const [applications, setApplications] = useState<Application[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
   const [withdrawingId, setWithdrawingId] = useState<number | null>(null);
+  const [downloadingCvId, setDownloadingCvId] = useState<number | null>(null);
   const [error, setError] = useState("");
+  const [cvError, setCvError] = useState("");
   const [message, setMessage] = useState("");
+  const isFreelanceView = mode === "freelance";
 
   async function loadApplications() {
     setIsLoading(true);
@@ -74,10 +98,20 @@ export default function MyApplicationsPage() {
     [projects],
   );
 
+  const scopedApplications = useMemo(
+    () =>
+      applications.filter((application) =>
+        isFreelanceView
+          ? application.opportunityType === OpportunityTypes.FreelanceTask
+          : application.opportunityType !== OpportunityTypes.FreelanceTask,
+      ),
+    [applications, isFreelanceView],
+  );
+
   const filteredApplications = useMemo(() => {
     const value = search.trim().toLowerCase();
 
-    return applications.filter((application) => {
+    return scopedApplications.filter((application) => {
       const project = projectsById.get(application.projectId);
       const matchesStatus =
         statusFilter === "all" || application.status === Number(statusFilter);
@@ -89,28 +123,34 @@ export default function MyApplicationsPage() {
 
       return matchesStatus && matchesSearch;
     });
-  }, [applications, projectsById, search, statusFilter]);
+  }, [projectsById, scopedApplications, search, statusFilter]);
 
   const stats = useMemo(
     () => ({
-      total: applications.length,
-      pending: applications.filter(
+      total: scopedApplications.length,
+      pending: scopedApplications.filter(
         (application) => application.status === ApplicationStatuses.Pending,
       ).length,
-      accepted: applications.filter(
+      accepted: scopedApplications.filter(
         (application) => application.status === ApplicationStatuses.Accepted,
       ).length,
-      closed: applications.filter(
+      closed: scopedApplications.filter(
         (application) =>
           application.status === ApplicationStatuses.Rejected ||
           application.status === ApplicationStatuses.Withdrawn,
       ).length,
     }),
-    [applications],
+    [scopedApplications],
   );
 
   async function handleWithdraw(application: Application) {
-    if (!window.confirm(`Withdraw your application for "${application.projectTitle}"?`)) {
+    if (
+      !window.confirm(
+        `Withdraw your ${
+          isFreelanceView ? "proposal" : "application"
+        } for "${application.projectTitle}"?`,
+      )
+    ) {
       return;
     }
 
@@ -120,7 +160,7 @@ export default function MyApplicationsPage() {
 
     try {
       await withdrawApplicationAsync(application.id);
-      setMessage("Application withdrawn.");
+      setMessage(isFreelanceView ? "Proposal withdrawn." : "Application withdrawn.");
       await loadApplications();
     } catch (caughtError) {
       setError(
@@ -133,32 +173,70 @@ export default function MyApplicationsPage() {
     }
   }
 
+  async function handleDownloadCv(application: Application) {
+    setDownloadingCvId(application.id);
+    setCvError("");
+
+    try {
+      await downloadApplicationCvAsync(application.id);
+    } catch (caughtError) {
+      setCvError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Unable to download the CV.",
+      );
+    } finally {
+      setDownloadingCvId(null);
+    }
+  }
+
   return (
-    <section className="page jobseeker-applications-page">
+    <section
+      className={`page jobseeker-applications-page ${
+        isFreelanceView ? "freelance-proposals-page" : ""
+      }`}
+    >
       <PageHeader
-        title="Applications"
+        title={isFreelanceView ? "Freelance proposals" : "Applications"}
         actions={
-          <Button to="/job-seeker/opportunities" variant="primary">
+          <Button
+            to={
+              isFreelanceView
+                ? "/job-seeker/freelance"
+                : "/job-seeker/opportunities"
+            }
+            variant="primary"
+          >
             <Search size={17} aria-hidden="true" />
-            Find opportunities
+            {isFreelanceView ? "Find freelance tasks" : "Find opportunities"}
           </Button>
         }
       />
 
       <div className="jobseeker-application-stats">
-        <article><span>Total applications</span><strong>{stats.total}</strong></article>
+        <article>
+          <span>{isFreelanceView ? "Total proposals" : "Total applications"}</span>
+          <strong>{stats.total}</strong>
+        </article>
         <article><span>Awaiting decision</span><strong>{stats.pending}</strong></article>
-        <article><span>Accepted</span><strong>{stats.accepted}</strong></article>
+        <article>
+          <span>{isFreelanceView ? "Hired" : "Accepted"}</span>
+          <strong>{stats.accepted}</strong>
+        </article>
         <article><span>Rejected / withdrawn</span><strong>{stats.closed}</strong></article>
       </div>
 
       <div className="jobseeker-application-controls">
-        <div className="jobseeker-status-tabs" role="tablist" aria-label="Application status">
+        <div
+          className="jobseeker-status-tabs"
+          role="tablist"
+          aria-label={isFreelanceView ? "Proposal status" : "Application status"}
+        >
           {statusTabs.map((tab) => {
             const count =
               tab.value === "all"
-                ? applications.length
-                : applications.filter(
+                ? scopedApplications.length
+                : scopedApplications.filter(
                     (application) => application.status === Number(tab.value),
                   ).length;
 
@@ -171,7 +249,10 @@ export default function MyApplicationsPage() {
                 className={statusFilter === tab.value ? "active" : ""}
                 onClick={() => setStatusFilter(tab.value)}
               >
-                {tab.label}<span>{count}</span>
+                {isFreelanceView && tab.label === "Accepted"
+                  ? "Hired"
+                  : tab.label}
+                <span>{count}</span>
               </button>
             );
           })}
@@ -179,8 +260,10 @@ export default function MyApplicationsPage() {
         <label className="jobseeker-search-field">
           <Search size={17} aria-hidden="true" />
           <input
-            aria-label="Search applications"
-            placeholder="Search project or company"
+            aria-label={isFreelanceView ? "Search proposals" : "Search applications"}
+            placeholder={
+              isFreelanceView ? "Search task or client" : "Search project or company"
+            }
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
@@ -188,20 +271,27 @@ export default function MyApplicationsPage() {
       </div>
 
       {message ? <div className="notice">{message}</div> : null}
+      {cvError ? <div className="notice notice-error">{cvError}</div> : null}
 
       <DataState
         isLoading={isLoading}
         error={error}
         empty={filteredApplications.length === 0}
-        emptyTitle="No applications in this view"
-        emptyDescription="Change the filter or browse open opportunities to start a new application."
+        emptyTitle={
+          isFreelanceView ? "No proposals in this view" : "No applications in this view"
+        }
+        emptyDescription={
+          isFreelanceView
+            ? "Change the filter or browse open freelance tasks to send a proposal."
+            : "Change the filter or browse open opportunities to start a new application."
+        }
       />
 
       {filteredApplications.length > 0 ? (
         <div className="jobseeker-application-table">
           <div className="jobseeker-application-table-head" aria-hidden="true">
-            <span>Opportunity</span>
-            <span>Application</span>
+            <span>{isFreelanceView ? "Freelance task" : "Opportunity"}</span>
+            <span>{isFreelanceView ? "Proposal" : "Application"}</span>
             <span>Status</span>
             <span>Next action</span>
           </div>
@@ -222,21 +312,54 @@ export default function MyApplicationsPage() {
                   <small>{project ? `${project.durationWeeks} weeks` : "Submitted"}</small>
                 </div>
                 <StatusBadge tone={getApplicationTone(application.status)}>
-                  {getApplicationStatusLabel(application.status)}
+                  {getApplicationStatusLabelForOpportunity(
+                    application.status,
+                    application.opportunityType,
+                  )}
                 </StatusBadge>
                 <div className="jobseeker-application-actions">
                   <Button
-                    to={`/job-seeker/opportunities/${application.projectId}`}
+                    to={
+                      application.opportunityType ===
+                      OpportunityTypes.FreelanceTask
+                        ? `/job-seeker/freelance/${application.projectId}`
+                        : `/job-seeker/opportunities/${application.projectId}`
+                    }
                     variant="secondary"
                   >
-                    View
+                    {application.opportunityType ===
+                    OpportunityTypes.FreelanceTask
+                      ? "View task"
+                      : "View"}
                     <ArrowRight size={15} aria-hidden="true" />
                   </Button>
+                  {application.hasCv && application.canViewCv ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      title={application.cvFileName ?? "Download CV"}
+                      aria-label={`Download CV for ${application.projectTitle}`}
+                      isLoading={downloadingCvId === application.id}
+                      onClick={() => handleDownloadCv(application)}
+                    >
+                      <FileDown size={17} aria-hidden="true" />
+                    </Button>
+                  ) : null}
                   {application.status === ApplicationStatuses.Pending ? (
                     <Button
                       variant="ghost"
-                      title="Withdraw application"
-                      aria-label={`Withdraw application for ${application.projectTitle}`}
+                      title={
+                        application.opportunityType ===
+                        OpportunityTypes.FreelanceTask
+                          ? "Withdraw proposal"
+                          : "Withdraw application"
+                      }
+                      aria-label={`Withdraw ${
+                        application.opportunityType ===
+                        OpportunityTypes.FreelanceTask
+                          ? "proposal"
+                          : "application"
+                      } for ${application.projectTitle}`}
                       isLoading={withdrawingId === application.id}
                       onClick={() => handleWithdraw(application)}
                     >
@@ -255,9 +378,52 @@ export default function MyApplicationsPage() {
                 </div>
                 {application.coverLetter ? (
                   <details className="jobseeker-cover-letter">
-                    <summary>Cover letter</summary>
+                    <summary>
+                      {application.opportunityType ===
+                      OpportunityTypes.FreelanceTask
+                        ? "Proposal message"
+                        : "Cover letter"}
+                    </summary>
                     <p>{application.coverLetter}</p>
                   </details>
+                ) : null}
+                {application.decisionNote ? (
+                  <div className="jobseeker-application-decision-note">
+                    <MessageSquareText size={18} aria-hidden="true" />
+                    <div>
+                      <strong>Provider feedback</strong>
+                      <p>{application.decisionNote}</p>
+                      {application.decidedAt ? (
+                        <small>
+                          Decision recorded{" "}
+                          {new Date(application.decidedAt).toLocaleDateString()}
+                        </small>
+                      ) : null}
+                    </div>
+                  </div>
+                ) : null}
+                {application.opportunityType ===
+                OpportunityTypes.FreelanceTask ? (
+                  <div className="freelance-proposal-inline freelance-proposal-inline-self">
+                    <span>
+                      <CircleDollarSign size={15} aria-hidden="true" />
+                      <small>Your proposal</small>
+                      <strong>
+                        {application.proposedBudget
+                          ? `$${application.proposedBudget}`
+                          : "Not set"}{" "}
+                        ·{" "}
+                        {getFreelancePricingLabel(
+                          application.freelancePricingType,
+                        ).toLowerCase()}
+                      </strong>
+                    </span>
+                    <span>
+                      <Clock3 size={15} aria-hidden="true" />
+                      <small>Delivery</small>
+                      <strong>{application.proposedDeliveryDays} days</strong>
+                    </span>
+                  </div>
                 ) : null}
               </article>
             );

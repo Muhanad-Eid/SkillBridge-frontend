@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { RouterProvider } from "react-router-dom";
 import { AuthProvider } from "./shared/auth/AuthContext";
 import AppErrorBoundary from "./shared/components/AppErrorBoundary";
@@ -9,7 +10,16 @@ export default function App() {
     <ThemeProvider>
       <AppErrorBoundary>
         <AuthProvider>
-          <RouterProvider router={router} />
+          <Suspense
+            fallback={
+              <div className="app-route-loader" role="status">
+                <span aria-hidden="true" />
+                <strong>Loading SkillBridge</strong>
+              </div>
+            }
+          >
+            <RouterProvider router={router} />
+          </Suspense>
         </AuthProvider>
       </AppErrorBoundary>
     </ThemeProvider>
