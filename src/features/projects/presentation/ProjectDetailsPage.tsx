@@ -232,6 +232,15 @@ export default function ProjectDetailsPage() {
                 </div>
               </section>
 
+              <section>
+                <h2>Short application task</h2>
+                <p>{project.applicationTask}</p>
+                <small>
+                  Applicants can answer this task or provide a previous work
+                  sample.
+                </small>
+              </section>
+
               {project.deliverables?.trim() ? (
                 <section>
                 <h2>Deliverables</h2>
@@ -239,10 +248,28 @@ export default function ProjectDetailsPage() {
                 </section>
               ) : null}
 
-              {project.milestonePlan?.trim() ? (
+              {project.milestones.length > 0 ||
+              project.milestonePlan?.trim() ? (
                 <section>
-                <h2>Milestone plan</h2>
-                <p>{project.milestonePlan}</p>
+                  <h2>Work milestones</h2>
+                  {project.milestones.length > 0 ? (
+                    <ol className="opportunity-milestone-plan">
+                      {project.milestones.map((milestone) => (
+                        <li key={milestone.id}>
+                          <span>{milestone.sortOrder + 1}</span>
+                          <div>
+                            <strong>{milestone.title}</strong>
+                            <small>Due by day {milestone.dueAfterDays}</small>
+                            {milestone.description ? (
+                              <p>{milestone.description}</p>
+                            ) : null}
+                          </div>
+                        </li>
+                      ))}
+                    </ol>
+                  ) : (
+                    <p>{project.milestonePlan}</p>
+                  )}
                 </section>
               ) : null}
 
@@ -373,12 +400,15 @@ export default function ProjectDetailsPage() {
                   </label>
                   <label className="field">
                     <span>Short application task</span>
+                    <p className="application-task-prompt">
+                      {project.applicationTask}
+                    </p>
                     <textarea
                       value={shortTaskResponse}
                       onChange={(event) =>
                         setShortTaskResponse(event.target.value)
                       }
-                      placeholder="Describe how you would approach the requested work."
+                      placeholder="Write your response to the provider's task."
                       maxLength={3000}
                     />
                     <small>

@@ -35,6 +35,8 @@ export type AdminJobSeeker = {
   bio: string | null;
   linkedInUrl: string | null;
   gitHubUrl: string | null;
+  universityName: string | null;
+  studentNumber: string | null;
   skillsCount: number;
   applicationsCount: number;
   portfolioItemsCount: number;
@@ -52,6 +54,7 @@ export type AdminProject = {
   status: ProjectStatus;
   budget: number | null;
   durationWeeks: number;
+  applicationTask: string;
   requiredTrainingHours: number | null;
   academicRequirements: string | null;
   applicationsCount: number;
@@ -119,6 +122,7 @@ export type CreateAdminProjectRequest = {
   durationWeeks: number;
   type: OpportunityType;
   status: ProjectStatus;
+  applicationTask?: string | null;
   requiredTrainingHours?: number | null;
   academicRequirements?: string | null;
 };
@@ -147,6 +151,8 @@ export type UpdateAdminJobSeekerRequest = {
   city?: string | null;
   linkedInUrl?: string | null;
   gitHubUrl?: string | null;
+  universityName?: string | null;
+  studentNumber?: string | null;
 };
 
 export type UpdateAdminProjectRequest = {
@@ -156,6 +162,7 @@ export type UpdateAdminProjectRequest = {
   durationWeeks: number;
   type: OpportunityType;
   status: ProjectStatus;
+  applicationTask?: string | null;
   requiredTrainingHours?: number | null;
   academicRequirements?: string | null;
 };

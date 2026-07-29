@@ -29,6 +29,7 @@ type ProjectForm = {
   description: string;
   budget: string;
   durationWeeks: string;
+  applicationTask: string;
   requiredTrainingHours: string;
   academicRequirements: string;
   type: OpportunityType;
@@ -41,6 +42,7 @@ const emptyProjectForm: ProjectForm = {
   description: "",
   budget: "",
   durationWeeks: "1",
+  applicationTask: "",
   requiredTrainingHours: "",
   academicRequirements: "",
   type: OpportunityTypes.ProfessionalProject,
@@ -173,6 +175,7 @@ export default function AdminProjectsPage() {
       description: project.description,
       budget: project.budget?.toString() ?? "",
       durationWeeks: project.durationWeeks.toString(),
+      applicationTask: project.applicationTask,
       requiredTrainingHours: project.requiredTrainingHours?.toString() ?? "",
       academicRequirements: project.academicRequirements ?? "",
       type: project.type,
@@ -215,6 +218,7 @@ export default function AdminProjectsPage() {
         description: form.description.trim(),
         budget: form.budget.trim() ? Number(form.budget) : null,
         durationWeeks: Number(form.durationWeeks),
+        applicationTask: form.applicationTask.trim() || null,
         requiredTrainingHours:
           form.type === OpportunityTypes.UniversityTraining
             ? requiredTrainingHours
@@ -476,14 +480,27 @@ export default function AdminProjectsPage() {
               </>
             ) : null}
           </div>
-          <label className="field">
-            <span>Description</span>
+            <label className="field">
+              <span>Description</span>
             <textarea
               value={form.description}
               onChange={(event) =>
                 setForm((current) => ({
                   ...current,
                   description: event.target.value,
+                }))
+              }
+              required
+            />
+          </label>
+          <label className="field">
+            <span>Short application task</span>
+            <textarea
+              value={form.applicationTask}
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  applicationTask: event.target.value,
                 }))
               }
               required

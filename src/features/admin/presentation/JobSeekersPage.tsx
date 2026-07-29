@@ -33,6 +33,8 @@ export default function JobSeekersPage() {
     bio: "",
     linkedInUrl: "",
     gitHubUrl: "",
+    universityName: "",
+    studentNumber: "",
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -107,6 +109,8 @@ export default function JobSeekersPage() {
       bio: jobSeeker.bio ?? "",
       linkedInUrl: jobSeeker.linkedInUrl ?? "",
       gitHubUrl: jobSeeker.gitHubUrl ?? "",
+      universityName: jobSeeker.universityName ?? "",
+      studentNumber: jobSeeker.studentNumber ?? "",
     });
     setError("");
   }
@@ -271,6 +275,30 @@ export default function JobSeekersPage() {
                 }
               />
             </label>
+            <label className="field">
+              <span>University</span>
+              <input
+                value={form.universityName ?? ""}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    universityName: event.target.value,
+                  }))
+                }
+              />
+            </label>
+            <label className="field">
+              <span>Student number</span>
+              <input
+                value={form.studentNumber ?? ""}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    studentNumber: event.target.value,
+                  }))
+                }
+              />
+            </label>
           </div>
           <label className="field">
             <span>Bio</span>
@@ -317,6 +345,14 @@ export default function JobSeekersPage() {
                 {jobSeeker.city ?? "No city"} -{" "}
                 {jobSeeker.bio ?? "No profile bio"}
               </span>
+              {jobSeeker.universityName ? (
+                <span>
+                  {jobSeeker.universityName}
+                  {jobSeeker.studentNumber
+                    ? ` - ${jobSeeker.studentNumber}`
+                    : ""}
+                </span>
+              ) : null}
             </div>
             <div className="admin-status-stack">
               <StatusBadge

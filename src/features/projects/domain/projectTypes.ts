@@ -44,6 +44,7 @@ export type Project = {
   deliverables: string;
   evaluationCriteria: string;
   milestonePlan: string;
+  applicationTask: string;
   hideApplicantIdentity: boolean;
   requiredTrainingHours: number | null;
   academicRequirements: string | null;
@@ -60,12 +61,27 @@ export type Project = {
   companyName: string;
   applicationsCount: number;
   skills: ProjectSkill[];
+  milestones: ProjectMilestone[];
 };
 
 type ProjectSkill = {
   id: number;
   name: string;
   isRequired: boolean;
+};
+
+export type ProjectMilestone = {
+  id: number;
+  title: string;
+  description: string | null;
+  dueAfterDays: number;
+  sortOrder: number;
+};
+
+export type ProjectMilestoneInput = {
+  title: string;
+  description?: string | null;
+  dueAfterDays: number;
 };
 
 export type CreateProjectRequest = {
@@ -75,6 +91,7 @@ export type CreateProjectRequest = {
   deliverables: string;
   evaluationCriteria: string;
   milestonePlan: string;
+  applicationTask: string;
   hideApplicantIdentity: boolean;
   requiredTrainingHours?: number | null;
   academicRequirements?: string | null;
@@ -90,6 +107,7 @@ export type CreateProjectRequest = {
   preferredSkillIds?: number[];
   requiredSkillNames: string[];
   preferredSkillNames: string[];
+  milestones: ProjectMilestoneInput[];
 };
 
 export type UpdateProjectRequest = CreateProjectRequest & {

@@ -37,6 +37,8 @@ import CompanyProjectsPage from "../features/projects/presentation/CompanyProjec
 import ProjectDetailsPage from "../features/projects/presentation/ProjectDetailsPage";
 import ProjectsPage from "../features/projects/presentation/ProjectsPage";
 import SkillsPage from "../features/skills/presentation/SkillsPage";
+import TalentProfilePage from "../features/talent/presentation/TalentProfilePage";
+import TalentSearchPage from "../features/talent/presentation/TalentSearchPage";
 import WorkHubPage from "../features/work/presentation/WorkHubPage";
 import UniversityTrainingPage from "../features/work/presentation/UniversityTrainingPage";
 
@@ -102,6 +104,8 @@ export const router = createBrowserRouter([
       },
       { path: "projects/:projectId/work", element: <WorkHubPage /> },
       { path: "applications", element: <CompanyApplicationsPage /> },
+      { path: "talent", element: <TalentSearchPage /> },
+      { path: "talent/:jobSeekerId", element: <TalentProfilePage /> },
       { path: "profile", element: <CompanyProfilePage /> },
       { path: "messages", element: <MessagesPage /> },
       { path: "notifications", element: <NotificationsPage /> },
@@ -142,6 +146,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/university/training" replace /> },
       { path: "training", element: <UniversityTrainingPage /> },
+      { path: "messages", element: <MessagesPage /> },
       { path: "notifications", element: <NotificationsPage /> },
       { path: "security", element: <ChangePasswordPage /> },
     ],

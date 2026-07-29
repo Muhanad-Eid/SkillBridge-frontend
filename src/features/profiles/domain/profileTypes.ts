@@ -6,6 +6,8 @@ export type JobSeekerProfile = {
   city: string | null;
   linkedInUrl: string | null;
   gitHubUrl: string | null;
+  universityName: string | null;
+  studentNumber: string | null;
   skills: string[];
   portfolioItemsCount: number;
   reviewsCount: number;
@@ -17,6 +19,8 @@ export type UpdateJobSeekerProfileRequest = {
   city?: string;
   linkedInUrl?: string;
   gitHubUrl?: string;
+  universityName?: string;
+  studentNumber?: string;
 };
 
 export function isJobSeekerProfileComplete(

@@ -32,6 +32,7 @@ import {
   reviewMilestoneAsync,
   submitFinalWorkAsync,
   submitMilestoneAsync,
+  updateContributionResponsibilitiesAsync,
 } from "../infrastructure/workApi";
 
 type WorkProgressPanelProps = {
@@ -57,8 +58,12 @@ export default function WorkProgressPanel({
   const [finalNote, setFinalNote] = useState("");
   const [finalUrl, setFinalUrl] = useState("");
   const [contribution, setContribution] = useState("");
+  const [responsibilityDrafts, setResponsibilityDrafts] = useState<
+    Record<number, string>
+  >({});
   const [evaluation, setEvaluation] = useState("");
   const [finalFeedback, setFinalFeedback] = useState("");
+  const [demonstratedSkillIds, setDemonstratedSkillIds] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [busyKey, setBusyKey] = useState("");
   const [error, setError] = useState("");
@@ -221,6 +226,16 @@ export default function WorkProgressPanel({
     record.milestones.every(
       (milestone) => milestone.status === MilestoneStatuses.Approved,
     );
+  const eligibleSupervisors = supervisors.filter(
+    (supervisor) =>
+      record.studentUniversityName &&
+      supervisor.universityName.trim().toLowerCase() ===
+        record.studentUniversityName.trim().toLowerCase(),
+  );
+  const responsibilityDraft =
+    responsibilityDrafts[record.applicationId] ??
+    record.assignedResponsibilities ??
+    "";
 
   return (
     <section className="work-hub-panel work-progress-panel">
@@ -253,7 +268,10 @@ export default function WorkProgressPanel({
                 item.applicationId === record.applicationId ? "active" : ""
               }
               key={item.applicationId}
-              onClick={() => setSelectedApplicationId(item.applicationId)}
+              onClick={() => {
+                setSelectedApplicationId(item.applicationId);
+                setDemonstratedSkillIds([]);
+              }}
             >
               {item.jobSeekerName}
             </button>
@@ -276,6 +294,13 @@ export default function WorkProgressPanel({
 
       {record.opportunityType === OpportunityTypes.UniversityTraining ? (
         <section className="training-supervision-summary">
+          <div>
+            <span>Student university</span>
+            <strong>{record.studentUniversityName ?? "Not provided"}</strong>
+            <small>
+              Student number: {record.studentNumber ?? "Not provided"}
+            </small>
+          </div>
           <div>
             <span>University supervisor</span>
             <strong>
@@ -309,13 +334,79 @@ export default function WorkProgressPanel({
                 }}
               >
                 <option value="">Choose supervisor</option>
-                {supervisors.map((supervisor) => (
+                {eligibleSupervisors.map((supervisor) => (
                   <option key={supervisor.id} value={supervisor.id}>
-                    {supervisor.fullName} · {supervisor.universityName}
+                    {supervisor.fullName} - {supervisor.universityName}
                   </option>
                 ))}
               </select>
+              {eligibleSupervisors.length === 0 ? (
+                <small>
+                  No supervisor from {record.studentUniversityName} is available.
+                </small>
+              ) : null}
             </label>
+          ) : null}
+          {record.academicRequirements ? (
+            <div>
+              <span>Academic requirements</span>
+              <strong>{record.academicRequirements}</strong>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
+
+      {record.opportunityType === OpportunityTypes.TeamProject ? (
+        <section className="team-responsibility-record">
+          <header>
+            <span>Individual contribution record</span>
+            <strong>Assigned responsibilities</strong>
+          </header>
+          {isCompany &&
+          canEditMilestones &&
+          record.projectStatus !== ProjectStatuses.Completed &&
+          record.projectStatus !== ProjectStatuses.Cancelled ? (
+            <div className="work-inline-form">
+              <textarea
+                value={responsibilityDraft}
+                minLength={10}
+                maxLength={2000}
+                placeholder={`Define what ${record.jobSeekerName} is responsible for`}
+                onChange={(event) =>
+                  setResponsibilityDrafts((current) => ({
+                    ...current,
+                    [record.applicationId]: event.target.value,
+                  }))
+                }
+              />
+              <Button
+                type="button"
+                disabled={responsibilityDraft.trim().length < 10}
+                isLoading={busyKey === "save-responsibilities"}
+                onClick={() =>
+                  void runAction("save-responsibilities", () =>
+                    updateContributionResponsibilitiesAsync(
+                      record.applicationId,
+                      { responsibilities: responsibilityDraft.trim() },
+                    ),
+                  )
+                }
+              >
+                <ClipboardCheck size={16} aria-hidden="true" />
+                Save responsibilities
+              </Button>
+            </div>
+          ) : (
+            <p>
+              {record.assignedResponsibilities ??
+                "The provider has not assigned your responsibilities yet."}
+            </p>
+          )}
+          {record.contributionSummary ? (
+            <div className="team-completed-contribution">
+              <span>Completed contribution</span>
+              <p>{record.contributionSummary}</p>
+            </div>
           ) : null}
         </section>
       ) : null}
@@ -550,13 +641,17 @@ export default function WorkProgressPanel({
           </label>
           {record.opportunityType === OpportunityTypes.TeamProject ? (
             <label className="field">
-              <span>Your individual contribution</span>
+              <span>Your responsibilities and completed contribution</span>
               <textarea
                 value={contribution}
+                minLength={20}
                 maxLength={2000}
                 required
                 onChange={(event) => setContribution(event.target.value)}
               />
+              <small>
+                Explain what you were responsible for and which parts you completed.
+              </small>
             </label>
           ) : null}
           <label className="field">
@@ -577,12 +672,35 @@ export default function WorkProgressPanel({
       {isCompany &&
       record.workStatus === WorkSubmissionStatuses.Submitted ? (
         <section className="work-final-review">
+          <section className="work-approval-standard">
+            <header>
+              <span>Approval standard</span>
+              <strong>Review against the original opportunity</strong>
+            </header>
+            <dl>
+              <div>
+                <dt>Required deliverables</dt>
+                <dd>{record.deliverables}</dd>
+              </div>
+              <div>
+                <dt>Evaluation criteria</dt>
+                <dd>{record.evaluationCriteria}</dd>
+              </div>
+            </dl>
+          </section>
           <div>
             <strong>Review final work</strong>
             <p>{record.finalSubmissionNote}</p>
             {record.contributionSummary ? (
               <p>
-                <strong>Contribution:</strong> {record.contributionSummary}
+                <strong>Completed contribution:</strong>{" "}
+                {record.contributionSummary}
+              </p>
+            ) : null}
+            {record.assignedResponsibilities ? (
+              <p>
+                <strong>Assigned responsibilities:</strong>{" "}
+                {record.assignedResponsibilities}
               </p>
             ) : null}
             {record.finalDeliverableUrl ? (
@@ -611,10 +729,36 @@ export default function WorkProgressPanel({
               onChange={(event) => setFinalFeedback(event.target.value)}
             />
           </label>
+          {record.availableSkills.length > 0 ? (
+            <fieldset className="work-demonstrated-skills">
+              <legend>Skills demonstrated in the completed work</legend>
+              <p>Select only the skills that this result provides evidence for.</p>
+              {record.availableSkills.map((skill) => (
+                <label key={skill.id}>
+                  <input
+                    type="checkbox"
+                    checked={demonstratedSkillIds.includes(skill.id)}
+                    onChange={(event) =>
+                      setDemonstratedSkillIds((current) =>
+                        event.target.checked
+                          ? [...current, skill.id]
+                          : current.filter((id) => id !== skill.id),
+                      )
+                    }
+                  />
+                  <span>{skill.name}</span>
+                </label>
+              ))}
+            </fieldset>
+          ) : null}
           <div className="work-final-actions">
             <Button
               type="button"
-              disabled={evaluation.trim().length < 10}
+              disabled={
+                evaluation.trim().length < 10 ||
+                (record.availableSkills.length > 0 &&
+                  demonstratedSkillIds.length === 0)
+              }
               isLoading={busyKey === "approve-final"}
               onClick={() =>
                 void runAction("approve-final", () =>
@@ -622,6 +766,7 @@ export default function WorkProgressPanel({
                     isApproved: true,
                     evaluationResult: evaluation.trim(),
                     feedback: finalFeedback.trim() || undefined,
+                    demonstratedSkillIds,
                   }),
                 )
               }
@@ -673,9 +818,15 @@ export default function WorkProgressPanel({
         <div className="notice notice-success">
           <strong>Final work approved</strong>
           <span>
-            The Evidence Card has been created privately in the participant’s
+            The Evidence Card has been created privately in the participant's
             portfolio.
           </span>
+          {record.demonstratedSkills.length > 0 ? (
+            <span>
+              Demonstrated skills:{" "}
+              {record.demonstratedSkills.map((skill) => skill.name).join(", ")}
+            </span>
+          ) : null}
         </div>
       ) : null}
 

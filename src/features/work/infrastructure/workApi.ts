@@ -5,6 +5,7 @@ import type {
   ReviewMilestoneRequest,
   SubmitFinalWorkRequest,
   SubmitMilestoneRequest,
+  UpdateContributionResponsibilitiesRequest,
   UniversitySupervisor,
   WorkMilestone,
   WorkRecord,
@@ -119,6 +120,19 @@ export function updateTrainingProgressAsync(
     {
       method: "PUT",
       body: JSON.stringify({ completedHours, progressNotes }),
+    },
+  );
+}
+
+export function updateContributionResponsibilitiesAsync(
+  applicationId: number,
+  request: UpdateContributionResponsibilitiesRequest,
+) {
+  return httpClient<void>(
+    `/api/work/applications/${applicationId}/responsibilities`,
+    {
+      method: "PUT",
+      body: JSON.stringify(request),
     },
   );
 }

@@ -1,5 +1,12 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
-import { Plus, Search, Sparkles, Wrench, X } from "lucide-react";
+import {
+  CheckCircle2,
+  Plus,
+  Search,
+  Sparkles,
+  Wrench,
+  X,
+} from "lucide-react";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
@@ -212,8 +219,21 @@ export default function SkillsPage() {
             ) : (
               <div>
                 {mySkills.map((skill) => (
-                  <span key={skill.id}>
-                    {skill.name}
+                  <span
+                    key={skill.id}
+                    className={skill.isEvidenceSupported ? "is-supported" : ""}
+                  >
+                    <span>
+                      {skill.isEvidenceSupported ? (
+                        <CheckCircle2 size={14} aria-hidden="true" />
+                      ) : null}
+                      <strong>{skill.name}</strong>
+                      <small>
+                        {skill.isEvidenceSupported
+                          ? `${skill.evidenceCount} approved evidence card${skill.evidenceCount === 1 ? "" : "s"}`
+                          : "Listed skill"}
+                      </small>
+                    </span>
                     <button
                       type="button"
                       title={`Remove ${skill.name}`}

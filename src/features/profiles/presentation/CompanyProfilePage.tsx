@@ -229,7 +229,7 @@ export default function CompanyProfilePage() {
                 )}
               </span>
               <div>
-                <StatusBadge tone={profile.isVerified ? "green" : "amber"}>
+                <StatusBadge tone={profile.isVerified ? "green" : "blue"}>
                   {profile.isVerified ? "Verified company" : "Pending verification"}
                 </StatusBadge>
                 <h2>

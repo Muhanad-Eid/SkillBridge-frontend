@@ -5,6 +5,7 @@ import {
   KeyRound,
   LogOut,
   Menu,
+  MessageSquare,
   X,
 } from "lucide-react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
@@ -20,6 +21,11 @@ const navItems = [
     label: "Supervised training",
     to: "/university/training",
     icon: GraduationCap,
+  },
+  {
+    label: "Messages",
+    to: "/university/messages",
+    icon: MessageSquare,
   },
   {
     label: "Notifications",

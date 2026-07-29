@@ -44,6 +44,7 @@ import {
   type ExperienceLevel,
   type OpportunityType,
   type Project,
+  type ProjectMilestoneInput,
   type ProjectStatus,
   type WorkMode,
 } from "../domain/projectTypes";
@@ -57,13 +58,19 @@ import {
 
 type FormMode = "create" | "edit";
 
+type MilestoneDraft = ProjectMilestoneInput & {
+  key: string;
+  description: string;
+};
+
 type ProjectForm = {
   title: string;
   description: string;
   requirements: string;
   deliverables: string;
   evaluationCriteria: string;
-  milestonePlan: string;
+  milestones: MilestoneDraft[];
+  applicationTask: string;
   requiredTrainingHours: string;
   academicRequirements: string;
   location: string;
@@ -80,6 +87,7 @@ type ProjectForm = {
 
 type CompanyPortalContext = {
   isCompanyVerified: boolean;
+  isTrainingProvider: boolean;
 };
 
 const emptyProjectForm: ProjectForm = {
@@ -88,7 +96,15 @@ const emptyProjectForm: ProjectForm = {
   requirements: "",
   deliverables: "",
   evaluationCriteria: "",
-  milestonePlan: "",
+  milestones: [
+    {
+      key: "milestone-1",
+      title: "",
+      description: "",
+      dueAfterDays: 7,
+    },
+  ],
+  applicationTask: "",
   requiredTrainingHours: "",
   academicRequirements: "",
   location: "",
@@ -133,7 +149,8 @@ function getStatusTone(
 }
 
 export default function CompanyProjectsPage() {
-  const { isCompanyVerified } = useOutletContext<CompanyPortalContext>();
+  const { isCompanyVerified, isTrainingProvider } =
+    useOutletContext<CompanyPortalContext>();
   const [searchParams, setSearchParams] = useSearchParams();
   const createRequested = searchParams.get("create") === "1";
   const [projects, setProjects] = useState<Project[]>([]);
@@ -251,7 +268,23 @@ export default function CompanyProjectsPage() {
       requirements: project.requirements,
       deliverables: project.deliverables,
       evaluationCriteria: project.evaluationCriteria,
-      milestonePlan: project.milestonePlan,
+      milestones:
+        project.milestones.length > 0
+          ? project.milestones.map((milestone) => ({
+              key: `milestone-${milestone.id}`,
+              title: milestone.title,
+              description: milestone.description ?? "",
+              dueAfterDays: milestone.dueAfterDays,
+            }))
+          : [
+              {
+                key: "milestone-existing-plan",
+                title: "Complete planned work",
+                description: project.milestonePlan,
+                dueAfterDays: Math.max(1, project.durationWeeks * 7),
+              },
+            ],
+      applicationTask: project.applicationTask,
       requiredTrainingHours: project.requiredTrainingHours?.toString() ?? "",
       academicRequirements: project.academicRequirements ?? "",
       location: project.location ?? "",
@@ -297,6 +330,17 @@ export default function CompanyProjectsPage() {
     const durationWeeks = Number(form.durationWeeks);
     const positionsAvailable = Number(form.positionsAvailable);
     const budget = form.budget.trim() ? Number(form.budget) : null;
+    const milestones = form.milestones.map((milestone) => ({
+      title: milestone.title.trim(),
+      description: milestone.description.trim() || null,
+      dueAfterDays: Number(milestone.dueAfterDays),
+    }));
+    const milestonePlan = milestones
+      .map(
+        (milestone, index) =>
+          `${index + 1}. ${milestone.title} (day ${milestone.dueAfterDays})`,
+      )
+      .join("\n");
     const requiredSkillNames = mergeSkillNames(
       form.requiredSkillNames,
       [requiredSkillInput],
@@ -315,10 +359,10 @@ export default function CompanyProjectsPage() {
       !form.requirements.trim() ||
       !form.deliverables.trim() ||
       !form.evaluationCriteria.trim() ||
-      !form.milestonePlan.trim()
+      !form.applicationTask.trim()
     ) {
       setError(
-        "Title, description, requirements, deliverables, milestone plan, and evaluation criteria are required.",
+        "Title, description, requirements, deliverables, application task, and evaluation criteria are required.",
       );
       return;
     }
@@ -358,6 +402,22 @@ export default function CompanyProjectsPage() {
       return;
     }
 
+    if (
+      milestones.length === 0 ||
+      milestones.some(
+        (milestone) =>
+          !milestone.title ||
+          !Number.isInteger(milestone.dueAfterDays) ||
+          milestone.dueAfterDays < 1 ||
+          milestone.dueAfterDays > durationWeeks * 7,
+      )
+    ) {
+      setError(
+        `Add at least one milestone and set each due day between 1 and ${durationWeeks * 7}.`,
+      );
+      return;
+    }
+
     if (budget !== null && (!Number.isFinite(budget) || budget < 0)) {
       setError("Budget must be zero or greater.");
       return;
@@ -373,7 +433,9 @@ export default function CompanyProjectsPage() {
           requirements: form.requirements.trim(),
           deliverables: form.deliverables.trim(),
           evaluationCriteria: form.evaluationCriteria.trim(),
-          milestonePlan: form.milestonePlan.trim(),
+          milestonePlan,
+          milestones,
+          applicationTask: form.applicationTask.trim(),
           hideApplicantIdentity: true,
           requiredTrainingHours,
           academicRequirements:
@@ -399,7 +461,9 @@ export default function CompanyProjectsPage() {
           requirements: form.requirements.trim(),
           deliverables: form.deliverables.trim(),
           evaluationCriteria: form.evaluationCriteria.trim(),
-          milestonePlan: form.milestonePlan.trim(),
+          milestonePlan,
+          milestones,
+          applicationTask: form.applicationTask.trim(),
           hideApplicantIdentity: true,
           requiredTrainingHours,
           academicRequirements:
@@ -615,9 +679,11 @@ export default function CompanyProjectsPage() {
           <option value={OpportunityTypes.ProfessionalProject}>
             Professional projects
           </option>
-          <option value={OpportunityTypes.UniversityTraining}>
-            University training
-          </option>
+          {!isTrainingProvider ? (
+            <option value={OpportunityTypes.UniversityTraining}>
+              University training
+            </option>
+          ) : null}
           <option value={OpportunityTypes.FreelanceTask}>Freelance tasks</option>
           <option value={OpportunityTypes.SkillDevelopmentChallenge}>
             Skill-development challenges
@@ -853,6 +919,21 @@ export default function CompanyProjectsPage() {
                 />
               </label>
               <label className="field">
+                <span>Short application task</span>
+                <textarea
+                  value={form.applicationTask}
+                  maxLength={3000}
+                  required
+                  placeholder="A short task applicants can answer instead of linking previous work"
+                  onChange={(event) =>
+                    setForm({
+                      ...form,
+                      applicationTask: event.target.value,
+                    })
+                  }
+                />
+              </label>
+              <label className="field">
                 <span>Expected deliverables</span>
                 <textarea
                   value={form.deliverables}
@@ -864,18 +945,123 @@ export default function CompanyProjectsPage() {
                   }
                 />
               </label>
-              <label className="field">
-                <span>Milestone plan</span>
-                <textarea
-                  value={form.milestonePlan}
-                  maxLength={3000}
-                  required
-                  placeholder="The main stages the accepted participant will follow"
-                  onChange={(event) =>
-                    setForm({ ...form, milestonePlan: event.target.value })
+              <fieldset className="company-milestone-builder">
+                <legend>Work milestones</legend>
+                <p>
+                  Define the stages once. They will be added to every accepted
+                  participant when the opportunity starts.
+                </p>
+                <div className="company-milestone-builder-list">
+                  {form.milestones.map((milestone, index) => (
+                    <article key={milestone.key}>
+                      <header>
+                        <strong>Milestone {index + 1}</strong>
+                        {form.milestones.length > 1 ? (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            className="company-icon-action company-danger-icon"
+                            aria-label={`Remove milestone ${index + 1}`}
+                            title="Remove milestone"
+                            onClick={() =>
+                              setForm({
+                                ...form,
+                                milestones: form.milestones.filter(
+                                  (item) => item.key !== milestone.key,
+                                ),
+                              })
+                            }
+                          >
+                            <Trash2 size={16} aria-hidden="true" />
+                          </Button>
+                        ) : null}
+                      </header>
+                      <div className="company-form-grid">
+                        <Input
+                          label="Title"
+                          value={milestone.title}
+                          maxLength={150}
+                          required
+                          onChange={(event) =>
+                            setForm({
+                              ...form,
+                              milestones: form.milestones.map((item) =>
+                                item.key === milestone.key
+                                  ? { ...item, title: event.target.value }
+                                  : item,
+                              ),
+                            })
+                          }
+                        />
+                        <Input
+                          label="Due after (days)"
+                          type="number"
+                          min="1"
+                          max={Math.max(7, Number(form.durationWeeks || 1) * 7)}
+                          value={milestone.dueAfterDays}
+                          required
+                          onChange={(event) =>
+                            setForm({
+                              ...form,
+                              milestones: form.milestones.map((item) =>
+                                item.key === milestone.key
+                                  ? {
+                                      ...item,
+                                      dueAfterDays: Number(event.target.value),
+                                    }
+                                  : item,
+                              ),
+                            })
+                          }
+                        />
+                      </div>
+                      <label className="field">
+                        <span>Description</span>
+                        <textarea
+                          value={milestone.description}
+                          maxLength={1500}
+                          placeholder="What should be completed at this stage"
+                          onChange={(event) =>
+                            setForm({
+                              ...form,
+                              milestones: form.milestones.map((item) =>
+                                item.key === milestone.key
+                                  ? { ...item, description: event.target.value }
+                                  : item,
+                              ),
+                            })
+                          }
+                        />
+                      </label>
+                    </article>
+                  ))}
+                </div>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={form.milestones.length >= 20}
+                  onClick={() =>
+                    setForm({
+                      ...form,
+                      milestones: [
+                        ...form.milestones,
+                        {
+                          key: `milestone-${Date.now()}`,
+                          title: "",
+                          description: "",
+                          dueAfterDays: Math.min(
+                            Math.max(1, Number(form.durationWeeks || 1) * 7),
+                            (form.milestones.at(-1)?.dueAfterDays ?? 0) + 7,
+                          ),
+                        },
+                      ],
+                    })
                   }
-                />
-              </label>
+                >
+                  <Plus size={16} aria-hidden="true" />
+                  Add milestone
+                </Button>
+              </fieldset>
               <label className="field">
                 <span>Evaluation criteria</span>
                 <textarea
@@ -899,9 +1085,11 @@ export default function CompanyProjectsPage() {
                   <option value={OpportunityTypes.ProfessionalProject}>
                     Professional project
                   </option>
-                  <option value={OpportunityTypes.UniversityTraining}>
-                    University training
-                  </option>
+                  {!isTrainingProvider ? (
+                    <option value={OpportunityTypes.UniversityTraining}>
+                      University training
+                    </option>
+                  ) : null}
                   <option value={OpportunityTypes.FreelanceTask}>
                     Freelance task
                   </option>

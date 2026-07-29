@@ -2,6 +2,7 @@ import { type FormEvent, useEffect, useMemo, useState } from "react";
 import {
   CheckCircle2,
   Code2,
+  GraduationCap,
   Link2,
   MapPin,
   PencilLine,
@@ -40,6 +41,8 @@ export default function JobSeekerProfilePage() {
   const [city, setCity] = useState("");
   const [linkedInUrl, setLinkedInUrl] = useState("");
   const [gitHubUrl, setGitHubUrl] = useState("");
+  const [universityName, setUniversityName] = useState("");
+  const [studentNumber, setStudentNumber] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -59,6 +62,8 @@ export default function JobSeekerProfilePage() {
     setCity(data.city ?? "");
     setLinkedInUrl(data.linkedInUrl ?? "");
     setGitHubUrl(data.gitHubUrl ?? "");
+    setUniversityName(data.universityName ?? "");
+    setStudentNumber(data.studentNumber ?? "");
   }
 
   useEffect(() => {
@@ -157,6 +162,8 @@ export default function JobSeekerProfilePage() {
         city: trimmedCity,
         linkedInUrl: linkedInUrl.trim() || undefined,
         gitHubUrl: gitHubUrl.trim() || undefined,
+        universityName: universityName.trim() || undefined,
+        studentNumber: studentNumber.trim() || undefined,
       });
 
       const refreshedProfile = await getMyJobSeekerProfileAsync();
@@ -224,6 +231,12 @@ export default function JobSeekerProfilePage() {
             </div>
             <h2>{profile.fullName}</h2>
             <span><MapPin size={15} aria-hidden="true" />{city || "City not added"}</span>
+            {universityName ? (
+              <span>
+                <GraduationCap size={15} aria-hidden="true" />
+                {universityName}
+              </span>
+            ) : null}
             <p>{bio || "Add a short professional bio to introduce your experience and goals."}</p>
 
             <div className="jobseeker-profile-strength">
@@ -296,6 +309,20 @@ export default function JobSeekerProfilePage() {
                   placeholder="https://github.com/your-name"
                   value={gitHubUrl}
                   onChange={(event) => setGitHubUrl(event.target.value)}
+                  readOnly={!isEditing}
+                />
+                <Input
+                  label="University"
+                  placeholder="Required for University Training"
+                  value={universityName}
+                  onChange={(event) => setUniversityName(event.target.value)}
+                  readOnly={!isEditing}
+                />
+                <Input
+                  label="Student number"
+                  placeholder="Required for University Training"
+                  value={studentNumber}
+                  onChange={(event) => setStudentNumber(event.target.value)}
                   readOnly={!isEditing}
                 />
               </div>

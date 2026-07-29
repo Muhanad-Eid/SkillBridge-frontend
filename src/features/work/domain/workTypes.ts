@@ -29,15 +29,24 @@ export type WorkMilestone = {
   reviewedAt: string | null;
 };
 
+export type WorkSkill = {
+  id: number;
+  name: string;
+};
+
 export type WorkRecord = {
   applicationId: number;
   projectId: number;
   projectTitle: string;
+  deliverables: string;
+  evaluationCriteria: string;
   opportunityType: OpportunityType;
   projectStatus: ProjectStatus;
   jobSeekerId: number;
   jobSeekerUserId: string;
   jobSeekerName: string;
+  studentUniversityName: string | null;
+  studentNumber: string | null;
   companyUserId: string;
   companyName: string;
   universitySupervisorId: number | null;
@@ -45,8 +54,10 @@ export type WorkRecord = {
   universitySupervisorName: string | null;
   universityName: string | null;
   requiredTrainingHours: number | null;
+  academicRequirements: string | null;
   completedTrainingHours: number;
   universityProgressNotes: string | null;
+  assignedResponsibilities: string | null;
   contributionSummary: string | null;
   finalSubmissionNote: string | null;
   finalDeliverableUrl: string | null;
@@ -58,6 +69,8 @@ export type WorkRecord = {
   companyApprovedAt: string | null;
   universityApprovedAt: string | null;
   hasEvidenceCard: boolean;
+  availableSkills: WorkSkill[];
+  demonstratedSkills: WorkSkill[];
   milestones: WorkMilestone[];
 };
 
@@ -95,6 +108,11 @@ export type ApproveFinalWorkRequest = {
   isApproved: boolean;
   evaluationResult: string;
   feedback?: string;
+  demonstratedSkillIds?: number[];
+};
+
+export type UpdateContributionResponsibilitiesRequest = {
+  responsibilities: string;
 };
 
 export function getMilestoneStatusLabel(status: MilestoneStatus) {

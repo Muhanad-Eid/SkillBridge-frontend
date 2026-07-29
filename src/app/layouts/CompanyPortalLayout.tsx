@@ -10,6 +10,7 @@ import {
   Menu,
   MessageSquare,
   ShieldCheck,
+  UserRoundSearch,
   UserRound,
   X,
   type LucideIcon,
@@ -47,6 +48,7 @@ const companyNavItems: CompanyNavItem[] = [
   { label: "Overview", to: "/company/dashboard", icon: LayoutDashboard },
   { label: "Opportunities", to: "/company/projects", icon: BriefcaseBusiness },
   { label: "Applications", to: "/company/applications", icon: ClipboardList },
+  { label: "Find talent", to: "/company/talent", icon: UserRoundSearch },
   {
     label: "Messages",
     to: "/company/messages",
@@ -348,6 +350,7 @@ export default function CompanyPortalLayout() {
                 profile,
                 profileIsComplete,
                 isCompanyVerified,
+                isTrainingProvider,
                 refreshProfileCompletion,
                 refreshBadges,
               }}

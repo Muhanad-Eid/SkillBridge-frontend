@@ -7,7 +7,8 @@ const API_BASE_URL = import.meta.env.DEV
   ? ""
   : CONFIGURED_API_URL?.trim() ||
     `${window.location.protocol}//${window.location.hostname}:8080`;
-const SESSION_LOST_STATUSES = new Set([401, 502, 503, 504]);
+const SESSION_LOST_STATUSES = new Set([401]);
+const API_UNAVAILABLE_STATUSES = new Set([502, 503, 504]);
 
 export const AUTH_STORAGE_KEY = "skillbridge_auth";
 export const AUTH_EXPIRED_EVENT = "skillbridge:auth-expired";
@@ -43,13 +44,9 @@ export async function httpClient<T>(
       },
     );
   } catch (caughtError) {
-    if (!options.skipAuth && getStoredAuth()?.token) {
-      expireAuthSession();
-    }
-
     throw new Error(
       caughtError instanceof Error
-        ? "The API is unavailable. Please log in again when it is running."
+        ? "The API service is unavailable. Start the API and try again."
         : "Unable to reach the API.",
       { cause: caughtError },
     );
@@ -157,6 +154,10 @@ async function readResponse(response: Response) {
 }
 
 function getErrorMessage(data: unknown, status: number) {
+  if (API_UNAVAILABLE_STATUSES.has(status)) {
+    return "The API service is unavailable. Start the API and try again.";
+  }
+
   if (typeof data === "string" && data.trim()) {
     return data;
   }

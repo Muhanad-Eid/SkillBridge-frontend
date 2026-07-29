@@ -11,8 +11,10 @@ import {
   Clock3,
   ExternalLink,
   GraduationCap,
+  MessageSquare,
   RotateCcw,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
@@ -20,7 +22,9 @@ import StatusBadge from "../../../shared/components/StatusBadge";
 import { WorkSubmissionStatuses } from "../../applications/domain/applicationTypes";
 import { ProjectStatuses } from "../../projects/domain/projectTypes";
 import {
+  getMilestoneStatusLabel,
   getWorkSubmissionStatusLabel,
+  MilestoneStatuses,
   type WorkRecord,
 } from "../domain/workTypes";
 import {
@@ -30,6 +34,7 @@ import {
 } from "../infrastructure/workApi";
 
 export default function UniversityTrainingPage() {
+  const navigate = useNavigate();
   const [records, setRecords] = useState<WorkRecord[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [completedHours, setCompletedHours] = useState("");
@@ -119,6 +124,21 @@ export default function UniversityTrainingPage() {
     );
   }
 
+  function openConversation(
+    receiverId: string,
+    receiverName: string,
+    projectId: number,
+    projectTitle: string,
+  ) {
+    const params = new URLSearchParams({
+      receiverId,
+      receiverName,
+      projectId: String(projectId),
+      projectTitle,
+    });
+    navigate(`/university/messages?${params.toString()}`);
+  }
+
   return (
     <section className="page university-training-page">
       <PageHeader title="Supervised training" />
@@ -184,9 +204,121 @@ export default function UniversityTrainingPage() {
               </article>
               <article>
                 <GraduationCap size={18} aria-hidden="true" />
+                <span>Student university</span>
+                <strong>{record.studentUniversityName ?? "Not provided"}</strong>
+                <small>{record.studentNumber ?? "No student number"}</small>
+              </article>
+              <article>
+                <Clock3 size={18} aria-hidden="true" />
                 <span>Completed hours</span>
                 <strong>{record.completedTrainingHours}</strong>
               </article>
+            </div>
+
+            {record.academicRequirements ? (
+              <section className="university-training-requirements">
+                <h3>Academic requirements</h3>
+                <p>{record.academicRequirements}</p>
+              </section>
+            ) : null}
+
+            <section className="university-milestone-summary">
+              <header>
+                <div>
+                  <span>Work progress</span>
+                  <h3>Milestones and submissions</h3>
+                </div>
+                <strong>
+                  {
+                    record.milestones.filter(
+                      (milestone) =>
+                        milestone.status === MilestoneStatuses.Approved,
+                    ).length
+                  }
+                  /{record.milestones.length}
+                </strong>
+              </header>
+              {record.milestones.length === 0 ? (
+                <p>No milestones have been added to this training record.</p>
+              ) : (
+                <div>
+                  {record.milestones.map((milestone, index) => (
+                    <article key={milestone.id}>
+                      <span>{index + 1}</span>
+                      <div>
+                        <header>
+                          <strong>{milestone.title}</strong>
+                          <StatusBadge
+                            tone={
+                              milestone.status === MilestoneStatuses.Approved
+                                ? "green"
+                                : milestone.status ===
+                                    MilestoneStatuses.ChangesRequested
+                                  ? "red"
+                                  : "neutral"
+                            }
+                          >
+                            {getMilestoneStatusLabel(milestone.status)}
+                          </StatusBadge>
+                        </header>
+                        <small>
+                          {milestone.dueDate
+                            ? `Due ${milestone.dueDate}`
+                            : "No due date"}
+                        </small>
+                        {milestone.description ? (
+                          <p>{milestone.description}</p>
+                        ) : null}
+                        {milestone.submissionNote ? (
+                          <p>
+                            <strong>Student submission:</strong>{" "}
+                            {milestone.submissionNote}
+                          </p>
+                        ) : null}
+                        {milestone.feedback ? (
+                          <p>
+                            <strong>Provider feedback:</strong>{" "}
+                            {milestone.feedback}
+                          </p>
+                        ) : null}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <div className="university-training-contact-actions">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() =>
+                  openConversation(
+                    record.jobSeekerUserId,
+                    record.jobSeekerName,
+                    record.projectId,
+                    record.projectTitle,
+                  )
+                }
+              >
+                <MessageSquare size={17} aria-hidden="true" />
+                Message student
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() =>
+                  openConversation(
+                    record.companyUserId,
+                    record.companyName,
+                    record.projectId,
+                    record.projectTitle,
+                  )
+                }
+              >
+                <MessageSquare size={17} aria-hidden="true" />
+                Message provider
+              </Button>
             </div>
 
             <form className="university-progress-form" onSubmit={saveProgress}>
