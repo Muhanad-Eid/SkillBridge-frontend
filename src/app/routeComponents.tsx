@@ -122,6 +122,9 @@ export const TalentSearchPage = lazy(
 export const WorkHubPage = lazy(
   () => import("../features/work/presentation/WorkHubPage"),
 );
+export const WorkOverviewPage = lazy(
+  () => import("../features/work/presentation/WorkOverviewPage"),
+);
 export const UniversityTrainingPage = lazy(
   () => import("../features/work/presentation/UniversityTrainingPage"),
 );

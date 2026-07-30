@@ -7,6 +7,7 @@ import {
   ClipboardList,
   KeyRound,
   LayoutDashboard,
+  ListChecks,
   LogOut,
   Menu,
   MessageSquare,
@@ -50,6 +51,7 @@ const companyNavItems: CompanyNavItem[] = [
   { label: "Opportunities", to: "/company/projects", icon: BriefcaseBusiness },
   { label: "Freelance", to: "/company/freelance", icon: CircleDollarSign },
   { label: "Applications", to: "/company/applications", icon: ClipboardList },
+  { label: "Work", to: "/company/work", icon: ListChecks },
   { label: "Find talent", to: "/company/talent", icon: UserRoundSearch },
   {
     label: "Messages",

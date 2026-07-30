@@ -15,6 +15,10 @@ import type {
   WorkRecord,
 } from "../domain/workTypes";
 
+export function getMyWorkAsync() {
+  return httpClient<WorkRecord[]>("/api/work/mine");
+}
+
 export function getProjectWorkAsync(projectId: number) {
   return httpClient<WorkRecord[]>(`/api/work/projects/${projectId}`);
 }

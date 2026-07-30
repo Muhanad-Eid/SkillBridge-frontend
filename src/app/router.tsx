@@ -43,6 +43,7 @@ import {
   UniversityTrainingPage,
   UsersPage,
   WorkHubPage,
+  WorkOverviewPage,
 } from "./routeComponents";
 
 export const router = createBrowserRouter([
@@ -112,6 +113,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/company/dashboard" replace /> },
       { path: "dashboard", element: <CompanyDashboardPage /> },
+      { path: "work", element: <WorkOverviewPage /> },
       {
         path: "projects",
         element: <CompanyProjectsPage key="company-opportunities" />,
@@ -147,6 +149,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/job-seeker/dashboard" replace /> },
       { path: "dashboard", element: <JobSeekerDashboardPage /> },
+      { path: "work", element: <WorkOverviewPage /> },
       {
         path: "opportunities",
         element: <ProjectsPage key="job-seeker-opportunities" />,
