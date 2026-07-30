@@ -13,6 +13,7 @@ import {
   Wrench,
   X,
 } from "lucide-react";
+import { NavLink } from "react-router-dom";
 import { useAuth } from "../../../shared/auth/AuthContext";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
@@ -30,6 +31,7 @@ import { getMySkillsAsync } from "../../skills/infrastructure/skillApi";
 import {
   calculateProjectMatch,
   ExperienceLevels,
+  FreelancePricingTypes,
   getExperienceLevelLabel,
   getFreelancePricingLabel,
   getOpportunityTypeLabel,
@@ -70,6 +72,7 @@ export default function ProjectsPage({
   const [skillFilter, setSkillFilter] = useState("all");
   const [matchFilter, setMatchFilter] = useState("all");
   const [pricingFilter, setPricingFilter] = useState("all");
+  const [budgetFilter, setBudgetFilter] = useState("all");
   const [sort, setSort] = useState("recommended");
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -221,10 +224,18 @@ export default function ProjectsPage({
         !isFreelanceView ||
         pricingFilter === "all" ||
         project.freelancePricingType === Number(pricingFilter);
+      const matchesBudget =
+        !isFreelanceView ||
+        budgetFilter === "all" ||
+        (budgetFilter === "under100" && (project.budget ?? 0) < 100) ||
+        (budgetFilter === "100to500" &&
+          (project.budget ?? 0) >= 100 &&
+          (project.budget ?? 0) <= 500) ||
+        (budgetFilter === "over500" && (project.budget ?? 0) > 500);
 
       return matchesSearch && matchesType && matchesDuration && matchesApplication &&
         matchesWorkMode && matchesExperience && matchesSkill && matchesFit &&
-        matchesPricing;
+        matchesPricing && matchesBudget;
     }).sort((left, right) => {
       if (isFreelanceView && sort === "budget") {
         return (right.budget ?? 0) - (left.budget ?? 0);
@@ -243,6 +254,7 @@ export default function ProjectsPage({
   }, [
     applicationByProject,
     applicationFilter,
+    budgetFilter,
     durationFilter,
     experienceFilter,
     isFreelanceView,
@@ -277,6 +289,7 @@ export default function ProjectsPage({
     skillFilter,
     matchFilter,
     ...(isFreelanceView ? [pricingFilter] : []),
+    ...(isFreelanceView ? [budgetFilter] : []),
   ].filter((value) => value !== "all").length;
 
   function clearFilters() {
@@ -288,6 +301,7 @@ export default function ProjectsPage({
     setSkillFilter("all");
     setMatchFilter("all");
     setPricingFilter("all");
+    setBudgetFilter("all");
   }
 
   return (
@@ -315,6 +329,15 @@ export default function ProjectsPage({
           )
         }
       />
+
+      {isFreelanceView && isJobSeeker ? (
+        <nav className="freelance-section-tabs" aria-label="Freelance">
+          <NavLink end to="/job-seeker/freelance">
+            Browse tasks
+          </NavLink>
+          <NavLink to="/job-seeker/freelance/proposals">My proposals</NavLink>
+        </nav>
+      ) : null}
 
       {isJobSeeker ? (
         <div className="jobseeker-discovery-summary">
@@ -459,11 +482,27 @@ export default function ProjectsPage({
                       onChange={(event) => setPricingFilter(event.target.value)}
                     >
                       <option value="all">Any pricing</option>
-                      <option value="0">Fixed price</option>
-                      <option value="1">Hourly</option>
+                      <option value={FreelancePricingTypes.FixedPrice}>
+                        Fixed price
+                      </option>
+                      <option value={FreelancePricingTypes.Hourly}>Hourly</option>
                     </select>
                   </label>
                 )}
+                {isFreelanceView ? (
+                  <label>
+                    <span>Budget</span>
+                    <select
+                      value={budgetFilter}
+                      onChange={(event) => setBudgetFilter(event.target.value)}
+                    >
+                      <option value="all">Any budget</option>
+                      <option value="under100">Under $100</option>
+                      <option value="100to500">$100 to $500</option>
+                      <option value="over500">More than $500</option>
+                    </select>
+                  </label>
+                ) : null}
                 <label>
                   <span>Work mode</span>
                   <select
@@ -625,6 +664,32 @@ export default function ProjectsPage({
                 <h2>{project.title}</h2>
                 <strong>{project.companyName}</strong>
                 <p>{project.description}</p>
+                {isFreelanceView ? (
+                  <div className="freelance-task-summary">
+                    <span>
+                      <small>Budget</small>
+                      <strong>
+                        {project.budget ? `$${project.budget}` : "Not listed"}
+                        {project.freelancePricingType ===
+                        FreelancePricingTypes.Hourly
+                          ? " / hour"
+                          : ""}
+                      </strong>
+                    </span>
+                    <span>
+                      <small>Delivery</small>
+                      <strong>
+                        {project.freelanceDeliveryDays ??
+                          project.durationWeeks * 7}{" "}
+                        days
+                      </strong>
+                    </span>
+                    <span>
+                      <small>Proposals</small>
+                      <strong>{project.applicationsCount}</strong>
+                    </span>
+                  </div>
+                ) : null}
                 <div className="jobseeker-opportunity-meta">
                   <span>
                     <Clock3 size={15} />

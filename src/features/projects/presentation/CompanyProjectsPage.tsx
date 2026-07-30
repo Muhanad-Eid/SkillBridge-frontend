@@ -742,19 +742,28 @@ export default function CompanyProjectsPage({
           <span className="company-kpi-icon kpi-neutral">
             <BriefcaseBusiness size={19} aria-hidden="true" />
           </span>
-          <div><span>Total</span><strong>{stats.total}</strong></div>
+          <div>
+            <span>{isFreelanceView ? "Total tasks" : "Total"}</span>
+            <strong>{stats.total}</strong>
+          </div>
         </article>
         <article>
           <span className="company-kpi-icon kpi-green">
             <BriefcaseBusiness size={19} aria-hidden="true" />
           </span>
-          <div><span>Open</span><strong>{stats.open}</strong></div>
+          <div>
+            <span>{isFreelanceView ? "Accepting proposals" : "Open"}</span>
+            <strong>{stats.open}</strong>
+          </div>
         </article>
         <article>
           <span className="company-kpi-icon kpi-blue">
             <Clock3 size={19} aria-hidden="true" />
           </span>
-          <div><span>In progress</span><strong>{stats.active}</strong></div>
+          <div>
+            <span>{isFreelanceView ? "Active contracts" : "In progress"}</span>
+            <strong>{stats.active}</strong>
+          </div>
         </article>
         <article>
           <span className="company-kpi-icon kpi-amber">
@@ -787,9 +796,15 @@ export default function CompanyProjectsPage({
           onChange={(event) => setStatusFilter(event.target.value)}
         >
           <option value="All">All statuses</option>
-          <option value={ProjectStatuses.Open}>Open</option>
-          <option value="ApplicationsClosed">Applications closed</option>
-          <option value={ProjectStatuses.InProgress}>In progress</option>
+          <option value={ProjectStatuses.Open}>
+            {isFreelanceView ? "Accepting proposals" : "Open"}
+          </option>
+          <option value="ApplicationsClosed">
+            {isFreelanceView ? "Proposals closed" : "Applications closed"}
+          </option>
+          <option value={ProjectStatuses.InProgress}>
+            {isFreelanceView ? "Active contracts" : "In progress"}
+          </option>
           <option value={ProjectStatuses.Completed}>Completed</option>
           <option value={ProjectStatuses.Cancelled}>Cancelled</option>
         </select>
@@ -903,7 +918,9 @@ export default function CompanyProjectsPage({
               </div>
 
               <div className="company-opportunity-controls">
-                {project.status !== ProjectStatuses.Cancelled ? (
+                {project.status !== ProjectStatuses.Cancelled &&
+                (!isFreelanceView ||
+                  project.status !== ProjectStatuses.Open) ? (
                   <Button
                     to={`/company/projects/${project.id}/work`}
                     variant={
@@ -912,7 +929,7 @@ export default function CompanyProjectsPage({
                     className="button-with-icon"
                   >
                     <FolderKanban size={17} aria-hidden="true" />
-                    Work hub
+                    {isFreelanceView ? "Manage contract" : "Work hub"}
                   </Button>
                 ) : null}
                 <Button
@@ -934,14 +951,18 @@ export default function CompanyProjectsPage({
 
                 {project.status === ProjectStatuses.Open ? (
                   <>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      disabled={isBusy || !isCompanyVerified}
-                      onClick={() => updateStatus(project, ProjectStatuses.InProgress)}
-                    >
-                      Start work
-                    </Button>
+                    {!isFreelanceView ? (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        disabled={isBusy || !isCompanyVerified}
+                        onClick={() =>
+                          updateStatus(project, ProjectStatuses.InProgress)
+                        }
+                      >
+                        Start work
+                      </Button>
+                    ) : null}
                     <Button
                       type="button"
                       variant="secondary"
@@ -955,14 +976,18 @@ export default function CompanyProjectsPage({
 
                 {project.status === ProjectStatuses.InProgress ? (
                   <>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      disabled={isBusy}
-                      onClick={() => updateStatus(project, ProjectStatuses.Completed)}
-                    >
-                      Complete
-                    </Button>
+                    {!isFreelanceView ? (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        disabled={isBusy}
+                        onClick={() =>
+                          updateStatus(project, ProjectStatuses.Completed)
+                        }
+                      >
+                        Complete
+                      </Button>
+                    ) : null}
                     <Button
                       type="button"
                       variant="secondary"

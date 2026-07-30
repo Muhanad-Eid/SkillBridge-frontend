@@ -11612,6 +11612,30 @@ a,
 }
 
 /* Dedicated freelance workspace */
+.freelance-section-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.freelance-section-tabs a {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+  padding: 0 14px;
+}
+
+.freelance-section-tabs a:hover,
+.freelance-section-tabs a.active {
+  border-bottom-color: var(--blue);
+  color: var(--blue-dark);
+}
+
 .freelance-marketplace-page .jobseeker-discovery-toolbar {
   grid-template-columns: minmax(0, 1fr) 180px auto;
 }
@@ -11645,6 +11669,42 @@ a,
 
 .freelance-marketplace-page .freelance-task-card .jobseeker-opportunity-copy > p {
   max-width: 850px;
+}
+
+.freelance-task-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(110px, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  margin: 14px 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--border);
+}
+
+.freelance-task-summary > span {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+  background: var(--surface-soft);
+  padding: 10px 12px;
+}
+
+.freelance-task-summary small {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.freelance-task-summary strong {
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.freelance-task-card .jobseeker-opportunity-meta > span:nth-child(-n + 3) {
+  display: none;
 }
 
 .freelance-marketplace-page .empty-state {
@@ -11697,6 +11757,10 @@ a,
   .freelance-marketplace-page .freelance-task-card .jobseeker-opportunity-action {
     grid-column: 2;
     justify-self: start;
+  }
+
+  .freelance-task-summary {
+    grid-template-columns: 1fr;
   }
 
   .company-freelance-page .company-list-toolbar {

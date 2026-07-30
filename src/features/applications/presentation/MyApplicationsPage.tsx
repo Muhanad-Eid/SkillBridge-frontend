@@ -10,6 +10,7 @@ import {
   Search,
   XCircle,
 } from "lucide-react";
+import { NavLink } from "react-router-dom";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
@@ -213,6 +214,15 @@ export default function MyApplicationsPage({
         }
       />
 
+      {isFreelanceView ? (
+        <nav className="freelance-section-tabs" aria-label="Freelance">
+          <NavLink end to="/job-seeker/freelance">
+            Browse tasks
+          </NavLink>
+          <NavLink to="/job-seeker/freelance/proposals">My proposals</NavLink>
+        </nav>
+      ) : null}
+
       <div className="jobseeker-application-stats">
         <article>
           <span>{isFreelanceView ? "Total proposals" : "Total applications"}</span>
@@ -309,7 +319,14 @@ export default function MyApplicationsPage({
                 </div>
                 <div className="jobseeker-application-reference">
                   <strong>#{application.id}</strong>
-                  <small>{project ? `${project.durationWeeks} weeks` : "Submitted"}</small>
+                  <small>
+                    {project
+                      ? application.opportunityType ===
+                        OpportunityTypes.FreelanceTask
+                        ? `${project.freelanceDeliveryDays ?? project.durationWeeks * 7} day target`
+                        : `${project.durationWeeks} weeks`
+                      : "Submitted"}
+                  </small>
                 </div>
                 <StatusBadge tone={getApplicationTone(application.status)}>
                   {getApplicationStatusLabelForOpportunity(

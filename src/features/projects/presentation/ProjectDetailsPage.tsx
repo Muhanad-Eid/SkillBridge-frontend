@@ -297,7 +297,13 @@ export default function ProjectDetailsPage() {
               <div className="jobseeker-opportunity-labels">
                 <StatusBadge tone="blue">{getOpportunityTypeLabel(project.type)}</StatusBadge>
                 <StatusBadge tone={isAcceptingApplications ? "green" : "neutral"}>
-                  {isAcceptingApplications ? "Accepting applications" : "Applications closed"}
+                  {project.type === OpportunityTypes.FreelanceTask
+                    ? isAcceptingApplications
+                      ? "Accepting proposals"
+                      : "Proposals closed"
+                    : isAcceptingApplications
+                      ? "Accepting applications"
+                      : "Applications closed"}
                 </StatusBadge>
               </div>
               <h1>{project.title}</h1>
@@ -308,7 +314,11 @@ export default function ProjectDetailsPage() {
           <div className="jobseeker-opportunity-details-grid">
             <main className="jobseeker-opportunity-main">
               <section>
-                <h2>About the opportunity</h2>
+                <h2>
+                  {project.type === OpportunityTypes.FreelanceTask
+                    ? "About the task"
+                    : "About the opportunity"}
+                </h2>
                 <p>{project.description}</p>
               </section>
 
@@ -338,11 +348,16 @@ export default function ProjectDetailsPage() {
               </section>
 
               <section>
-                <h2>Short application task</h2>
+                <h2>
+                  {project.type === OpportunityTypes.FreelanceTask
+                    ? "Client question"
+                    : "Short application task"}
+                </h2>
                 <p>{project.applicationTask}</p>
                 <small>
-                  Applicants can answer this task or provide a previous work
-                  sample.
+                  {project.type === OpportunityTypes.FreelanceTask
+                    ? "Freelancers can answer this question or provide a relevant work sample."
+                    : "Applicants can answer this task or provide a previous work sample."}
                 </small>
               </section>
 
@@ -430,42 +445,55 @@ export default function ProjectDetailsPage() {
               ) : null}
 
               <section>
-                <h2>Commitment and details</h2>
+                <h2>
+                  {project.type === OpportunityTypes.FreelanceTask
+                    ? "Task details"
+                    : "Commitment and details"}
+                </h2>
                 <div className="jobseeker-opportunity-facts">
-                  <article>
-                    <Clock3 size={19} />
-                    <span>
-                      {project.type === OpportunityTypes.FreelanceTask
-                        ? "Delivery window"
-                        : "Duration"}
-                    </span>
-                    <strong>
-                      {project.type === OpportunityTypes.FreelanceTask
-                        ? `${project.freelanceDeliveryDays ?? project.durationWeeks * 7} days`
-                        : `${project.durationWeeks} weeks`}
-                    </strong>
-                  </article>
-                  <article>
-                    <BriefcaseBusiness size={19} />
-                    <span>Budget</span>
-                    <strong>
-                      {project.budget
-                        ? `$${project.budget}${
-                            project.type === OpportunityTypes.FreelanceTask &&
-                            project.freelancePricingType ===
-                              FreelancePricingTypes.Hourly
-                              ? " / hour"
-                              : ""
-                          }`
-                        : project.type === OpportunityTypes.UniversityTraining
-                          ? "Unpaid training"
-                          : "No payment listed"}
-                    </strong>
-                  </article>
+                  {project.type !== OpportunityTypes.FreelanceTask ? (
+                    <>
+                      <article>
+                        <Clock3 size={19} />
+                        <span>Duration</span>
+                        <strong>{project.durationWeeks} weeks</strong>
+                      </article>
+                      <article>
+                        <BriefcaseBusiness size={19} />
+                        <span>Budget</span>
+                        <strong>
+                          {project.budget
+                            ? `$${project.budget}`
+                            : project.type ===
+                                OpportunityTypes.UniversityTraining
+                              ? "Unpaid training"
+                              : "No payment listed"}
+                        </strong>
+                      </article>
+                    </>
+                  ) : null}
                   <article><MapPin size={19} /><span>Work mode</span><strong>{getWorkModeLabel(project.workMode)}{project.location ? ` - ${project.location}` : ""}</strong></article>
                   <article><Wrench size={19} /><span>Experience</span><strong>{getExperienceLevelLabel(project.experienceLevel)}</strong></article>
-                  <article><UsersRound size={19} /><span>Open positions</span><strong>{project.positionsAvailable}</strong></article>
-                  <article><CalendarDays size={19} /><span>Apply by</span><strong>{project.applicationDeadline ?? "Open until filled"}</strong></article>
+                  <article>
+                    <UsersRound size={19} />
+                    <span>
+                      {project.type === OpportunityTypes.FreelanceTask
+                        ? "Freelancers needed"
+                        : "Open positions"}
+                    </span>
+                    <strong>{project.positionsAvailable}</strong>
+                  </article>
+                  <article>
+                    <CalendarDays size={19} />
+                    <span>
+                      {project.type === OpportunityTypes.FreelanceTask
+                        ? "Submit by"
+                        : "Apply by"}
+                    </span>
+                    <strong>
+                      {project.applicationDeadline ?? "Open until filled"}
+                    </strong>
+                  </article>
                 </div>
               </section>
 
@@ -545,10 +573,20 @@ export default function ProjectDetailsPage() {
               ) : !isAcceptingApplications ? (
                 <div className="jobseeker-applied-state">
                   <CalendarDays size={30} aria-hidden="true" />
-                  <span>Applications closed</span>
-                  <h2>The application window has ended</h2>
+                  <span>
+                    {project.type === OpportunityTypes.FreelanceTask
+                      ? "Proposals closed"
+                      : "Applications closed"}
+                  </span>
+                  <h2>
+                    {project.type === OpportunityTypes.FreelanceTask
+                      ? "This task is no longer accepting proposals"
+                      : "The application window has ended"}
+                  </h2>
                   <p>
-                    This opportunity is no longer accepting new applications.
+                    {project.type === OpportunityTypes.FreelanceTask
+                      ? "The client has closed the proposal window."
+                      : "This opportunity is no longer accepting new applications."}
                   </p>
                 </div>
               ) : isJobSeeker ? (
@@ -748,8 +786,16 @@ export default function ProjectDetailsPage() {
                 </div>
               ) : (
                 <div className="jobseeker-applied-state">
-                  <h2>Ready to apply?</h2>
-                  <p>Log in or create a job seeker profile to submit an application.</p>
+                  <h2>
+                    {project.type === OpportunityTypes.FreelanceTask
+                      ? "Ready to send a proposal?"
+                      : "Ready to apply?"}
+                  </h2>
+                  <p>
+                    {project.type === OpportunityTypes.FreelanceTask
+                      ? "Log in or create a job seeker profile to propose your price and delivery time."
+                      : "Log in or create a job seeker profile to submit an application."}
+                  </p>
                   <Link className="button button-primary" to="/login">Log in</Link>
                   <Link className="button button-secondary" to="/register">Register</Link>
                 </div>
