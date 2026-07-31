@@ -21,6 +21,7 @@ import {
   ProjectStatuses,
 } from "../../projects/domain/projectTypes";
 import {
+  CriterionRatings,
   getMilestoneStatusLabel,
   getWorkSubmissionStatusLabel,
   MilestoneStatuses,
@@ -46,6 +47,39 @@ type WorkProgressPanelProps = {
   projectId: number;
 };
 
+function parseEvaluationCriteria(value: string) {
+  const criteria = value
+    .split(/\r?\n/)
+    .map((item) => item.trim().replace(/^[-*\u2022]\s*/, ""))
+    .filter(Boolean);
+
+  return criteria.length > 0
+    ? [...new Set(criteria)].slice(0, 12)
+    : ["Completion of the defined opportunity requirements"];
+}
+
+function buildCriterionDrafts(record: WorkRecord) {
+  const savedEvaluations = new Map(
+    record.criterionEvaluations.map((item) => [
+      item.criterion.toLowerCase(),
+      item,
+    ]),
+  );
+
+  return Object.fromEntries(
+    parseEvaluationCriteria(record.evaluationCriteria).map((criterion) => {
+      const saved = savedEvaluations.get(criterion.toLowerCase());
+      return [
+        criterion,
+        {
+          rating: saved?.rating ?? 0,
+          note: saved?.note ?? "",
+        },
+      ];
+    }),
+  );
+}
+
 export default function WorkProgressPanel({
   isCompany,
   projectId,
@@ -70,6 +104,10 @@ export default function WorkProgressPanel({
   const [evaluation, setEvaluation] = useState("");
   const [finalFeedback, setFinalFeedback] = useState("");
   const [demonstratedSkillIds, setDemonstratedSkillIds] = useState<number[]>([]);
+  const [criterionDraftsByApplication, setCriterionDraftsByApplication] =
+    useState<
+      Record<number, Record<string, { rating: number; note: string }>>
+    >({});
   const [isLoading, setIsLoading] = useState(true);
   const [busyKey, setBusyKey] = useState("");
   const [error, setError] = useState("");
@@ -252,6 +290,25 @@ export default function WorkProgressPanel({
     0,
     (record.agreedRevisions ?? 1) - record.revisionRequestsUsed,
   );
+  const evaluationCriteria = parseEvaluationCriteria(
+    record.evaluationCriteria,
+  );
+  const criterionDrafts =
+    criterionDraftsByApplication[record.applicationId] ??
+    buildCriterionDrafts(record);
+  const criterionEvaluations = evaluationCriteria.map((criterion) => ({
+    criterion,
+    rating: criterionDrafts[criterion]?.rating ?? 0,
+    note: criterionDrafts[criterion]?.note.trim() ?? "",
+  }));
+  const criteriaComplete = criterionEvaluations.every(
+    (item) => item.rating > 0 && item.note.length >= 3,
+  );
+  const criteriaMeetApprovalStandard =
+    criteriaComplete &&
+    criterionEvaluations.every(
+      (item) => item.rating !== CriterionRatings.NeedsImprovement,
+    );
 
   return (
     <section className="work-hub-panel work-progress-panel">
@@ -532,7 +589,7 @@ export default function WorkProgressPanel({
                     </div>
                   ) : null}
                   {milestone.feedback ? (
-                    <div className="notice">
+                    <div className="notice milestone-feedback-notice">
                       <strong>Provider feedback</strong>
                       <span>{milestone.feedback}</span>
                     </div>
@@ -779,8 +836,77 @@ export default function WorkProgressPanel({
               </a>
             ) : null}
           </div>
+          <fieldset className="work-criterion-review">
+            <legend>Criterion-by-criterion evaluation</legend>
+            <p>
+              Record what in the submission supports each decision. Approval is
+              blocked while any criterion still needs improvement.
+            </p>
+            <div className="work-criterion-list">
+              {evaluationCriteria.map((criterion, index) => (
+                <section key={criterion}>
+                  <header>
+                    <span>{String(index + 1).padStart(2, "0")}</span>
+                    <strong>{criterion}</strong>
+                  </header>
+                  <label className="field">
+                    <span>Result</span>
+                    <select
+                      value={criterionDrafts[criterion]?.rating ?? 0}
+                      required
+                      onChange={(event) =>
+                        setCriterionDraftsByApplication((current) => ({
+                          ...current,
+                          [record.applicationId]: {
+                            ...criterionDrafts,
+                            [criterion]: {
+                            rating: Number(event.target.value),
+                              note: criterionDrafts[criterion]?.note ?? "",
+                            },
+                          },
+                        }))
+                      }
+                    >
+                      <option value={0}>Choose a result</option>
+                      <option value={CriterionRatings.NeedsImprovement}>
+                        Needs improvement
+                      </option>
+                      <option value={CriterionRatings.MeetsStandard}>
+                        Meets the standard
+                      </option>
+                      <option value={CriterionRatings.ExceedsStandard}>
+                        Exceeds the standard
+                      </option>
+                    </select>
+                  </label>
+                  <label className="field">
+                    <span>Evidence note</span>
+                    <textarea
+                      value={criterionDrafts[criterion]?.note ?? ""}
+                      minLength={3}
+                      maxLength={1000}
+                      required
+                      placeholder="Point to the part of the submission that supports this result."
+                      onChange={(event) =>
+                        setCriterionDraftsByApplication((current) => ({
+                          ...current,
+                          [record.applicationId]: {
+                            ...criterionDrafts,
+                            [criterion]: {
+                              rating: criterionDrafts[criterion]?.rating ?? 0,
+                              note: event.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    />
+                  </label>
+                </section>
+              ))}
+            </div>
+          </fieldset>
           <label className="field">
-            <span>Evaluation result</span>
+            <span>Overall evaluation</span>
             <textarea
               value={evaluation}
               minLength={10}
@@ -822,6 +948,7 @@ export default function WorkProgressPanel({
               type="button"
               disabled={
                 evaluation.trim().length < 10 ||
+                !criteriaMeetApprovalStandard ||
                 (record.availableSkills.length > 0 &&
                   demonstratedSkillIds.length === 0)
               }
@@ -833,6 +960,13 @@ export default function WorkProgressPanel({
                     evaluationResult: evaluation.trim(),
                     feedback: finalFeedback.trim() || undefined,
                     demonstratedSkillIds,
+                    criterionEvaluations: criterionEvaluations.map((item) => ({
+                      ...item,
+                      rating: item.rating as
+                        | typeof CriterionRatings.NeedsImprovement
+                        | typeof CriterionRatings.MeetsStandard
+                        | typeof CriterionRatings.ExceedsStandard,
+                    })),
                   }),
                 )
               }
@@ -844,7 +978,9 @@ export default function WorkProgressPanel({
               type="button"
               variant="secondary"
               disabled={
-                evaluation.trim().length < 10 || !finalFeedback.trim()
+                evaluation.trim().length < 10 ||
+                !criteriaComplete ||
+                !finalFeedback.trim()
               }
               isLoading={busyKey === "return-final"}
               onClick={() =>
@@ -853,6 +989,13 @@ export default function WorkProgressPanel({
                     isApproved: false,
                     evaluationResult: evaluation.trim(),
                     feedback: finalFeedback.trim(),
+                    criterionEvaluations: criterionEvaluations.map((item) => ({
+                      ...item,
+                      rating: item.rating as
+                        | typeof CriterionRatings.NeedsImprovement
+                        | typeof CriterionRatings.MeetsStandard
+                        | typeof CriterionRatings.ExceedsStandard,
+                    })),
                   }),
                 )
               }

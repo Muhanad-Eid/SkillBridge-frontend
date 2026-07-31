@@ -35,6 +35,21 @@ export type WorkSkill = {
   name: string;
 };
 
+export const CriterionRatings = {
+  NeedsImprovement: 1,
+  MeetsStandard: 2,
+  ExceedsStandard: 3,
+} as const;
+
+export type CriterionRating =
+  (typeof CriterionRatings)[keyof typeof CriterionRatings];
+
+export type CriterionEvaluation = {
+  criterion: string;
+  rating: CriterionRating;
+  note: string;
+};
+
 export const TrainingReportStatuses = {
   Submitted: 0,
   ChangesRequested: 1,
@@ -105,6 +120,7 @@ export type WorkRecord = {
   hasEvidenceCard: boolean;
   availableSkills: WorkSkill[];
   demonstratedSkills: WorkSkill[];
+  criterionEvaluations: CriterionEvaluation[];
   milestones: WorkMilestone[];
   trainingReports: TrainingReport[];
 };
@@ -144,6 +160,7 @@ export type ApproveFinalWorkRequest = {
   evaluationResult: string;
   feedback?: string;
   demonstratedSkillIds?: number[];
+  criterionEvaluations?: CriterionEvaluation[];
 };
 
 export type UpdateContributionResponsibilitiesRequest = {

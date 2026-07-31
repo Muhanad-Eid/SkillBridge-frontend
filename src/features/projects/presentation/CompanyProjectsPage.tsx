@@ -1255,11 +1255,15 @@ export default function CompanyProjectsPage({
                   value={form.evaluationCriteria}
                   maxLength={3000}
                   required
-                  placeholder="How the provider will decide whether the work is complete"
+                  placeholder={"Accuracy\nCompleteness\nUsability"}
                   onChange={(event) =>
                     setForm({ ...form, evaluationCriteria: event.target.value })
                   }
                 />
+                <small>
+                  Add one criterion per line. Each one must be rated during the
+                  final review.
+                </small>
               </label>
               {!isFreelanceView ? (
                 <label className="field">

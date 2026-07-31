@@ -6,10 +6,12 @@ import {
   EyeOff,
   FileCheck2,
   Image,
+  ListChecks,
   Pencil,
   Pin,
   Search,
   Share2,
+  ShieldCheck,
   Star,
   X,
 } from "lucide-react";
@@ -51,6 +53,10 @@ function sortPortfolio(items: PortfolioItem[]) {
 
     return rightDate - leftDate;
   });
+}
+
+function evidenceReference(id: number) {
+  return `SB-EV-${String(id).padStart(6, "0")}`;
 }
 
 export default function PortfolioPage() {
@@ -400,7 +406,10 @@ export default function PortfolioPage() {
             <div className="portfolio-manager-content">
               <header>
                 <div>
-                  <span>{getOpportunityTypeLabel(item.opportunityType)}</span>
+                  <div className="portfolio-manager-eyebrow">
+                    <span>{getOpportunityTypeLabel(item.opportunityType)}</span>
+                    <span>{evidenceReference(item.id)}</span>
+                  </div>
                   <h2>{item.projectTitle}</h2>
                   <p>{item.companyName}</p>
                 </div>
@@ -421,6 +430,10 @@ export default function PortfolioPage() {
               </p>
 
               <div className="portfolio-manager-meta">
+                <span title="System-generated evidence">
+                  <ShieldCheck size={14} aria-hidden="true" />
+                  Approved record
+                </span>
                 <span>
                   <CalendarDays size={14} aria-hidden="true" />
                   {item.approvedAt
@@ -431,6 +444,12 @@ export default function PortfolioPage() {
                   <span>
                     <Star size={14} fill="currentColor" aria-hidden="true" />
                     {item.reviewRating}/5
+                  </span>
+                ) : null}
+                {item.criterionEvaluations.length > 0 ? (
+                  <span>
+                    <ListChecks size={14} aria-hidden="true" />
+                    {item.criterionEvaluations.length} criteria
                   </span>
                 ) : null}
                 {item.skills.slice(0, 4).map((skill) => (
@@ -533,7 +552,7 @@ export default function PortfolioPage() {
               </Button>
             </header>
             <label className="field">
-              <span>Your overview</span>
+              <span>Your portfolio overview</span>
               <textarea
                 value={ownerSummary}
                 maxLength={1000}
@@ -542,6 +561,13 @@ export default function PortfolioPage() {
               />
               <small>{ownerSummary.length}/1000</small>
             </label>
+            <div className="portfolio-record-lock">
+              <ShieldCheck size={18} aria-hidden="true" />
+              <span>
+                You can change the presentation and sharing. The approved work,
+                evaluation, evaluator, and dates remain locked.
+              </span>
+            </div>
             <label className="field">
               <span>Cover image link (optional)</span>
               <div className="portfolio-cover-input">

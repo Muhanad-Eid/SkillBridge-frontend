@@ -5,6 +5,12 @@ type PortfolioSkill = {
   name: string;
 };
 
+export type PortfolioCriterionEvaluation = {
+  criterion: string;
+  rating: 1 | 2 | 3;
+  note: string;
+};
+
 export type PortfolioItem = {
   id: number;
   jobSeekerId: number;
@@ -13,6 +19,9 @@ export type PortfolioItem = {
   companyName: string;
   opportunityType: OpportunityType;
   skills: PortfolioSkill[];
+  deliverables: string;
+  evaluationCriteria: string;
+  criterionEvaluations: PortfolioCriterionEvaluation[];
   description: string | null;
   projectUrl: string | null;
   ownerSummary: string | null;
@@ -25,6 +34,15 @@ export type PortfolioItem = {
   isFeatured: boolean;
   updatedAt: string;
   isEvidenceCard: boolean;
+  providerVerifiedAtApproval: boolean;
+  applicationSubmittedAt: string | null;
+  finalSubmittedAt: string | null;
+  companyApprovedAt: string | null;
+  universityApprovedAt: string | null;
+  milestoneCount: number;
+  approvedMilestoneCount: number;
+  trainingReportCount: number;
+  approvedTrainingReportCount: number;
   reviewRating: number | null;
   reviewComment: string | null;
 };

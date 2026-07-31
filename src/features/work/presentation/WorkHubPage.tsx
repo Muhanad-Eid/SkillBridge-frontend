@@ -31,6 +31,7 @@ import PageHeader from "../../../shared/components/PageHeader";
 import StatusBadge from "../../../shared/components/StatusBadge";
 import {
   ApplicationStatuses,
+  WorkSubmissionStatuses,
   type Application,
 } from "../../applications/domain/applicationTypes";
 import {
@@ -267,6 +268,12 @@ export default function WorkHubPage() {
           review.jobSeekerId === application.jobSeekerId,
       ),
     );
+  const allFinalWorkApproved =
+    acceptedApplications.length > 0 &&
+    acceptedApplications.every(
+      (application) =>
+        application.workStatus === WorkSubmissionStatuses.Approved,
+    );
 
   const timeline = useMemo<TimelineStep[]>(() => {
     if (!project) return [];
@@ -360,6 +367,16 @@ export default function WorkHubPage() {
 
   async function changeProjectStatus(status: ProjectStatus) {
     if (!project) return;
+
+    if (
+      status === ProjectStatuses.Completed &&
+      !allFinalWorkApproved
+    ) {
+      setError(
+        "Approve the final work for every accepted participant before completing this opportunity.",
+      );
+      return;
+    }
 
     if (
       status === ProjectStatuses.Completed &&
@@ -753,15 +770,21 @@ export default function WorkHubPage() {
                 {isCompany &&
                 project.status === ProjectStatuses.InProgress ? (
                   <>
-                    <h2>Confirm completion</h2>
+                    <h2>
+                      {allFinalWorkApproved
+                        ? "Confirm completion"
+                        : "Final approval required"}
+                    </h2>
                     <p>
-                      Complete the opportunity after the team delivers the
-                      agreed result.
+                      {allFinalWorkApproved
+                        ? "Every accepted participant has approved final work. The opportunity can now be completed."
+                        : "Review and approve the final work for every accepted participant before completing this opportunity."}
                     </p>
                     <Button
                       type="button"
                       fullWidth
                       isLoading={isUpdating}
+                      disabled={!allFinalWorkApproved}
                       onClick={() =>
                         changeProjectStatus(ProjectStatuses.Completed)
                       }

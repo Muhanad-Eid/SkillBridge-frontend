@@ -4,6 +4,7 @@ import {
   CalendarDays,
   FileCheck2,
   Pencil,
+  ShieldCheck,
   Star,
   Trash2,
 } from "lucide-react";
@@ -126,6 +127,10 @@ export default function PortfolioGallery({
               ) : null}
 
               <footer>
+                <span title="System-generated evidence">
+                  <ShieldCheck size={14} aria-hidden="true" />
+                  SB-EV-{String(item.id).padStart(6, "0")}
+                </span>
                 <span>
                   <CalendarDays size={14} aria-hidden="true" />
                   {item.approvedAt

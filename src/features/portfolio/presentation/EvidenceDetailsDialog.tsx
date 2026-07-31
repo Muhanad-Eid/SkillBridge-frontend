@@ -1,23 +1,66 @@
 import { useEffect } from "react";
 import {
+  BadgeCheck,
   BriefcaseBusiness,
-  CalendarDays,
+  CheckCircle2,
+  CircleDot,
   ExternalLink,
   FileCheck2,
+  History,
+  LockKeyhole,
+  Route,
   ShieldCheck,
   Star,
-  UserRoundCheck,
   X,
 } from "lucide-react";
 import Button from "../../../shared/components/Button";
 import StatusBadge from "../../../shared/components/StatusBadge";
-import { getOpportunityTypeLabel } from "../../projects/domain/projectTypes";
-import type { PortfolioItem } from "../domain/portfolioTypes";
+import {
+  getOpportunityTypeLabel,
+  OpportunityTypes,
+} from "../../projects/domain/projectTypes";
+import type {
+  PortfolioCriterionEvaluation,
+  PortfolioItem,
+} from "../domain/portfolioTypes";
 
 type EvidenceDetailsDialogProps = {
   item: PortfolioItem;
   onClose: () => void;
 };
+
+function evidenceReference(id: number) {
+  return `SB-EV-${String(id).padStart(6, "0")}`;
+}
+
+function formatDate(value: string | null) {
+  return value ? new Date(value).toLocaleDateString() : "Not recorded";
+}
+
+function evidenceAge(value: string | null) {
+  if (!value) return "Approval date unavailable";
+
+  const approvedAt = new Date(value);
+  const days = Math.max(
+    0,
+    Math.floor((Date.now() - approvedAt.getTime()) / 86_400_000),
+  );
+
+  if (days < 30) return "Approved this month";
+  if (days < 365) {
+    const months = Math.max(1, Math.floor(days / 30));
+    return `Approved ${months} month${months === 1 ? "" : "s"} ago`;
+  }
+
+  const years = Math.max(1, Math.floor(days / 365));
+  return `Approved ${years} year${years === 1 ? "" : "s"} ago`;
+}
+
+function ratingLabel(rating: PortfolioCriterionEvaluation["rating"]) {
+  if (rating === 3) return "Exceeds standard";
+  if (rating === 2) return "Meets standard";
+  return "Needs improvement";
+}
 
 export default function EvidenceDetailsDialog({
   item,
@@ -38,6 +81,47 @@ export default function EvidenceDetailsDialog({
     };
   }, [onClose]);
 
+  const isTraining =
+    item.opportunityType === OpportunityTypes.UniversityTraining;
+  const approvalRoute = isTraining
+    ? "Company and university"
+    : "Verified provider";
+  const completedChecks =
+    2 +
+    Number(item.providerVerifiedAtApproval) +
+    Number(
+      item.milestoneCount === 0 ||
+        item.approvedMilestoneCount === item.milestoneCount,
+    ) +
+    Number(!isTraining || Boolean(item.universityApprovedAt));
+
+  const timeline = [
+    {
+      label: "Application received",
+      date: item.applicationSubmittedAt,
+    },
+    {
+      label: "Final work submitted",
+      date: item.finalSubmittedAt,
+    },
+    {
+      label: "Provider approval",
+      date: item.companyApprovedAt,
+    },
+    ...(isTraining
+      ? [
+          {
+            label: "University approval",
+            date: item.universityApprovedAt,
+          },
+        ]
+      : []),
+    {
+      label: "Evidence Card generated",
+      date: item.approvedAt,
+    },
+  ].filter((event) => event.date);
+
   return (
     <div
       className="evidence-dialog-backdrop"
@@ -49,14 +133,17 @@ export default function EvidenceDetailsDialog({
       <section
         aria-labelledby="evidence-dialog-title"
         aria-modal="true"
-        className="evidence-dialog"
+        className="evidence-dialog evidence-chain-dialog"
         role="dialog"
       >
         <header>
           <div>
-            <StatusBadge tone="blue">
-              {getOpportunityTypeLabel(item.opportunityType)}
-            </StatusBadge>
+            <div className="evidence-dialog-kicker">
+              <StatusBadge tone="blue">
+                {getOpportunityTypeLabel(item.opportunityType)}
+              </StatusBadge>
+              <span>{evidenceReference(item.id)}</span>
+            </div>
             <h2 id="evidence-dialog-title">{item.projectTitle}</h2>
             <p>
               <BriefcaseBusiness size={15} aria-hidden="true" />
@@ -83,57 +170,173 @@ export default function EvidenceDetailsDialog({
           />
         ) : null}
 
+        <div className="evidence-dialog-verification">
+          <ShieldCheck size={21} aria-hidden="true" />
+          <div>
+            <strong>System-generated evidence</strong>
+            <span>
+              This record was created from completed work after the required
+              approval. The owner can control sharing and presentation, but
+              cannot rewrite the source work, evaluation, evaluator, or dates.
+            </span>
+          </div>
+          <strong>{completedChecks}/5 checks</strong>
+        </div>
+
+        <section className="evidence-chain-summary">
+          <header>
+            <div>
+              <span>Evidence Chain</span>
+              <h3>Why this record can be checked</h3>
+            </div>
+            <span>{evidenceAge(item.approvedAt)}</span>
+          </header>
+          <dl>
+            <div>
+              <BadgeCheck size={18} aria-hidden="true" />
+              <dt>Provider</dt>
+              <dd>
+                {item.providerVerifiedAtApproval
+                  ? "Verified at approval"
+                  : "Verification unavailable"}
+              </dd>
+            </div>
+            <div>
+              <CheckCircle2 size={18} aria-hidden="true" />
+              <dt>Milestones</dt>
+              <dd>
+                {item.milestoneCount > 0
+                  ? `${item.approvedMilestoneCount}/${item.milestoneCount} approved`
+                  : "No milestones required"}
+              </dd>
+            </div>
+            <div>
+              <Route size={18} aria-hidden="true" />
+              <dt>Approval route</dt>
+              <dd>{approvalRoute}</dd>
+            </div>
+            <div>
+              <LockKeyhole size={18} aria-hidden="true" />
+              <dt>Core record</dt>
+              <dd>Locked after approval</dd>
+            </div>
+          </dl>
+        </section>
+
         {item.ownerSummary ? (
           <section className="evidence-dialog-owner-summary">
-            <span>Overview</span>
+            <span>Owner's overview</span>
             <p>{item.ownerSummary}</p>
           </section>
         ) : null}
 
-        <div className="evidence-dialog-verification">
-          <ShieldCheck size={20} aria-hidden="true" />
-          <div>
-            <strong>Approved SkillBridge work</strong>
-            <span>
-              The contribution and evaluation below come from the completed
-              opportunity record.
-            </span>
-          </div>
-        </div>
+        <div className="evidence-dialog-layout">
+          <main>
+            <section className="evidence-record-section">
+              <header>
+                <span>01</span>
+                <h3>Approved work record</h3>
+              </header>
+              <dl className="evidence-dialog-grid">
+                <section>
+                  <dt>Required deliverable</dt>
+                  <dd>{item.deliverables || "Not recorded."}</dd>
+                </section>
+                <section>
+                  <dt>Completed work</dt>
+                  <dd>{item.description ?? "Approved completed work."}</dd>
+                </section>
+                <section>
+                  <dt>Individual contribution</dt>
+                  <dd>
+                    {item.contribution ?? "No contribution summary recorded."}
+                  </dd>
+                </section>
+                <section>
+                  <dt>Overall evaluation</dt>
+                  <dd>{item.evaluationResult ?? "Final approval recorded."}</dd>
+                </section>
+              </dl>
+            </section>
 
-        <div className="evidence-dialog-grid">
-          <section>
-            <span>Completed work</span>
-            <p>{item.description ?? "Approved completed work."}</p>
-          </section>
-          <section>
-            <span>Individual contribution</span>
-            <p>{item.contribution ?? "No contribution summary recorded."}</p>
-          </section>
-          <section>
-            <span>Evaluation</span>
-            <p>{item.evaluationResult ?? "Final approval recorded."}</p>
-          </section>
-          <section>
-            <span>Approval</span>
-            <p>
-              <UserRoundCheck size={16} aria-hidden="true" />
-              {item.evaluatorName ?? item.companyName}
-            </p>
-            {item.approvedAt ? (
-              <p>
-                <CalendarDays size={16} aria-hidden="true" />
-                {new Date(item.approvedAt).toLocaleDateString()}
-              </p>
+            <section className="evidence-record-section">
+              <header>
+                <span>02</span>
+                <h3>Evaluation breakdown</h3>
+              </header>
+              {item.criterionEvaluations.length > 0 ? (
+                <div className="evidence-criterion-results">
+                  {item.criterionEvaluations.map((evaluation) => (
+                    <article key={evaluation.criterion}>
+                      <div>
+                        <strong>{evaluation.criterion}</strong>
+                        <StatusBadge
+                          tone={evaluation.rating === 1 ? "red" : "green"}
+                        >
+                          {ratingLabel(evaluation.rating)}
+                        </StatusBadge>
+                      </div>
+                      <p>{evaluation.note}</p>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <div className="evidence-legacy-evaluation">
+                  <span>Evaluation criteria</span>
+                  <p>{item.evaluationCriteria || "Final approval recorded."}</p>
+                  <small>
+                    This evidence was approved before structured criterion
+                    results were introduced.
+                  </small>
+                </div>
+              )}
+            </section>
+          </main>
+
+          <aside className="evidence-provenance">
+            <header>
+              <History size={18} aria-hidden="true" />
+              <div>
+                <span>Provenance</span>
+                <h3>Record history</h3>
+              </div>
+            </header>
+            <ol>
+              {timeline.map((event) => (
+                <li key={event.label}>
+                  <CircleDot size={15} aria-hidden="true" />
+                  <div>
+                    <strong>{event.label}</strong>
+                    <span>{formatDate(event.date)}</span>
+                  </div>
+                </li>
+              ))}
+            </ol>
+            <div className="evidence-approval-source">
+              <span>Approved by</span>
+              <strong>{item.evaluatorName ?? item.companyName}</strong>
+              <small>{formatDate(item.approvedAt)}</small>
+            </div>
+            {isTraining && item.trainingReportCount > 0 ? (
+              <div className="evidence-approval-source">
+                <span>Training reports</span>
+                <strong>
+                  {item.approvedTrainingReportCount}/{item.trainingReportCount}{" "}
+                  approved
+                </strong>
+              </div>
             ) : null}
-          </section>
+          </aside>
         </div>
 
         {item.skills.length > 0 ? (
           <div className="evidence-dialog-skills">
-            {item.skills.map((skill) => (
-              <span key={skill.id}>{skill.name}</span>
-            ))}
+            <span>Skills demonstrated</span>
+            <div>
+              {item.skills.map((skill) => (
+                <span key={skill.id}>{skill.name}</span>
+              ))}
+            </div>
           </div>
         ) : null}
 
