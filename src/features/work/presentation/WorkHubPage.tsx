@@ -51,11 +51,13 @@ import {
 } from "../../profiles/infrastructure/profileApi";
 import {
   getExperienceLevelLabel,
+  getFreelancePricingLabel,
   getOpportunityTypeLabel,
   getProjectDisplayStatusLabel,
   getProjectStatusLabel,
   getWorkModeLabel,
   isApplicationDeadlinePassed,
+  OpportunityTypes,
   ProjectStatuses,
   type Project,
   type ProjectStatus,
@@ -134,6 +136,9 @@ export default function WorkHubPage() {
   const [accessDenied, setAccessDenied] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [activeSection, setActiveSection] = useState<"delivery" | "details">(
+    "delivery",
+  );
 
   const loadWorkHub = useCallback(async () => {
     setIsLoading(true);
@@ -259,6 +264,8 @@ export default function WorkHubPage() {
   const portfolioItem = portfolioItems.find(
     (item) => item.projectId === numericProjectId,
   );
+  const isFreelanceContract =
+    project?.type === OpportunityTypes.FreelanceTask;
   const allWorkersReviewed =
     acceptedApplications.length > 0 &&
     acceptedApplications.every((application) =>
@@ -286,16 +293,20 @@ export default function WorkHubPage() {
     if (isCompany) {
       return [
         {
-          label: "Opportunity published",
-          detail: "The opportunity is available in your company record.",
+          label: isFreelanceContract ? "Task posted" : "Opportunity published",
+          detail: isFreelanceContract
+            ? "The task was published for freelance proposals."
+            : "The opportunity is available in your company record.",
           done: true,
           icon: BriefcaseBusiness,
         },
         {
-          label: "Worker accepted",
+          label: isFreelanceContract ? "Freelancer selected" : "Worker accepted",
           detail:
             acceptedApplications.length > 0
-              ? `${acceptedApplications.length} worker${
+              ? `${acceptedApplications.length} ${
+                  isFreelanceContract ? "freelancer" : "worker"
+                }${
                   acceptedApplications.length === 1 ? "" : "s"
                 } accepted.`
               : "Accept at least one applicant before starting.",
@@ -303,14 +314,18 @@ export default function WorkHubPage() {
           icon: UsersRound,
         },
         {
-          label: "Work started",
-          detail: "The accepted team can now deliver the opportunity.",
+          label: isFreelanceContract ? "Contract started" : "Work started",
+          detail: isFreelanceContract
+            ? "The accepted proposal is now an active contract."
+            : "The accepted team can now deliver the opportunity.",
           done: workStarted,
           icon: Play,
         },
         {
-          label: "Work completed",
-          detail: "Mark complete after the expected outcome is delivered.",
+          label: isFreelanceContract ? "Delivery approved" : "Work completed",
+          detail: isFreelanceContract
+            ? "Complete the contract after the final delivery is approved."
+            : "Mark complete after the expected outcome is delivered.",
           done: workCompleted,
           icon: CheckCircle2,
         },
@@ -325,20 +340,26 @@ export default function WorkHubPage() {
 
     return [
       {
-        label: "Application accepted",
-        detail: "The company added you to this opportunity.",
+        label: isFreelanceContract ? "Proposal accepted" : "Application accepted",
+        detail: isFreelanceContract
+          ? "The client accepted your proposal and terms."
+          : "The company added you to this opportunity.",
         done: acceptedApplications.length > 0,
         icon: FileCheck2,
       },
       {
-        label: "Work started",
-        detail: "The company has moved the opportunity into active work.",
+        label: isFreelanceContract ? "Contract started" : "Work started",
+        detail: isFreelanceContract
+          ? "The client has started the freelance contract."
+          : "The company has moved the opportunity into active work.",
         done: workStarted,
         icon: Play,
       },
       {
-        label: "Work completed",
-        detail: "The company has confirmed the opportunity is complete.",
+        label: isFreelanceContract ? "Delivery approved" : "Work completed",
+        detail: isFreelanceContract
+          ? "The client approved the final delivery."
+          : "The company has confirmed the opportunity is complete.",
         done: workCompleted,
         icon: CheckCircle2,
       },
@@ -360,6 +381,7 @@ export default function WorkHubPage() {
     acceptedApplications.length,
     allWorkersReviewed,
     isCompany,
+    isFreelanceContract,
     portfolioItem,
     project,
     projectReview,
@@ -406,15 +428,19 @@ export default function WorkHubPage() {
     }
   }
 
-  const backPath = isCompany
-    ? "/company/projects"
-    : "/job-seeker/applications";
+  const backPath = isFreelanceContract
+    ? isCompany
+      ? "/company/freelance/work"
+      : "/job-seeker/freelance/work"
+    : isCompany
+      ? "/company/work"
+      : "/job-seeker/work";
 
   return (
     <section className="page work-hub-page">
       <Button to={backPath} variant="ghost" className="work-hub-back">
         <ArrowLeft size={17} aria-hidden="true" />
-        {isCompany ? "Opportunities" : "Applications"}
+        {isFreelanceContract ? "Freelance contracts" : "Work"}
       </Button>
 
       <PageHeader
@@ -467,32 +493,90 @@ export default function WorkHubPage() {
             <article>
               <BriefcaseBusiness size={18} aria-hidden="true" />
               <span>Type</span>
-              <strong>{getOpportunityTypeLabel(project.type)}</strong>
+              <strong>
+                {isFreelanceContract
+                  ? "Freelance contract"
+                  : getOpportunityTypeLabel(project.type)}
+              </strong>
             </article>
             <article>
               <Clock3 size={18} aria-hidden="true" />
-              <span>Duration</span>
-              <strong>{project.durationWeeks} weeks</strong>
+              <span>{isFreelanceContract ? "Delivery target" : "Duration"}</span>
+              <strong>
+                {isFreelanceContract
+                  ? `${project.freelanceDeliveryDays ?? project.durationWeeks * 7} days`
+                  : `${project.durationWeeks} weeks`}
+              </strong>
             </article>
             <article>
-              <MapPin size={18} aria-hidden="true" />
-              <span>Work setup</span>
+              {isFreelanceContract ? (
+                <CircleDollarSign size={18} aria-hidden="true" />
+              ) : (
+                <MapPin size={18} aria-hidden="true" />
+              )}
+              <span>{isFreelanceContract ? "Pricing" : "Work setup"}</span>
               <strong>
-                {getWorkModeLabel(project.workMode)}
-                {project.location ? ` · ${project.location}` : ""}
+                {isFreelanceContract
+                  ? getFreelancePricingLabel(project.freelancePricingType)
+                  : getWorkModeLabel(project.workMode)}
+                {!isFreelanceContract && project.location
+                  ? ` · ${project.location}`
+                  : ""}
               </strong>
             </article>
             <article>
               <CircleDollarSign size={18} aria-hidden="true" />
               <span>Budget</span>
               <strong>
-                {project.budget !== null ? `$${project.budget}` : "Training"}
+                {project.budget !== null
+                  ? `$${project.budget}`
+                  : isFreelanceContract
+                    ? "To be agreed"
+                    : "Training"}
               </strong>
             </article>
           </div>
 
-          <div className="work-hub-layout">
-            <div className="work-hub-main">
+          <div
+            className="work-hub-section-tabs"
+            role="tablist"
+            aria-label="Work hub sections"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeSection === "delivery"}
+              aria-controls="work-hub-active-panel"
+              className={activeSection === "delivery" ? "active" : ""}
+              onClick={() => setActiveSection("delivery")}
+            >
+              Delivery
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeSection === "details"}
+              aria-controls="work-hub-active-panel"
+              className={activeSection === "details" ? "active" : ""}
+              onClick={() => setActiveSection("details")}
+            >
+              Brief and people
+            </button>
+          </div>
+
+          <div className={`work-hub-layout work-hub-layout-${activeSection}`}>
+            <div
+              className="work-hub-main"
+              id="work-hub-active-panel"
+              role="tabpanel"
+              aria-label={
+                activeSection === "delivery"
+                  ? "Delivery"
+                  : "Brief and people"
+              }
+            >
+              {activeSection === "details" ? (
+                <>
               <section className="work-hub-panel">
                 <header className="work-hub-panel-header">
                   <div>
@@ -713,11 +797,13 @@ export default function WorkHubPage() {
                   ))}
                 </div>
               </section>
-
-              <WorkProgressPanel
-                isCompany={isCompany}
-                projectId={project.id}
-              />
+                </>
+              ) : (
+                <WorkProgressPanel
+                  isCompany={isCompany}
+                  projectId={project.id}
+                />
+              )}
             </div>
 
             <aside className="work-hub-side">
@@ -910,7 +996,8 @@ export default function WorkHubPage() {
                 ) : null}
               </section>
 
-              <section className="work-hub-reference">
+              {activeSection === "details" ? (
+                <section className="work-hub-reference">
                 <span>Reference</span>
                 <dl>
                   <div>
@@ -943,7 +1030,8 @@ export default function WorkHubPage() {
                 >
                   {isCompany ? "Team and applicants" : "Opportunity details"}
                 </Button>
-              </section>
+                </section>
+              ) : null}
             </aside>
           </div>
         </>

@@ -1,0 +1,310 @@
+/* Evidence lifecycle, application criteria, and evaluation workflow. */
+
+/* Evidence workflow */
+.workflow-policy-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.workflow-policy-note svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: var(--accent);
+}
+
+.work-progress-panel,
+.work-milestone-list,
+.work-milestone > div:last-child,
+.work-submission-copy,
+.work-inline-form,
+.work-add-milestone,
+.work-final-form,
+.work-final-review,
+.university-progress-form,
+.university-final-review,
+.university-approval-form,
+.portfolio-evidence-page,
+.evidence-card-list,
+.evidence-card,
+.university-training-record {
+  display: grid;
+  gap: 16px;
+}
+
+.application-task-prompt {
+  margin: 0;
+  padding: 12px 14px;
+  border-left: 3px solid var(--accent);
+  background: var(--surface-soft);
+  color: var(--text);
+  line-height: 1.55;
+}
+
+.work-record-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+}
+
+.work-record-tabs button,
+.university-training-list button {
+  min-height: 38px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--muted);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.work-record-tabs button {
+  white-space: nowrap;
+}
+
+.work-record-tabs button.active,
+.university-training-list button.active {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+  color: var(--blue-dark);
+}
+
+.work-record-heading,
+.work-milestone header,
+.evidence-card header,
+.evidence-card footer,
+.university-training-record > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.work-record-heading > div,
+.work-record-heading > span {
+  display: flex;
+  gap: 8px;
+}
+
+.work-record-heading > div {
+  flex-direction: column;
+}
+
+.work-record-heading > span {
+  align-items: center;
+  color: var(--green);
+  font-weight: 800;
+}
+
+.training-supervision-summary,
+.university-training-meta,
+.evidence-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--border);
+}
+
+.training-supervision-summary > div,
+.training-supervision-summary > label,
+.university-training-meta article,
+.evidence-card-grid section {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  margin: 0;
+  padding: 16px;
+  background: var(--surface);
+}
+
+.training-supervision-summary span,
+.university-training-meta span,
+.evidence-card-grid span,
+.evidence-card > header span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.work-milestone {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-soft);
+}
+
+.work-milestone-index,
+.evidence-card-mark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: var(--blue-soft);
+  color: var(--blue-dark);
+  font-weight: 900;
+}
+
+.work-milestone header > div {
+  display: grid;
+  gap: 3px;
+}
+
+.work-milestone p,
+.work-final-review p,
+.evidence-card p,
+.university-training-record p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.work-inline-form,
+.work-add-milestone,
+.work-final-form,
+.work-final-review,
+.university-progress-form,
+.university-final-review,
+.university-approval-form {
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.work-inline-form > div,
+.work-final-actions,
+.university-approval-form > div,
+.university-training-contact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.work-demonstrated-skills {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.work-demonstrated-skills legend {
+  padding: 0 6px;
+  font-weight: 800;
+}
+
+.work-demonstrated-skills > label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.work-approval-standard {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--blue);
+  border-radius: 6px;
+  background: var(--surface-soft);
+}
+
+.work-approval-standard > header {
+  display: grid;
+  gap: 3px;
+}
+
+.work-approval-standard > header span {
+  color: var(--blue-dark);
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.work-approval-standard dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--border);
+}
+
+.work-approval-standard dl > div {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  background: var(--surface);
+}
+
+.work-approval-standard dt {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.work-approval-standard dd {
+  margin: 0;
+  color: var(--text);
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.jobseeker-selected-skills > div > span {
+  min-width: 190px;
+  min-height: 48px;
+  justify-content: space-between;
+  border-radius: 6px;
+  padding: 7px 7px 7px 11px;
+}
+
+.jobseeker-selected-skills > div > span > span {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 2px 6px;
+  min-width: 0;
+}
+
+.jobseeker-selected-skills > div > span > span strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.jobseeker-selected-skills > div > span > span small {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.jobseeker-selected-skills > div > span.is-supported {
+  border-color: #9fd2c2;
+  background: #e9f8f2;
+  color: #086b50;
+}
+

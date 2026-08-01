@@ -30,6 +30,10 @@ import {
   type WorkRecord,
 } from "../domain/workTypes";
 import {
+  buildCriterionDrafts,
+  parseEvaluationCriteria,
+} from "../domain/workEvaluation";
+import {
   assignUniversitySupervisorAsync,
   createWorkMilestoneAsync,
   getProjectWorkAsync,
@@ -46,39 +50,6 @@ type WorkProgressPanelProps = {
   isCompany: boolean;
   projectId: number;
 };
-
-function parseEvaluationCriteria(value: string) {
-  const criteria = value
-    .split(/\r?\n/)
-    .map((item) => item.trim().replace(/^[-*\u2022]\s*/, ""))
-    .filter(Boolean);
-
-  return criteria.length > 0
-    ? [...new Set(criteria)].slice(0, 12)
-    : ["Completion of the defined opportunity requirements"];
-}
-
-function buildCriterionDrafts(record: WorkRecord) {
-  const savedEvaluations = new Map(
-    record.criterionEvaluations.map((item) => [
-      item.criterion.toLowerCase(),
-      item,
-    ]),
-  );
-
-  return Object.fromEntries(
-    parseEvaluationCriteria(record.evaluationCriteria).map((criterion) => {
-      const saved = savedEvaluations.get(criterion.toLowerCase());
-      return [
-        criterion,
-        {
-          rating: saved?.rating ?? 0,
-          note: saved?.note ?? "",
-        },
-      ];
-    }),
-  );
-}
 
 export default function WorkProgressPanel({
   isCompany,

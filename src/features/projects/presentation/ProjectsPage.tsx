@@ -13,7 +13,6 @@ import {
   Wrench,
   X,
 } from "lucide-react";
-import { NavLink } from "react-router-dom";
 import { useAuth } from "../../../shared/auth/AuthContext";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
@@ -42,6 +41,7 @@ import {
   type Project,
 } from "../domain/projectTypes";
 import { getProjectsAsync } from "../infrastructure/projectApi";
+import FreelanceWorkspaceNav from "./FreelanceWorkspaceNav";
 
 type ProjectsPageProps = {
   mode?: "opportunities" | "freelance";
@@ -331,12 +331,7 @@ export default function ProjectsPage({
       />
 
       {isFreelanceView && isJobSeeker ? (
-        <nav className="freelance-section-tabs" aria-label="Freelance">
-          <NavLink end to="/job-seeker/freelance">
-            Browse tasks
-          </NavLink>
-          <NavLink to="/job-seeker/freelance/proposals">My proposals</NavLink>
-        </nav>
+        <FreelanceWorkspaceNav />
       ) : null}
 
       {isJobSeeker ? (

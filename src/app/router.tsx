@@ -113,7 +113,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/company/dashboard" replace /> },
       { path: "dashboard", element: <CompanyDashboardPage /> },
-      { path: "work", element: <WorkOverviewPage /> },
+      { path: "work", element: <WorkOverviewPage mode="work" /> },
       {
         path: "projects",
         element: <CompanyProjectsPage key="company-opportunities" />,
@@ -123,6 +123,10 @@ export const router = createBrowserRouter([
         element: (
           <CompanyProjectsPage key="company-freelance" mode="freelance" />
         ),
+      },
+      {
+        path: "freelance/work",
+        element: <WorkOverviewPage mode="freelance" />,
       },
       {
         path: "projects/:projectId/applications",
@@ -149,7 +153,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/job-seeker/dashboard" replace /> },
       { path: "dashboard", element: <JobSeekerDashboardPage /> },
-      { path: "work", element: <WorkOverviewPage /> },
+      { path: "work", element: <WorkOverviewPage mode="work" /> },
       {
         path: "opportunities",
         element: <ProjectsPage key="job-seeker-opportunities" />,
@@ -168,6 +172,10 @@ export const router = createBrowserRouter([
         element: (
           <MyApplicationsPage key="job-seeker-proposals" mode="freelance" />
         ),
+      },
+      {
+        path: "freelance/work",
+        element: <WorkOverviewPage mode="freelance" />,
       },
       { path: "freelance/:projectId", element: <ProjectDetailsPage /> },
       { path: "work/:projectId", element: <WorkHubPage /> },

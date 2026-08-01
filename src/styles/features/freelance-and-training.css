@@ -1,0 +1,1481 @@
+/* Freelance workspace, proposals, CV upload, milestones, team records, and university training. */
+
+/* Dedicated freelance workspace */
+.freelance-section-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+
+.freelance-section-tabs a {
+  min-height: 44px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+  padding: 0 14px;
+}
+
+.freelance-section-tabs a:hover,
+.freelance-section-tabs a.active {
+  border-bottom-color: var(--blue);
+  color: var(--blue-dark);
+}
+
+.freelance-marketplace-page .jobseeker-discovery-toolbar {
+  grid-template-columns: minmax(0, 1fr) 180px auto;
+}
+
+.freelance-sort-select {
+  min-height: 44px;
+  border: 1px solid var(--border-strong);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 700;
+  padding: 0 12px;
+}
+
+.freelance-marketplace-page .jobseeker-opportunity-list {
+  grid-template-columns: 1fr;
+}
+
+.freelance-marketplace-page .freelance-task-card {
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-content: start;
+  min-height: 0;
+  border-left: 3px solid var(--blue);
+}
+
+.freelance-marketplace-page .freelance-task-card .jobseeker-opportunity-action {
+  grid-column: 3;
+  align-self: center;
+  justify-self: end;
+}
+
+.freelance-marketplace-page .freelance-task-card .jobseeker-opportunity-copy > p {
+  max-width: 850px;
+}
+
+.freelance-task-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(110px, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  margin: 14px 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--border);
+}
+
+.freelance-task-summary > span {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+  background: var(--surface-soft);
+  padding: 10px 12px;
+}
+
+.freelance-task-summary small {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.freelance-task-summary strong {
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.freelance-task-card .jobseeker-opportunity-meta > span:nth-child(-n + 3) {
+  display: none;
+}
+
+.freelance-marketplace-page .empty-state {
+  width: 100%;
+  min-height: 170px;
+  gap: 8px;
+  padding: 24px;
+  box-shadow: none;
+}
+
+.freelance-marketplace-page .empty-state h1 {
+  font-size: 21px;
+}
+
+.freelance-marketplace-page .empty-state p {
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.company-freelance-page .company-list-toolbar {
+  grid-template-columns: minmax(260px, 1fr) 190px;
+}
+
+.company-freelance-page .company-opportunity-row {
+  border-left: 3px solid var(--blue);
+}
+
+.freelance-proposals-page .jobseeker-application-project > span {
+  background: var(--blue-soft);
+  color: var(--blue-dark);
+}
+
+@media (max-width: 760px) {
+  .freelance-marketplace-page .jobseeker-discovery-toolbar {
+    grid-template-columns: 1fr auto;
+  }
+
+  .freelance-marketplace-page .jobseeker-discovery-toolbar .jobseeker-search-field {
+    grid-column: 1 / -1;
+  }
+
+  .freelance-sort-select {
+    width: 100%;
+  }
+
+  .freelance-marketplace-page .freelance-task-card {
+    grid-template-columns: 44px minmax(0, 1fr);
+  }
+
+  .freelance-marketplace-page .freelance-task-card .jobseeker-opportunity-action {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .freelance-task-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .company-freelance-page .company-list-toolbar {
+    grid-template-columns: 1fr;
+  }
+}
+
+[data-theme="dark"] .work-record-tabs button.active,
+[data-theme="dark"] .university-training-list button.active,
+[data-theme="dark"] .work-milestone-index,
+[data-theme="dark"] .evidence-card-mark {
+  background: rgba(106, 100, 255, 0.18);
+  color: #c7c4ff;
+}
+
+.company-milestone-builder {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.company-milestone-builder legend {
+  padding: 0 6px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.company-milestone-builder > p,
+.company-milestone-builder-list article > p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.company-milestone-builder-list {
+  display: grid;
+  gap: 12px;
+}
+
+.company-milestone-builder-list article {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border-left: 3px solid var(--accent);
+  background: var(--surface-soft);
+}
+
+.company-milestone-builder-list article > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.opportunity-milestone-plan {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.opportunity-milestone-plan li {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.opportunity-milestone-plan li > span {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 1px solid var(--border-strong);
+  color: var(--accent-strong);
+  font-weight: 800;
+}
+
+.opportunity-milestone-plan li div {
+  display: grid;
+  gap: 4px;
+}
+
+.opportunity-milestone-plan small {
+  color: var(--muted);
+}
+
+.opportunity-milestone-plan p {
+  margin: 4px 0 0;
+}
+
+.team-responsibility-record,
+.university-milestone-summary {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-soft);
+}
+
+.team-responsibility-record > header,
+.university-milestone-summary > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.team-responsibility-record > header {
+  align-items: flex-start;
+  flex-direction: column;
+}
+
+.team-responsibility-record > header span,
+.team-completed-contribution > span,
+.university-milestone-summary > header span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.team-responsibility-record p,
+.team-completed-contribution p {
+  margin: 0;
+}
+
+.team-completed-contribution {
+  display: grid;
+  gap: 5px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.university-milestone-summary > header h3 {
+  margin: 3px 0 0;
+}
+
+.university-milestone-summary > div {
+  display: grid;
+  gap: 10px;
+}
+
+.university-milestone-summary article {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.university-milestone-summary article > span {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  background: var(--surface);
+  color: var(--accent-strong);
+  font-weight: 800;
+}
+
+.training-report-panel {
+  display: grid;
+  gap: 16px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.training-report-panel > header,
+.training-report-list > article > header,
+.training-report-form > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.training-report-panel > header > div:first-child,
+.training-report-form > header {
+  display: grid;
+  justify-content: start;
+  gap: 3px;
+}
+
+.training-report-panel > header span,
+.training-report-form > header span,
+.training-supervisor-card > header > span {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.training-report-panel h3 {
+  margin: 0;
+}
+
+.training-report-counts {
+  display: grid;
+  justify-items: end;
+}
+
+.training-report-counts strong {
+  color: var(--blue-dark);
+  font-size: 1.65rem;
+}
+
+.training-report-counts span {
+  text-transform: none;
+}
+
+.training-report-overview,
+.university-training-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.training-report-overview article,
+.university-training-kpis article {
+  display: grid;
+  align-content: center;
+  gap: 5px;
+  min-height: 88px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-soft);
+  padding: 14px;
+}
+
+.training-report-overview svg {
+  color: var(--blue);
+}
+
+.training-report-overview span,
+.university-training-kpis span {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.training-report-overview strong,
+.university-training-kpis strong {
+  font-size: 1.2rem;
+}
+
+.training-supervisor-card {
+  display: grid;
+  gap: 14px;
+  border-left: 3px solid var(--blue);
+  background: var(--surface-soft);
+  padding: 14px 16px;
+}
+
+.training-supervisor-card > header {
+  display: grid;
+  gap: 3px;
+}
+
+.training-supervisor-card .company-form-grid {
+  align-items: end;
+}
+
+.training-supervisor-card .button {
+  align-self: end;
+}
+
+.training-report-list {
+  display: grid;
+  gap: 12px;
+}
+
+.training-report-list > article {
+  display: grid;
+  gap: 13px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.training-report-list > article > header > div {
+  display: grid;
+  gap: 3px;
+}
+
+.training-report-list > article > header span {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.training-report-list dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.training-report-list dl > div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.training-report-list dt {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.training-report-list dd {
+  margin: 0;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.training-report-list > article > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  color: var(--blue-dark);
+  font-weight: 800;
+}
+
+.training-report-review,
+.training-report-form {
+  display: grid;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.training-report-review > div,
+.training-report-form > div:last-child {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.university-training-page {
+  max-width: 1500px;
+}
+
+.university-training-kpis {
+  margin-bottom: 12px;
+}
+
+.university-training-toolbar {
+  min-height: 46px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  padding: 0 14px;
+}
+
+.university-training-toolbar svg {
+  color: var(--muted);
+}
+
+.university-training-toolbar input {
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  outline: 0;
+}
+
+.training-academic-confirmation {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-soft);
+  padding: 13px 14px;
+  font-weight: 700;
+}
+
+.training-academic-confirmation input {
+  margin-top: 3px;
+}
+
+@media (max-width: 700px) {
+  .training-report-overview,
+  .university-training-kpis,
+  .training-report-list dl {
+    grid-template-columns: 1fr;
+  }
+
+  .training-report-panel > header,
+  .training-report-list > article > header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .training-report-counts {
+    justify-items: start;
+  }
+}
+
+@media print {
+  .university-portal .company-sidebar,
+  .university-portal .page-header,
+  .university-training-kpis,
+  .university-training-toolbar,
+  .university-training-list,
+  .university-training-contact-actions,
+  .university-progress-form,
+  .university-approval-form,
+  .training-report-review,
+  .portal-content-menu-button {
+    display: none !important;
+  }
+
+  .university-portal,
+  .university-portal .company-workspace,
+  .university-portal .company-content,
+  .university-training-layout {
+    display: block;
+    background: #ffffff;
+  }
+
+  .university-training-record {
+    border: 0;
+    padding: 0;
+  }
+}
+
+.university-milestone-summary article > div {
+  display: grid;
+  gap: 5px;
+}
+
+.university-milestone-summary article header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.university-milestone-summary article p,
+.university-milestone-summary article small {
+  margin: 0;
+  color: var(--muted);
+}
+
+.freelance-terms-fields {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.company-field-readout {
+  min-height: 78px;
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-soft);
+  padding: 11px 13px;
+}
+
+.company-field-readout > span,
+.company-field-readout > small {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.company-field-readout > strong {
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.application-cv-upload {
+  position: relative;
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 7px;
+  background: var(--surface-soft);
+  padding: 13px 14px;
+  cursor: pointer;
+}
+
+.application-cv-upload:hover {
+  border-color: var(--blue);
+}
+
+.application-cv-upload:focus-within {
+  outline: 3px solid color-mix(in srgb, var(--blue) 24%, transparent);
+  outline-offset: 2px;
+}
+
+.application-cv-upload > input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.application-cv-copy,
+.application-cv-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.application-cv-copy > svg {
+  flex: 0 0 auto;
+  color: var(--blue);
+}
+
+.application-cv-copy > span {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.application-cv-copy small {
+  color: var(--muted);
+}
+
+.application-cv-picker {
+  max-width: min(48%, 310px);
+  color: var(--blue);
+  font-size: 0.82rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.application-cv-picker svg {
+  flex: 0 0 auto;
+}
+
+.freelance-terms-fields legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 7px;
+  font-weight: 800;
+}
+
+.freelance-proposal-fields,
+.freelance-proposal-summary,
+.freelance-proposal-inline {
+  display: grid;
+  gap: 10px;
+}
+
+.freelance-proposal-fields {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.freelance-brief-reference {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--border);
+}
+
+.freelance-brief-reference > span {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  background: var(--surface-soft);
+  padding: 11px 12px;
+}
+
+.freelance-brief-reference small {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.freelance-brief-reference strong {
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font-size: 0.88rem;
+}
+
+.freelance-proposal-terms {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 12px;
+}
+
+.freelance-proposal-terms legend {
+  padding: 0 6px;
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.freelance-proposal-review {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 3px 12px;
+  border-left: 3px solid var(--blue);
+  background: var(--surface-soft);
+  padding: 11px 13px;
+}
+
+.freelance-proposal-review span,
+.freelance-proposal-review small {
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.freelance-proposal-review strong {
+  grid-row: 1 / 3;
+  grid-column: 2;
+  color: var(--text);
+}
+
+.freelance-proposal-summary {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-block: 1px solid var(--border);
+  padding-block: 12px;
+}
+
+.freelance-proposal-summary > div {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 3px 8px;
+  min-width: 0;
+}
+
+.freelance-proposal-summary > div svg {
+  grid-row: 1 / 3;
+  color: var(--blue);
+}
+
+.freelance-proposal-summary span {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.freelance-proposal-inline {
+  grid-template-columns: repeat(2, minmax(0, max-content));
+  align-items: center;
+  color: var(--muted);
+}
+
+.freelance-proposal-inline > span {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 2px 7px;
+  min-width: 0;
+}
+
+.freelance-proposal-inline svg {
+  grid-row: 1 / 3;
+  color: var(--blue);
+}
+
+.freelance-proposal-inline small {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.freelance-proposal-inline strong {
+  color: var(--text);
+  font-size: 0.82rem;
+}
+
+.freelance-opportunity-terms {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.company-freelance-brief {
+  display: grid;
+  grid-template-columns: minmax(150px, 1.2fr) repeat(3, minmax(130px, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--border);
+}
+
+.company-freelance-brief > div {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 3px 9px;
+  min-width: 0;
+  padding: 14px 16px;
+  background: var(--surface);
+}
+
+.company-freelance-brief > div:first-child {
+  grid-template-columns: 1fr;
+}
+
+.company-freelance-brief svg {
+  grid-row: 1 / 3;
+  color: var(--blue);
+}
+
+.company-freelance-brief span {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.company-team-controls {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.company-proposal-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.company-proposal-controls > button {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--muted);
+  padding: 0 11px;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.company-proposal-controls > button:hover,
+.company-proposal-controls > button.active {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.company-proposal-controls > button strong {
+  min-width: 20px;
+  border-radius: 4px;
+  background: var(--surface-soft);
+  padding: 2px 5px;
+  color: inherit;
+  text-align: center;
+}
+
+.company-proposal-sort {
+  min-height: 42px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  padding: 0 10px;
+}
+
+.company-proposal-sort svg {
+  color: var(--muted);
+}
+
+.company-proposal-sort select {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+}
+
+.company-freelance-proposal-row > .freelance-proposal-inline {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.company-freelance-proposal-row > p {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+
+.company-freelance-proposal-row > .company-proposal-statuses {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+.company-proposal-statuses {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.company-freelance-proposal-row > .company-team-actions {
+  grid-column: 4;
+  grid-row: 1;
+}
+
+.company-freelance-proposal-row.is-shortlisted {
+  box-shadow: inset 3px 0 0 var(--blue);
+}
+
+.company-freelance-proposal-row.is-compared {
+  background: color-mix(in srgb, var(--blue) 6%, var(--surface));
+}
+
+.company-view-proposal {
+  min-width: 126px;
+}
+
+.company-proposal-compare-tray {
+  position: sticky;
+  bottom: 14px;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14);
+  padding: 11px 12px;
+}
+
+.company-proposal-compare-tray > div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.company-proposal-compare-tray > div:first-child svg {
+  color: var(--blue);
+}
+
+.company-proposal-compare-tray small {
+  color: var(--muted);
+}
+
+.company-proposal-compare-dialog {
+  width: min(calc(100% - 32px), 1120px);
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  align-self: center;
+  margin: auto;
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.22);
+  overflow: hidden;
+}
+
+.company-proposal-compare-dialog > header,
+.company-proposal-compare-dialog > footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+}
+
+.company-proposal-compare-dialog > header {
+  border-bottom: 1px solid var(--border);
+}
+
+.company-proposal-compare-dialog > footer {
+  border-top: 1px solid var(--border);
+}
+
+.company-proposal-compare-dialog > header span {
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.company-proposal-compare-dialog h2 {
+  margin: 3px 0 0;
+  font-size: 1.25rem;
+}
+
+.company-proposal-compare-dialog > footer small {
+  max-width: 680px;
+  color: var(--muted);
+}
+
+.company-proposal-compare-table {
+  overflow: auto;
+}
+
+.company-proposal-compare-table table {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+}
+
+.company-proposal-compare-table th,
+.company-proposal-compare-table td {
+  border-bottom: 1px solid var(--border);
+  padding: 12px 14px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.company-proposal-compare-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+
+.company-proposal-compare-table td {
+  color: var(--text);
+  font-size: 0.84rem;
+}
+
+.company-proposal-compare-table td > strong,
+.company-proposal-compare-table td > small {
+  display: block;
+}
+
+.company-proposal-compare-table td > small {
+  margin-top: 3px;
+  color: var(--muted);
+}
+
+.company-proposal-compare-table td > p {
+  max-width: 320px;
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: var(--muted);
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.company-proposal-accept-dialog {
+  width: min(calc(100% - 32px), 620px);
+  align-self: center;
+  margin: auto;
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.22);
+  overflow: hidden;
+}
+
+.company-proposal-accept-dialog > header,
+.company-proposal-accept-dialog > footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 18px;
+}
+
+.company-proposal-accept-dialog > header {
+  border-bottom: 1px solid var(--border);
+}
+
+.company-proposal-accept-dialog > header span,
+.company-proposal-accept-terms span {
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.company-proposal-accept-dialog h2 {
+  margin: 3px 0 0;
+  font-size: 1.25rem;
+}
+
+.company-proposal-accept-dialog > p {
+  margin: 0;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  padding: 14px 18px;
+}
+
+.company-proposal-accept-dialog > footer {
+  justify-content: flex-end;
+  border-top: 1px solid var(--border);
+}
+
+.company-proposal-accept-terms {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.company-proposal-accept-terms > div {
+  display: grid;
+  gap: 4px;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 18px;
+}
+
+.company-proposal-accept-terms > div:nth-child(2n) {
+  border-right: 0;
+}
+
+.company-proposal-accept-terms > div:nth-last-child(-n + 2) {
+  border-bottom: 0;
+}
+
+.company-application-decision-dialog {
+  width: min(calc(100% - 32px), 620px);
+  align-self: center;
+  margin: auto;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.22);
+}
+
+.company-application-decision-dialog > header,
+.company-application-decision-dialog form > footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 18px;
+}
+
+.company-application-decision-dialog > header {
+  border-bottom: 1px solid var(--border);
+}
+
+.company-application-decision-dialog > header span,
+.company-application-decision-summary span,
+.company-application-decision-dialog .company-proposal-accept-terms span {
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.company-application-decision-dialog h2 {
+  margin: 3px 0 0;
+  font-size: 1.25rem;
+}
+
+.company-application-decision-dialog form {
+  display: grid;
+}
+
+.company-application-decision-dialog form > p,
+.company-application-decision-dialog form > .field,
+.company-application-decision-summary {
+  margin: 0;
+  padding: 16px 18px;
+}
+
+.company-application-decision-summary {
+  display: grid;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.company-application-decision-dialog form > p {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.company-application-decision-dialog form > footer {
+  justify-content: flex-end;
+  border-top: 1px solid var(--border);
+}
+
+.company-application-decision-dialog .company-proposal-accept-terms {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.company-application-decision-dialog .company-proposal-accept-terms > div {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+}
+
+.company-application-decision-dialog .company-proposal-accept-terms svg {
+  grid-row: 1 / 3;
+  color: var(--blue);
+}
+
+.company-decision-reject-confirm {
+  border-color: #c94444;
+  background: #c94444;
+  color: #ffffff;
+}
+
+.company-decision-reject-confirm:hover:not(:disabled) {
+  border-color: #a93636;
+  background: #a93636;
+}
+
+.jobseeker-application-table .freelance-proposal-inline {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.freelance-agreement {
+  display: grid;
+  gap: 14px;
+  border-block: 1px solid var(--border);
+  padding-block: 16px;
+}
+
+.freelance-agreement > header {
+  display: grid;
+  gap: 3px;
+}
+
+.freelance-agreement > header span,
+.freelance-agreement article span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.freelance-agreement > div {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--border);
+}
+
+.freelance-agreement article {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 5px 9px;
+  min-width: 0;
+  padding: 14px;
+  background: var(--surface);
+}
+
+.freelance-agreement article small {
+  grid-column: 2;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.freelance-agreement article svg {
+  grid-row: 1 / 3;
+  color: var(--blue);
+}
+
+.freelance-agreement > small {
+  color: var(--muted);
+}
+
+@media (max-width: 600px) {
+  .freelance-proposal-fields,
+  .freelance-proposal-summary,
+  .freelance-brief-reference,
+  .freelance-opportunity-terms,
+  .freelance-agreement > div {
+    grid-template-columns: 1fr;
+  }
+
+  .freelance-proposal-inline,
+  .company-team-controls,
+  .company-freelance-brief {
+    grid-template-columns: 1fr;
+  }
+
+  .company-freelance-proposal-row > .freelance-proposal-inline,
+  .company-freelance-proposal-row > p,
+  .company-freelance-proposal-row > .company-proposal-statuses,
+  .company-freelance-proposal-row > .company-team-actions {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .application-cv-upload {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .application-cv-picker {
+    max-width: 100%;
+  }
+
+  .company-proposal-controls,
+  .company-proposal-compare-tray,
+  .company-proposal-compare-tray > div,
+  .company-proposal-compare-dialog > footer,
+  .company-proposal-accept-dialog > footer,
+  .company-application-decision-dialog form > footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .company-proposal-controls > button,
+  .company-proposal-sort,
+  .company-proposal-compare-tray .button {
+    width: 100%;
+  }
+
+  .company-proposal-compare-dialog {
+    width: calc(100% - 16px);
+    max-height: calc(100vh - 16px);
+  }
+
+  .company-proposal-accept-dialog {
+    width: calc(100% - 16px);
+  }
+
+  .company-proposal-accept-terms,
+  .company-application-decision-dialog .company-proposal-accept-terms {
+    grid-template-columns: 1fr;
+  }
+
+  .company-application-decision-dialog {
+    width: calc(100% - 16px);
+  }
+
+  .company-proposal-accept-terms > div,
+  .company-proposal-accept-terms > div:nth-child(2n),
+  .company-proposal-accept-terms > div:nth-last-child(-n + 2) {
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .company-proposal-accept-terms > div:last-child {
+    border-bottom: 0;
+  }
+
+  .university-milestone-summary article header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 960px) {
+  .company-freelance-proposal-row > .freelance-proposal-inline,
+  .company-freelance-proposal-row > p,
+  .company-freelance-proposal-row > .company-proposal-statuses,
+  .company-freelance-proposal-row > .company-team-actions {
+    grid-column: auto;
+    grid-row: auto;
+  }
+}
+
+@media (min-width: 961px) and (max-width: 1180px) {
+  .company-freelance-proposal-row {
+    grid-template-columns: minmax(190px, 1fr) minmax(220px, 1fr) auto;
+  }
+
+  .company-freelance-proposal-row > .freelance-proposal-inline {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .company-freelance-proposal-row > .company-proposal-statuses {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .company-freelance-proposal-row > .company-team-actions {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .company-freelance-proposal-row > p {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+

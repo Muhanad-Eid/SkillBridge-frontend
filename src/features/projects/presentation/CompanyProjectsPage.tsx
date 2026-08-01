@@ -59,6 +59,7 @@ import {
   updateProjectAsync,
   updateProjectStatusAsync,
 } from "../infrastructure/projectApi";
+import FreelanceWorkspaceNav from "./FreelanceWorkspaceNav";
 
 type FormMode = "create" | "edit";
 
@@ -733,6 +734,8 @@ export default function CompanyProjectsPage({
           </Button>
         }
       />
+
+      {isFreelanceView ? <FreelanceWorkspaceNav /> : null}
 
       {message ? <div className="notice notice-success">{message}</div> : null}
       {error ? <div className="notice notice-error">{error}</div> : null}

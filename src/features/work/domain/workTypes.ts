@@ -120,7 +120,7 @@ export type WorkRecord = {
   hasEvidenceCard: boolean;
   availableSkills: WorkSkill[];
   demonstratedSkills: WorkSkill[];
-  criterionEvaluations: CriterionEvaluation[];
+  criterionEvaluations?: CriterionEvaluation[];
   milestones: WorkMilestone[];
   trainingReports: TrainingReport[];
 };

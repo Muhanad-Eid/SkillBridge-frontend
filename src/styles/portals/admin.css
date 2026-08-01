@@ -1,0 +1,1250 @@
+/* Administrator portal shell, dashboards, lists, and management screens. */
+
+/* Admin portal v2 */
+.admin-portal.admin-portal-v2 {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 264px minmax(0, 1fr);
+  background: #f3f5f7;
+  color: var(--text);
+}
+
+.admin-sidebar-v2 {
+  position: sticky;
+  top: 0;
+  min-width: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  background: #071d2e;
+  color: #f8fafc;
+  padding: 22px 16px 18px;
+  overflow: hidden;
+  z-index: 12;
+}
+
+.admin-brand-v2 {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  color: #ffffff;
+  padding: 0 8px;
+}
+
+.admin-brand-v2 .brand-mark {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  background: transparent;
+}
+
+.admin-brand-v2 strong,
+.admin-brand-v2 small {
+  display: block;
+}
+
+.admin-brand-v2 strong {
+  font-size: 16px;
+}
+
+.admin-brand-v2 small {
+  margin-top: 2px;
+  color: #aebdca;
+  font-size: 11px;
+}
+
+.admin-authority-card {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #2b4357;
+  border-radius: 4px;
+  background: #0e2a42;
+  padding: 12px;
+}
+
+.admin-authority-card > span {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  background: var(--gold);
+  color: #102236;
+}
+
+.admin-authority-card > div {
+  min-width: 0;
+}
+
+.admin-authority-card strong,
+.admin-authority-card small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-authority-card strong {
+  font-size: 12px;
+}
+
+.admin-authority-card small {
+  margin-top: 3px;
+  color: #aebdca;
+  font-size: 10px;
+}
+
+.admin-authority-card > svg {
+  color: var(--gold);
+}
+
+.admin-sidebar-nav {
+  min-height: 0;
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  overflow-y: auto;
+}
+
+.admin-sidebar-nav a {
+  min-height: 43px;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  border-radius: 4px;
+  color: #b8c5d0;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 0 11px;
+}
+
+.admin-sidebar-nav a:hover {
+  background: #102d46;
+  color: #ffffff;
+}
+
+.admin-sidebar-nav a.active {
+  background: var(--gold);
+  color: #102236;
+}
+
+.admin-nav-badge {
+  min-width: 21px;
+  height: 21px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #d92d20;
+  color: #ffffff;
+  font-size: 10px;
+  line-height: 1;
+  padding: 0 6px;
+}
+
+.admin-sidebar-footer {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 38px;
+  align-items: center;
+  gap: 8px;
+  border-top: 1px solid #294056;
+  padding: 16px 4px 0;
+  margin-top: auto;
+}
+
+.admin-sidebar-footer > div {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+}
+
+.admin-sidebar-footer span,
+.admin-sidebar-footer strong,
+.admin-sidebar-footer small {
+  min-width: 0;
+  display: block;
+}
+
+.admin-sidebar-footer strong,
+.admin-sidebar-footer small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-sidebar-footer strong {
+  font-size: 12px;
+}
+
+.admin-sidebar-footer small {
+  margin-top: 2px;
+  color: #96a9b8;
+  font-size: 10px;
+}
+
+.admin-sidebar-v2 .admin-logout-button {
+  width: 38px;
+  min-width: 38px;
+  height: 38px;
+  min-height: 38px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid #385064;
+  background: transparent;
+  color: #c4ced7;
+  padding: 0;
+}
+
+.admin-workspace-v2 {
+  min-width: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-content.admin-content-v2 {
+  width: 100%;
+  flex: 1;
+  padding: clamp(24px, 3vw, 40px);
+}
+
+.admin-portal-v2 .page {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  gap: 24px;
+}
+
+.admin-portal-v2 .page-header {
+  align-items: center;
+}
+
+.admin-portal-v2 .page-header h1 {
+  font-size: 34px;
+  line-height: 1.12;
+}
+
+.admin-portal-v2 .card-eyebrow {
+  color: var(--gold-dark) !important;
+  font-size: 11px;
+}
+
+.admin-portal-v2 .button {
+  min-height: 40px;
+  border-radius: 4px;
+  box-shadow: none;
+  font-size: 13px;
+  padding: 0 14px;
+}
+
+.admin-portal-v2 .button-primary {
+  border-color: var(--gold);
+  background: var(--gold);
+  color: #102236;
+}
+
+.admin-portal-v2 .button-primary:hover {
+  border-color: #dfaf2f;
+  background: #dfaf2f;
+}
+
+.admin-portal-v2 .button-ghost {
+  color: #59636f;
+}
+
+.admin-portal-v2 .button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.admin-kpi-grid-v2 {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.admin-kpi-grid-v2 article {
+  min-width: 0;
+  min-height: 112px;
+  display: grid;
+  align-content: center;
+  gap: 7px;
+  border: 1px solid #dfe2e6;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 16px;
+}
+
+.admin-kpi-grid-v2 article > span {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #667085;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.admin-kpi-grid-v2 article > span svg {
+  color: var(--gold-dark);
+  flex: 0 0 auto;
+}
+
+.admin-kpi-grid-v2 article > strong {
+  font-size: 30px;
+  line-height: 1;
+}
+
+.admin-kpi-grid-v2 article > small {
+  overflow: hidden;
+  color: #7d8792;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-attention-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.admin-attention-grid article {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 36px;
+  align-items: center;
+  gap: 11px;
+  border: 1px solid #dfe2e6;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 14px;
+}
+
+.admin-attention-grid article.warning {
+  border-color: #e8c879;
+  background: #fffaf0;
+}
+
+.admin-attention-grid article.danger {
+  border-color: #f2b8b2;
+  background: #fff5f4;
+}
+
+.admin-attention-grid article > span {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  background: #f1f3f5;
+  color: #59636f;
+}
+
+.admin-attention-grid .warning > span {
+  background: #fff0c9;
+  color: #9a6700;
+}
+
+.admin-attention-grid .danger > span {
+  background: #fee4e2;
+  color: #b42318;
+}
+
+.admin-attention-grid strong,
+.admin-attention-grid p {
+  display: block;
+  margin: 0;
+}
+
+.admin-attention-grid strong {
+  font-size: 12px;
+}
+
+.admin-attention-grid p {
+  margin-top: 3px;
+  color: #707a85;
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.admin-attention-grid .button {
+  width: 36px;
+  min-width: 36px;
+  padding: 0;
+}
+
+.admin-dashboard-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
+  align-items: start;
+  gap: 16px;
+}
+
+.admin-dashboard-columns.lower {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.admin-ops-panel,
+.admin-health-panel {
+  min-width: 0;
+  border: 1px solid #dfe2e6;
+  border-radius: 8px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.admin-ops-panel > header,
+.admin-health-panel > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid #e6e8eb;
+  padding: 16px 18px;
+}
+
+.admin-ops-panel > header span,
+.admin-health-panel > header span {
+  color: var(--gold-dark);
+  font-size: 9px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.admin-ops-panel > header h2,
+.admin-health-panel > header h2 {
+  margin: 3px 0 0;
+  font-size: 16px;
+}
+
+.admin-ops-list,
+.admin-project-activity-list {
+  display: grid;
+}
+
+.admin-ops-list article {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 11px;
+  border-bottom: 1px solid #edf0f2;
+  padding: 13px 16px;
+}
+
+.admin-ops-list article:last-child,
+.admin-project-activity-list article:last-child {
+  border-bottom: 0;
+}
+
+.admin-entity-mark {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  background: #fce8e6;
+  color: #9e2017;
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.admin-ops-list article > div {
+  min-width: 0;
+}
+
+.admin-ops-list article > div strong,
+.admin-ops-list article > div small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-ops-list article > div strong {
+  font-size: 12px;
+}
+
+.admin-ops-list article > div small {
+  margin-top: 3px;
+  color: #7d8792;
+  font-size: 10px;
+}
+
+.admin-empty-ops {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  color: #667085;
+  padding: 36px 20px;
+  text-align: center;
+}
+
+.admin-empty-ops svg {
+  color: #1d9568;
+}
+
+.admin-empty-ops strong {
+  color: #2a323b;
+  font-size: 13px;
+}
+
+.admin-empty-ops span {
+  font-size: 10px;
+}
+
+.admin-health-panel > div {
+  display: grid;
+  gap: 17px;
+  padding: 20px;
+}
+
+.admin-health-panel > div article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 7px 10px;
+}
+
+.admin-health-panel > div span {
+  color: #667085;
+  font-size: 10px;
+}
+
+.admin-health-panel > div strong {
+  font-size: 12px;
+}
+
+.admin-health-panel > div article > div {
+  grid-column: 1 / -1;
+  height: 7px;
+  border-radius: 999px;
+  background: #e7eaed;
+  overflow: hidden;
+}
+
+.admin-health-panel > div b {
+  height: 100%;
+  display: block;
+  border-radius: inherit;
+  background: #1d9568;
+}
+
+.admin-health-panel > .button {
+  width: calc(100% - 36px);
+  margin: 0 18px 18px;
+}
+
+.admin-project-activity-list article {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 110px auto;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid #edf0f2;
+  padding: 14px 18px;
+}
+
+.admin-project-activity-list article > div {
+  min-width: 0;
+}
+
+.admin-project-activity-list article > div strong,
+.admin-project-activity-list article > div span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-project-activity-list article > div strong {
+  font-size: 12px;
+}
+
+.admin-project-activity-list article > div span,
+.admin-project-activity-list article > span {
+  margin-top: 3px;
+  color: #7d8792;
+  font-size: 10px;
+}
+
+.admin-portal-v2 .admin-list-page {
+  gap: 22px;
+}
+
+.admin-portal-v2 .admin-list-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.admin-portal-v2 .admin-list-stats article {
+  min-height: 92px;
+  display: grid;
+  align-content: center;
+  gap: 7px;
+  border: 1px solid #dfe2e6;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 15px 18px;
+}
+
+.admin-portal-v2 .admin-list-stats article.needs-attention {
+  border-color: #f2b8b2;
+  background: #fff5f4;
+}
+
+.admin-portal-v2 .admin-list-stats span {
+  color: #667085;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.admin-portal-v2 .admin-list-stats strong {
+  color: #1d242c;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.admin-portal-v2 .admin-toolbar,
+.admin-toolbar-v2 {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(160px, 220px);
+  gap: 10px;
+  border: 1px solid #dfe2e6;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 11px;
+}
+
+.admin-portal-v2 .admin-toolbar input,
+.admin-portal-v2 .admin-toolbar select,
+.admin-toolbar-v2 label,
+.admin-toolbar-v2 select {
+  min-height: 42px;
+  border: 1px solid #d5dade;
+  border-radius: 7px;
+  background: #f8f9fa;
+}
+
+.admin-portal-v2 .admin-toolbar input,
+.admin-portal-v2 .admin-toolbar select,
+.admin-toolbar-v2 select {
+  color: #37404a;
+  padding: 0 11px;
+}
+
+.admin-toolbar-v2 label {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #7a838d;
+  padding: 0 11px;
+}
+
+.admin-toolbar-v2 label input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.admin-portal-v2 .admin-edit-card {
+  gap: 16px;
+  border: 1px solid #e0b7b3;
+  border-radius: 8px;
+  background: #fffafa;
+  box-shadow: none;
+  padding: 20px;
+}
+
+.admin-portal-v2 .admin-edit-card > div:first-child span {
+  color: var(--gold-dark);
+  font-size: 10px;
+}
+
+.admin-portal-v2 .admin-edit-card > div:first-child strong {
+  font-size: 20px;
+}
+
+.admin-portal-v2 .admin-edit-card > div:first-child small {
+  margin-top: 4px;
+  color: #737d87;
+  font-size: 10px;
+}
+
+.admin-portal-v2 .admin-edit-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.admin-portal-v2 .table-card.admin-table-card {
+  border: 1px solid #dfe2e6;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.admin-portal-v2 .admin-table-card .table-row {
+  min-width: 0;
+  grid-template-columns: minmax(280px, 1fr) minmax(145px, auto) auto;
+  gap: 16px;
+  border-bottom: 1px solid #e8ebee;
+  padding: 15px 18px;
+}
+
+.admin-portal-v2 .admin-table-card .table-row:last-child {
+  border-bottom: 0;
+}
+
+.admin-portal-v2 .admin-table-card .table-row > div:first-child {
+  min-width: 0;
+}
+
+.admin-portal-v2 .admin-table-card .table-row > div:first-child strong,
+.admin-portal-v2 .admin-table-card .table-row > div:first-child span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-portal-v2 .admin-table-card .table-row > div:first-child strong {
+  font-size: 13px;
+}
+
+.admin-portal-v2 .admin-table-card .table-row > div:first-child span {
+  color: #6d7782;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.admin-portal-v2 .admin-status-stack {
+  align-items: flex-start;
+}
+
+.admin-portal-v2 .admin-status-stack > span {
+  color: #7a838d;
+  font-size: 9px;
+}
+
+.admin-portal-v2 .admin-row-actions {
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.admin-portal-v2 .admin-row-actions .button {
+  min-height: 36px;
+  padding: 0 11px;
+}
+
+.admin-review-table-v2 {
+  border: 1px solid #dfe2e6;
+  border-radius: 8px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.admin-review-head,
+.admin-review-table-v2 > article {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(170px, 0.7fr) 90px 100px 84px;
+  align-items: center;
+  gap: 14px;
+}
+
+.admin-review-head {
+  min-height: 42px;
+  border-bottom: 1px solid #dfe2e6;
+  background: #f7f8f9;
+  color: #667085;
+  font-size: 9px;
+  font-weight: 950;
+  text-transform: uppercase;
+  padding: 0 16px;
+}
+
+.admin-review-table-v2 > article {
+  min-width: 0;
+  border-bottom: 1px solid #e8ebee;
+  padding: 15px 16px;
+}
+
+.admin-review-table-v2 > article:last-child {
+  border-bottom: 0;
+}
+
+.admin-review-table-v2 > article > div {
+  min-width: 0;
+}
+
+.admin-review-table-v2 > article > div:first-child strong,
+.admin-review-table-v2 > article > div:first-child p,
+.admin-review-table-v2 > article > div:first-child small,
+.admin-review-table-v2 > article > div:nth-child(2) strong,
+.admin-review-table-v2 > article > div:nth-child(2) span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-review-table-v2 > article > div:first-child strong,
+.admin-review-table-v2 > article > div:nth-child(2) strong {
+  font-size: 12px;
+}
+
+.admin-review-table-v2 > article > div:first-child p {
+  margin: 4px 0;
+  color: #59636f;
+  font-size: 10px;
+}
+
+.admin-review-table-v2 > article > div:first-child small,
+.admin-review-table-v2 > article > div:nth-child(2) span,
+.admin-review-table-v2 > article time {
+  color: #7d8792;
+  font-size: 9px;
+}
+
+.admin-review-table-v2 .status-badge {
+  width: max-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.admin-icon-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.admin-icon-actions .button {
+  width: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+}
+
+/* Keep the job seeker v2 shell above older compatibility rules. */
+.jobseeker-portal.jobseeker-portal-v2 {
+  background: #f3f5f7;
+}
+
+.jobseeker-portal.jobseeker-portal-v2 .page {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+.jobseeker-portal.jobseeker-portal-v2 .card-eyebrow {
+  color: var(--gold-dark) !important;
+}
+
+@media (max-width: 1180px) {
+  .admin-kpi-grid-v2 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .admin-attention-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 960px) {
+  .admin-portal.admin-portal-v2 {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-sidebar-v2 {
+    position: static;
+    height: auto;
+    gap: 14px;
+    padding: 14px 18px;
+  }
+
+  .admin-brand-v2 {
+    padding: 0;
+  }
+
+  .admin-authority-card {
+    display: none;
+  }
+
+  .admin-sidebar-nav {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+  }
+
+  .admin-sidebar-nav a {
+    min-width: max-content;
+    grid-template-columns: 19px auto auto;
+  }
+
+  .admin-sidebar-footer {
+    position: absolute;
+    top: 16px;
+    right: 18px;
+    width: auto;
+    display: flex;
+    border: 0;
+    padding: 0;
+    margin: 0;
+  }
+
+  .admin-sidebar-footer > div {
+    display: none;
+  }
+
+  .admin-dashboard-columns,
+  .admin-dashboard-columns.lower {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-review-head {
+    display: none;
+  }
+
+  .admin-review-table-v2 > article {
+    grid-template-columns: minmax(220px, 1fr) minmax(150px, 0.7fr) 90px 80px;
+  }
+
+  .admin-review-table-v2 > article .admin-icon-actions {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 720px) {
+  .admin-content.admin-content-v2 {
+    padding: 22px 16px 36px;
+  }
+
+  .admin-portal-v2 .page-header {
+    align-items: flex-start;
+  }
+
+  .admin-portal-v2 .page-header h1 {
+    font-size: 29px;
+  }
+
+  .admin-portal-v2 .page-actions,
+  .admin-portal-v2 .page-actions .button {
+    width: 100%;
+  }
+
+  .admin-kpi-grid-v2,
+  .admin-portal-v2 .admin-list-stats,
+  .admin-portal-v2 .admin-toolbar,
+  .admin-toolbar-v2 {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-kpi-grid-v2 article,
+  .admin-portal-v2 .admin-list-stats article {
+    min-height: 84px;
+  }
+
+  .admin-ops-list article {
+    grid-template-columns: 36px minmax(0, 1fr) auto;
+  }
+
+  .admin-ops-list article > .button {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .admin-project-activity-list article {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .admin-project-activity-list article > span {
+    display: none;
+  }
+
+  .admin-portal-v2 .table-card.admin-table-card {
+    border: 0;
+    background: transparent;
+    overflow: visible;
+  }
+
+  .admin-portal-v2 .admin-table-card .table-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    border: 1px solid #dfe2e6;
+    border-radius: 8px;
+    background: #ffffff;
+    margin-bottom: 10px;
+    padding: 15px;
+  }
+
+  .admin-portal-v2 .admin-row-actions {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .admin-portal-v2 .admin-row-actions .button:not(.button-danger) {
+    flex: 1;
+  }
+
+  .admin-portal-v2 .admin-edit-card .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-portal-v2 .admin-edit-actions {
+    flex-direction: column;
+  }
+
+  .admin-portal-v2 .admin-edit-actions .button {
+    width: 100%;
+  }
+
+  .admin-review-table-v2 {
+    border: 0;
+    background: transparent;
+    overflow: visible;
+  }
+
+  .admin-review-table-v2 > article {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+    border: 1px solid #dfe2e6;
+    border-radius: 8px;
+    background: #ffffff;
+    margin-bottom: 10px;
+    padding: 15px;
+  }
+
+  .admin-review-table-v2 > article > div:first-child,
+  .admin-review-table-v2 > article > div:nth-child(2),
+  .admin-review-table-v2 > article .admin-icon-actions {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Keep the dedicated job seeker shell authoritative over legacy portal rules. */
+.jobseeker-portal.jobseeker-portal-v2 {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 252px minmax(0, 1fr);
+  background: #f3f5f7;
+}
+
+.jobseeker-portal.jobseeker-portal-v2 .page {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+.jobseeker-portal.jobseeker-portal-v2 .card-eyebrow {
+  color: var(--gold-dark) !important;
+}
+
+@media (max-width: 960px) {
+  .jobseeker-portal.jobseeker-portal-v2 {
+    grid-template-columns: 1fr;
+  }
+}
+.portal-mobile-menu-button,
+.portal-sidebar-close,
+.portal-sidebar-backdrop {
+  display: none;
+}
+
+.portal-desktop-sidebar-close,
+.portal-desktop-sidebar-open {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.portal-desktop-sidebar-close {
+  position: absolute;
+  top: 18px;
+  right: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.portal-desktop-sidebar-close:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.portal-desktop-sidebar-open {
+  margin-bottom: 18px;
+  border: 1px solid #d7dfe7;
+  background: #ffffff;
+  color: #243746;
+  box-shadow: none;
+}
+
+.portal-desktop-sidebar-open:hover {
+  border-color: #b8c5d1;
+  background: #f8fafc;
+}
+
+@media (min-width: 961px) {
+  .jobseeker-portal.jobseeker-portal-v2,
+  .company-portal-v2,
+  .admin-portal.admin-portal-v2 {
+    transition: grid-template-columns 180ms ease;
+  }
+
+  .jobseeker-portal.jobseeker-portal-v2.is-sidebar-collapsed,
+  .company-portal-v2.is-sidebar-collapsed,
+  .admin-portal.admin-portal-v2.is-sidebar-collapsed {
+    grid-template-columns: 0 minmax(0, 1fr);
+  }
+
+  .jobseeker-portal-v2.is-sidebar-collapsed > .jobseeker-sidebar,
+  .company-portal-v2.is-sidebar-collapsed > .company-sidebar,
+  .admin-portal-v2.is-sidebar-collapsed > .admin-sidebar-v2 {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-100%);
+  }
+
+  .jobseeker-sidebar,
+  .company-sidebar,
+  .admin-sidebar-v2 {
+    transition: opacity 180ms ease, transform 180ms ease;
+  }
+
+  .jobseeker-brand,
+  .company-brand,
+  .admin-brand-v2 {
+    padding-right: 46px;
+  }
+}
+
+@media (max-width: 960px) {
+  .portal-desktop-sidebar-close,
+  .portal-desktop-sidebar-open {
+    display: none;
+  }
+
+  .jobseeker-sidebar,
+  .company-sidebar,
+  .admin-sidebar-v2 {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: min(86vw, 310px);
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    padding: 22px 16px 18px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    transform: translateX(-105%);
+    transition: transform 180ms ease;
+    box-shadow: 18px 0 48px rgba(8, 15, 25, 0.3);
+    z-index: 102;
+  }
+
+  .jobseeker-sidebar.is-mobile-open,
+  .company-sidebar.is-mobile-open,
+  .admin-sidebar-v2.is-mobile-open {
+    transform: translateX(0);
+  }
+
+  .jobseeker-sidebar-nav,
+  .company-sidebar-nav,
+  .admin-sidebar-nav {
+    display: grid;
+    gap: 6px;
+    overflow: visible;
+  }
+
+  .jobseeker-sidebar-nav a,
+  .company-sidebar-nav a,
+  .admin-sidebar-nav a {
+    min-width: 0;
+  }
+
+  .jobseeker-account-summary,
+  .company-account-summary,
+  .admin-authority-card {
+    display: grid;
+  }
+
+  .jobseeker-sidebar-footer,
+  .company-sidebar-footer,
+  .admin-sidebar-footer {
+    position: static;
+    inset: auto;
+    width: 100%;
+    display: flex;
+    margin-top: auto;
+  }
+
+  .jobseeker-sidebar-footer > div,
+  .company-sidebar-footer > div,
+  .admin-sidebar-footer > div {
+    display: flex;
+  }
+
+  .portal-sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: rgba(8, 15, 25, 0.58);
+    cursor: pointer;
+    padding: 0;
+    z-index: 101;
+  }
+
+  .portal-sidebar-close,
+  .portal-mobile-menu-button {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .portal-sidebar-close {
+    position: absolute;
+    top: 20px;
+    right: 14px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+  }
+
+  .jobseeker-brand,
+  .company-brand,
+  .admin-brand-v2 {
+    padding-right: 48px;
+  }
+
+  .portal-mobile-menu-button {
+    background: #ffffff;
+    border-color: #d7dfe7;
+    color: #243746;
+  }
+
+  .portal-content-menu-button {
+    margin-bottom: 18px;
+  }
+}
+

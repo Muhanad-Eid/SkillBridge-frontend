@@ -21,7 +21,9 @@ import {
 import {
   getOpportunityTypeLabel,
   OpportunityTypes,
+  ProjectStatuses,
 } from "../../projects/domain/projectTypes";
+import FreelanceWorkspaceNav from "../../projects/presentation/FreelanceWorkspaceNav";
 import {
   MilestoneStatuses,
   TrainingReportStatuses,
@@ -144,13 +146,29 @@ function getStatusPresentation(view: WorkView, isCompany: boolean) {
   return { label: "In progress", tone: "neutral" as const };
 }
 
-function getNextAction(view: WorkView, isCompany: boolean) {
+function getNextAction(
+  record: WorkRecord,
+  view: WorkView,
+  isCompany: boolean,
+) {
   if (view === "completed") return "View completed work";
   if (view === "attention") {
     return isCompany ? "Review the latest submission" : "Address the feedback";
   }
   if (view === "review") return "Follow the approval status";
+  if (record.projectStatus === ProjectStatuses.Open) {
+    return isCompany ? "Start the handoff" : "Waiting for the provider to start";
+  }
   return isCompany ? "Manage delivery" : "Continue your work";
+}
+
+function getPrimaryActionLabel(view: WorkView, isCompany: boolean) {
+  if (view === "completed") return "View record";
+  if (view === "attention") {
+    return isCompany ? "Review submission" : "Update work";
+  }
+  if (view === "review") return "Track review";
+  return isCompany ? "Manage work" : "Continue work";
 }
 
 function getWorkIcon(type: number) {
@@ -160,9 +178,16 @@ function getWorkIcon(type: number) {
   return BriefcaseBusiness;
 }
 
-export default function WorkOverviewPage() {
+type WorkOverviewPageProps = {
+  mode?: "work" | "freelance";
+};
+
+export default function WorkOverviewPage({
+  mode = "work",
+}: WorkOverviewPageProps) {
   const { user } = useAuth();
   const isCompany = user?.role === "Company";
+  const isFreelanceView = mode === "freelance";
   const [records, setRecords] = useState<WorkRecord[]>([]);
   const [view, setView] = useState<WorkView>("all");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -199,45 +224,55 @@ export default function WorkOverviewPage() {
     };
   }, []);
 
+  const scopedRecords = useMemo(
+    () =>
+      records.filter((record) =>
+        isFreelanceView
+          ? record.opportunityType === OpportunityTypes.FreelanceTask
+          : record.opportunityType !== OpportunityTypes.FreelanceTask,
+      ),
+    [isFreelanceView, records],
+  );
+
   const recordViews = useMemo(
     () =>
       new Map(
-        records.map((record) => [
+        scopedRecords.map((record) => [
           record.applicationId,
           getWorkView(record, isCompany),
         ]),
       ),
-    [isCompany, records],
+    [isCompany, scopedRecords],
   );
 
   const counts = useMemo(
     () => ({
-      total: records.length,
-      active: records.filter(
+      total: scopedRecords.length,
+      active: scopedRecords.filter(
         (record) => recordViews.get(record.applicationId) === "active",
       ).length,
-      attention: records.filter(
+      attention: scopedRecords.filter(
         (record) => recordViews.get(record.applicationId) === "attention",
       ).length,
-      completed: records.filter(
+      completed: scopedRecords.filter(
         (record) => recordViews.get(record.applicationId) === "completed",
       ).length,
     }),
-    [recordViews, records],
+    [recordViews, scopedRecords],
   );
 
   const availableTypes = useMemo(
     () =>
-      Array.from(new Set(records.map((record) => record.opportunityType))).sort(
-        (left, right) => left - right,
-      ),
-    [records],
+      Array.from(
+        new Set(scopedRecords.map((record) => record.opportunityType)),
+      ).sort((left, right) => left - right),
+    [scopedRecords],
   );
 
   const filteredRecords = useMemo(() => {
     const value = search.trim().toLowerCase();
 
-    return records.filter((record) => {
+    return scopedRecords.filter((record) => {
       const recordView = recordViews.get(record.applicationId);
       const matchesView = view === "all" || recordView === view;
       const matchesType =
@@ -253,7 +288,7 @@ export default function WorkOverviewPage() {
 
       return matchesView && matchesType && matchesSearch;
     });
-  }, [isCompany, recordViews, records, search, typeFilter, view]);
+  }, [isCompany, recordViews, scopedRecords, search, typeFilter, view]);
 
   function buildMessagePath(record: WorkRecord) {
     const params = new URLSearchParams({
@@ -272,11 +307,13 @@ export default function WorkOverviewPage() {
 
   return (
     <section className="page work-overview-page">
-      <PageHeader title="Work" />
+      <PageHeader title={isFreelanceView ? "Freelance contracts" : "Work"} />
+
+      {isFreelanceView ? <FreelanceWorkspaceNav /> : null}
 
       <div className="work-overview-summary" aria-label="Work summary">
         <article>
-          <span>Total engagements</span>
+          <span>{isFreelanceView ? "Total contracts" : "Total engagements"}</span>
           <strong>{counts.total}</strong>
         </article>
         <article>
@@ -298,8 +335,8 @@ export default function WorkOverviewPage() {
           {workViews.map((item) => {
             const count =
               item.value === "all"
-                ? records.length
-                : records.filter(
+                ? scopedRecords.length
+                : scopedRecords.filter(
                     (record) =>
                       recordViews.get(record.applicationId) === item.value,
                   ).length;
@@ -334,18 +371,20 @@ export default function WorkOverviewPage() {
               onChange={(event) => setSearch(event.target.value)}
             />
           </label>
-          <select
-            aria-label="Filter by opportunity type"
-            value={typeFilter}
-            onChange={(event) => setTypeFilter(event.target.value)}
-          >
-            <option value="all">All opportunity types</option>
-            {availableTypes.map((type) => (
-              <option key={type} value={type}>
-                {getOpportunityTypeLabel(type)}
-              </option>
-            ))}
-          </select>
+          {!isFreelanceView ? (
+            <select
+              aria-label="Filter by opportunity type"
+              value={typeFilter}
+              onChange={(event) => setTypeFilter(event.target.value)}
+            >
+              <option value="all">All opportunity types</option>
+              {availableTypes.map((type) => (
+                <option key={type} value={type}>
+                  {getOpportunityTypeLabel(type)}
+                </option>
+              ))}
+            </select>
+          ) : null}
         </div>
       </div>
 
@@ -353,12 +392,22 @@ export default function WorkOverviewPage() {
         isLoading={isLoading}
         error={error}
         empty={!isLoading && !error && filteredRecords.length === 0}
-        emptyTitle={records.length === 0 ? "No accepted work yet" : "No work matches this view"}
+        emptyTitle={
+          scopedRecords.length === 0
+            ? isFreelanceView
+              ? "No freelance contracts yet"
+              : "No accepted work yet"
+            : "No work matches this view"
+        }
         emptyDescription={
-          records.length === 0
+          scopedRecords.length === 0
             ? isCompany
-              ? "Accepted applicants will appear here when delivery begins."
-              : "Accepted opportunities will appear here with their milestones and approvals."
+              ? isFreelanceView
+                ? "Accepted freelance proposals will appear here as contracts."
+                : "Accepted applicants will appear here when delivery begins."
+              : isFreelanceView
+                ? "Accepted proposals will appear here with delivery progress and approval."
+                : "Accepted opportunities will appear here with their milestones and approvals."
             : "Change the status, type, or search filter."
         }
       />
@@ -431,13 +480,13 @@ export default function WorkOverviewPage() {
                     ) : (
                       <Clock3 size={15} aria-hidden="true" />
                     )}
-                    {getNextAction(recordView, isCompany)}
+                    {getNextAction(record, recordView, isCompany)}
                   </span>
                 </div>
 
                 <div className="work-overview-actions">
                   <Button to={workPath} variant="primary">
-                    Open work
+                    {getPrimaryActionLabel(recordView, isCompany)}
                     <ArrowRight size={16} aria-hidden="true" />
                   </Button>
                   <Button
