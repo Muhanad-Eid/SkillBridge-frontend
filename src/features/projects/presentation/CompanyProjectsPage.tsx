@@ -519,7 +519,6 @@ export default function CompanyProjectsPage({
           milestonePlan,
           milestones,
           applicationTask: form.applicationTask.trim(),
-          hideApplicantIdentity: true,
           requiredTrainingHours,
           academicRequirements:
             form.type === OpportunityTypes.UniversityTraining
@@ -559,7 +558,6 @@ export default function CompanyProjectsPage({
           milestonePlan,
           milestones,
           applicationTask: form.applicationTask.trim(),
-          hideApplicantIdentity: true,
           requiredTrainingHours,
           academicRequirements:
             form.type === OpportunityTypes.UniversityTraining

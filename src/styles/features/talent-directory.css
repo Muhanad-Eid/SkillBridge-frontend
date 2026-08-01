@@ -10,6 +10,33 @@
   gap: 16px;
 }
 
+.profile-preview-notice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--primary);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.profile-preview-notice > svg {
+  flex: 0 0 auto;
+  color: var(--primary);
+}
+
+.profile-preview-notice > div {
+  display: grid;
+  gap: 2px;
+}
+
+.profile-preview-notice span {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
 .company-talent-toolbar {
   display: grid;
   grid-template-columns:
@@ -236,21 +263,18 @@
   font-size: 0.65rem;
 }
 
-.company-talent-signals,
-.company-talent-profile-intro dl {
+.company-talent-signals {
   display: flex;
   gap: 16px;
   margin: 0;
 }
 
-.company-talent-signals > div,
-.company-talent-profile-intro dl > div {
+.company-talent-signals > div {
   display: grid;
   gap: 3px;
 }
 
-.company-talent-signals dt,
-.company-talent-profile-intro dt {
+.company-talent-signals dt {
   display: flex;
   align-items: center;
   gap: 5px;
@@ -259,8 +283,7 @@
   font-weight: 750;
 }
 
-.company-talent-signals dd,
-.company-talent-profile-intro dd {
+.company-talent-signals dd {
   margin: 0;
   font-size: 0.9rem;
   font-weight: 850;
@@ -268,51 +291,139 @@
 
 .company-talent-profile-intro {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 14px;
+  grid-template-columns: auto minmax(0, 1fr) minmax(330px, auto);
+  gap: 18px;
   align-items: center;
-  padding: 18px 0;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
 }
 
 .company-talent-profile-avatar {
-  width: 54px;
-  height: 54px;
-  font-size: 1.2rem;
+  width: 64px;
+  height: 64px;
+  border: 1px solid color-mix(in srgb, var(--blue-dark) 20%, transparent);
+  font-size: 1.35rem;
 }
 
 .company-talent-profile-intro h1 {
-  font-size: clamp(1.25rem, 2vw, 1.65rem);
+  font-size: 1.55rem;
 }
 
-.company-talent-profile-intro dl {
-  padding-left: 20px;
+.company-talent-profile-identity {
+  min-width: 0;
+}
+
+.company-talent-profile-kicker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 5px;
+  color: var(--blue-dark);
+  font-size: 0.72rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.company-talent-profile-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 7px;
+}
+
+.company-talent-profile-meta > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.company-talent-profile-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(90px, 1fr));
+  gap: 0;
+  min-width: 330px;
+  padding-left: 18px;
   border-left: 1px solid var(--border);
+}
+
+.company-talent-profile-metrics > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 2px 16px;
+  border-left: 1px solid var(--border);
+}
+
+.company-talent-profile-metrics > div:first-child {
+  border-left: 0;
+}
+
+.company-talent-profile-metrics dt {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 750;
+  line-height: 1.35;
+}
+
+.company-talent-profile-metrics dd {
+  margin: 0;
+  color: var(--text);
+  font-size: 1.3rem;
+  font-weight: 900;
 }
 
 .company-talent-profile-body {
   display: grid;
-  grid-template-columns: minmax(250px, 0.65fr) minmax(0, 1.5fr);
-  gap: 28px;
+  grid-template-columns: minmax(260px, 0.68fr) minmax(0, 1.5fr);
+  gap: 30px;
   align-items: start;
 }
 
 .company-talent-profile-body > aside {
   display: grid;
-  gap: 20px;
+  gap: 0;
 }
 
-.company-talent-profile-body > aside > section {
+.company-talent-profile-section {
   display: grid;
-  gap: 10px;
-  padding-bottom: 20px;
+  gap: 12px;
+  padding: 18px 0;
   border-bottom: 1px solid var(--border);
+}
+
+.company-talent-profile-section:first-child {
+  padding-top: 0;
+}
+
+.company-talent-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.company-talent-section-heading > div {
+  display: grid;
+  gap: 2px;
+}
+
+.company-talent-section-heading > div > span {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.company-talent-section-heading > strong {
+  color: var(--blue-dark);
+  font-size: 0.82rem;
 }
 
 .company-talent-profile-body h2 {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.96rem;
 }
 
 .company-talent-profile-body > aside p {
@@ -320,6 +431,24 @@
   color: var(--muted);
   line-height: 1.65;
   white-space: pre-wrap;
+}
+
+.company-talent-skill-group {
+  display: grid;
+  gap: 8px;
+}
+
+.company-talent-skill-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.71rem;
+  font-weight: 800;
+}
+
+.company-talent-skill-label > svg {
+  color: var(--green);
 }
 
 .company-talent-profile-links {
@@ -342,38 +471,49 @@
 
 .company-talent-evidence > header {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 16px;
-  padding-bottom: 12px;
+  padding-bottom: 14px;
   border-bottom: 1px solid var(--border);
 }
 
-.company-talent-evidence > header span,
-.company-talent-evidence article > header span {
+.company-talent-evidence > header > div > span,
+.company-talent-evidence-labels > span {
   color: var(--blue-dark);
   font-size: 0.7rem;
   font-weight: 850;
   text-transform: uppercase;
 }
 
-.company-talent-evidence > header > strong {
-  min-width: 30px;
-  height: 30px;
-  display: grid;
-  place-items: center;
-  border-radius: 6px;
-  background: var(--blue-soft);
+.company-talent-evidence > header p {
+  max-width: 650px;
+  margin-top: 5px;
+}
+
+.company-talent-evidence-total {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   color: var(--blue-dark);
+  font-size: 0.75rem;
+  font-weight: 850;
+  white-space: nowrap;
 }
 
 .company-talent-evidence article {
   display: grid;
-  gap: 14px;
-  padding: 16px;
+  gap: 16px;
+  padding: 18px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--surface);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.company-talent-evidence article:hover {
+  border-color: var(--border-strong);
+  box-shadow: 0 8px 22px rgba(15, 34, 52, 0.07);
 }
 
 .company-talent-evidence article > header,
@@ -384,32 +524,80 @@
   gap: 14px;
 }
 
-.company-talent-evidence article > header > svg {
-  flex: 0 0 auto;
-  color: var(--green);
+.company-talent-evidence article > header p {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
 }
 
 .company-talent-evidence h3 {
-  margin-top: 3px;
-  font-size: 1rem;
+  margin-top: 5px;
+  font-size: 1.02rem;
 }
 
-.company-talent-evidence article dl {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1px;
-  overflow: hidden;
-  margin: 0;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--border);
+.company-talent-evidence-labels {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
 }
 
-.company-talent-evidence article dl > div {
+.company-talent-evidence-labels small {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 750;
+}
+
+.company-talent-approved-label {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--green);
+  font-size: 0.73rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.company-talent-evidence-summary {
   display: grid;
   gap: 5px;
-  padding: 12px;
-  background: var(--surface-soft);
+}
+
+.company-talent-evidence-summary > span {
+  color: var(--muted);
+  font-size: 0.69rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.company-talent-evidence-summary > p {
+  margin: 0;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.company-talent-evidence-details {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  padding: 14px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.company-talent-evidence-details > div {
+  display: grid;
+  gap: 5px;
+  padding: 0 14px;
+  border-left: 1px solid var(--border);
+}
+
+.company-talent-evidence-details > div:first-child {
+  padding-left: 0;
+  border-left: 0;
 }
 
 .company-talent-evidence dt {
@@ -427,8 +615,40 @@
   white-space: pre-wrap;
 }
 
+.company-talent-evidence-chain {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--surface-soft);
+}
+
+.company-talent-evidence-chain > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.company-talent-evidence-chain svg {
+  color: var(--green);
+}
+
 .company-talent-evidence article > footer {
   align-items: center;
+}
+
+.company-talent-evidence-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.company-talent-evidence-actions .button {
+  min-height: 38px;
 }
 
 .company-talent-no-evidence {
@@ -501,9 +721,19 @@
 
   .company-talent-profile-intro dl {
     grid-column: 1 / -1;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    min-width: 0;
     padding: 14px 0 0;
     border-top: 1px solid var(--border);
     border-left: 0;
+  }
+
+  .company-talent-profile-metrics > div {
+    padding: 0 10px;
+  }
+
+  .company-talent-profile-metrics > div:first-child {
+    padding-left: 0;
   }
 
   .company-talent-evidence article dl,
@@ -511,9 +741,41 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .company-talent-evidence-details > div,
+  .company-talent-evidence-details > div:first-child {
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+    border-left: 0;
+  }
+
+  .company-talent-evidence-details > div:first-child {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .company-talent-evidence-details > div:last-child {
+    padding-bottom: 0;
+  }
+
   .company-talent-evidence article > footer {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .company-talent-evidence > header,
+  .company-talent-evidence article > header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .company-talent-evidence-actions {
+    width: 100%;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .company-talent-evidence-actions .button {
+    width: 100%;
   }
 }
 

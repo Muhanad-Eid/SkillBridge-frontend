@@ -202,7 +202,6 @@ a,
   color: var(--muted);
 }
 
-.jobseeker-account-summary,
 .company-account-summary,
 .admin-authority-card {
   border-color: #dcdbf3;
@@ -210,14 +209,12 @@ a,
   background: #f6f5ff;
 }
 
-.jobseeker-avatar,
 .company-account-icon,
 .admin-authority-card > span {
   background: var(--blue);
   color: #ffffff;
 }
 
-.jobseeker-account-summary > svg,
 .company-account-summary > svg,
 .admin-authority-card > svg {
   color: var(--blue);
@@ -950,7 +947,6 @@ a,
   background: #17171f;
 }
 
-[data-theme="dark"] .jobseeker-account-summary,
 [data-theme="dark"] .company-account-summary,
 [data-theme="dark"] .admin-authority-card {
   border-color: #403e68;

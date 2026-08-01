@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import RequireGuest from "../shared/auth/RequireGuest";
 import RequireRole from "../shared/auth/RequireRole";
+import RouteErrorPage from "../shared/components/RouteErrorPage";
 import {
   AdminApplicationsPage,
   AdminDashboard,
@@ -50,6 +51,7 @@ export const router = createBrowserRouter([
   {
     path: "/",
     element: <PublicLayout />,
+    errorElement: <RouteErrorPage />,
     children: [
       { index: true, element: <HomePage /> },
       {
@@ -97,6 +99,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/admin/login",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireGuest>
         <AdminLoginPage />
@@ -105,6 +108,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/company",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole allowedRoles={["Company"]}>
         <CompanyPortalLayout />
@@ -145,6 +149,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/job-seeker",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole allowedRoles={["JobSeeker"]}>
         <JobSeekerPortalLayout />
@@ -180,6 +185,10 @@ export const router = createBrowserRouter([
       { path: "freelance/:projectId", element: <ProjectDetailsPage /> },
       { path: "work/:projectId", element: <WorkHubPage /> },
       { path: "profile", element: <JobSeekerProfilePage /> },
+      {
+        path: "profile/preview",
+        element: <TalentProfilePage mode="self-preview" />,
+      },
       { path: "skills", element: <SkillsPage /> },
       { path: "portfolio", element: <PortfolioPage /> },
       { path: "reviews", element: <JobSeekerReviewsPage /> },
@@ -190,6 +199,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/university",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole allowedRoles={["UniversitySupervisor"]}>
         <UniversityPortalLayout />
@@ -205,6 +215,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/admin",
+    errorElement: <RouteErrorPage />,
     element: (
       <RequireRole allowedRoles={["Admin"]} loginPath="/admin/login">
         <AdminPortalLayout />

@@ -16,6 +16,7 @@ import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
 import { useAuth } from "../../../shared/auth/AuthContext";
+import useVisibilityPolling from "../../../shared/hooks/useVisibilityPolling";
 import {
   getNotificationDestination,
   type Notification,
@@ -68,12 +69,13 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => loadNotifications(true), 0);
-    const intervalId = window.setInterval(() => loadNotifications(false), 5000);
-    return () => {
-      window.clearTimeout(timeoutId);
-      window.clearInterval(intervalId);
-    };
+    return () => window.clearTimeout(timeoutId);
   }, []);
+
+  useVisibilityPolling(
+    () => loadNotifications(false),
+    30000,
+  );
 
   const unreadCount = notifications.filter(
     (notification) => !notification.isRead,

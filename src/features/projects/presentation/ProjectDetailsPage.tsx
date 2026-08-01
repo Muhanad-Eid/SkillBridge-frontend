@@ -776,7 +776,8 @@ export default function ProjectDetailsPage() {
                       : "Submit application"}
                   </Button>
                   <small>
-                    Selected personal details stay hidden during the first review.
+                    The provider can review your profile, application details,
+                    and attached CV before making a decision.
                   </small>
                 </form>
               ) : user ? (

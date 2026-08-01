@@ -36,8 +36,9 @@ import {
   type CompanyProfile,
 } from "../../features/profiles/domain/profileTypes";
 import { getMyCompanyProfileAsync } from "../../features/profiles/infrastructure/profileApi";
-import { getMyMessagesAsync } from "../../features/messages/infrastructure/messageApi";
-import { getMyNotificationsAsync } from "../../features/notifications/infrastructure/notificationApi";
+import { getUnreadMessageCountAsync } from "../../features/messages/infrastructure/messageApi";
+import { getUnreadNotificationCountAsync } from "../../features/notifications/infrastructure/notificationApi";
+import useVisibilityPolling from "../../shared/hooks/useVisibilityPolling";
 
 type CompanyNavItem = {
   label: string;
@@ -103,23 +104,16 @@ export default function CompanyPortalLayout() {
 
   const refreshBadges = useCallback(async () => {
     const [messageResult, notificationResult] = await Promise.allSettled([
-      getMyMessagesAsync(),
-      getMyNotificationsAsync(),
+      getUnreadMessageCountAsync(user?.userId),
+      getUnreadNotificationCountAsync(),
     ]);
 
     if (messageResult.status === "fulfilled") {
-      setUnreadMessages(
-        messageResult.value.filter(
-          (message) => !message.isRead && message.receiverId === user?.userId,
-        ).length,
-      );
+      setUnreadMessages(messageResult.value);
     }
 
     if (notificationResult.status === "fulfilled") {
-      setUnreadNotifications(
-        notificationResult.value.filter((notification) => !notification.isRead)
-          .length,
-      );
+      setUnreadNotifications(notificationResult.value);
     }
   }, [user?.userId]);
 
@@ -128,14 +122,7 @@ export default function CompanyPortalLayout() {
     return () => window.clearTimeout(timeoutId);
   }, [refreshProfileCompletion]);
 
-  useEffect(() => {
-    const timeoutId = window.setTimeout(refreshBadges, 0);
-    const intervalId = window.setInterval(refreshBadges, 5000);
-    return () => {
-      window.clearTimeout(timeoutId);
-      window.clearInterval(intervalId);
-    };
-  }, [refreshBadges]);
+  useVisibilityPolling(refreshBadges, 30000, { runImmediately: true });
 
   useEffect(() => {
     if (!isSidebarOpen) return;

@@ -15,18 +15,14 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
-import { ApplicationStatuses } from "../../features/applications/domain/applicationTypes";
-import {
-  getAdminApplicationsAsync,
-  getAdminCompaniesAsync,
-  getAdminReviewsAsync,
-} from "../../features/admin/infrastructure/adminApi";
+import { getAdminQueueSummaryAsync } from "../../features/admin/infrastructure/adminApi";
 import { useAuth } from "../../shared/auth/AuthContext";
 import Button from "../../shared/components/Button";
 import BrandIcon from "../../shared/components/BrandIcon";
 import ConfirmDialog from "../../shared/components/ConfirmDialog";
 import ThemeToggle from "../../shared/components/ThemeToggle";
 import useSidebarPreference from "../../shared/hooks/useSidebarPreference";
+import useVisibilityPolling from "../../shared/hooks/useVisibilityPolling";
 
 type AdminNavItem = {
   label: string;
@@ -59,38 +55,17 @@ export default function AdminPortalLayout() {
     useSidebarPreference("admin");
 
   const refreshQueues = useCallback(async () => {
-    const [companyResult, applicationResult, reviewResult] = await Promise.allSettled([
-      getAdminCompaniesAsync(),
-      getAdminApplicationsAsync(),
-      getAdminReviewsAsync(),
-    ]);
-
-    if (companyResult.status === "fulfilled") {
-      setPendingCompanies(companyResult.value.filter((company) => !company.isVerified).length);
-    }
-
-    if (applicationResult.status === "fulfilled") {
-      setPendingApplications(
-        applicationResult.value.filter(
-          (application) => application.status === ApplicationStatuses.Pending,
-        ).length,
-      );
-    }
-
-    if (reviewResult.status === "fulfilled") {
-      setFlaggedReviews(reviewResult.value.filter((review) => review.rating <= 2).length);
+    try {
+      const summary = await getAdminQueueSummaryAsync();
+      setPendingCompanies(summary.pendingCompanies);
+      setPendingApplications(summary.pendingApplications);
+      setFlaggedReviews(summary.flaggedReviews);
+    } catch {
+      // Management pages display their own loading errors.
     }
   }, []);
 
-  useEffect(() => {
-    const timeoutId = window.setTimeout(refreshQueues, 0);
-    const intervalId = window.setInterval(refreshQueues, 10000);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-      window.clearInterval(intervalId);
-    };
-  }, [refreshQueues]);
+  useVisibilityPolling(refreshQueues, 30000, { runImmediately: true });
 
   useEffect(() => {
     if (!isSidebarOpen) return;

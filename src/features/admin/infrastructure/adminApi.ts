@@ -1,9 +1,11 @@
 import { httpClient } from "../../../shared/api/httpClient";
+import { ApplicationStatuses } from "../../applications/domain/applicationTypes";
 import type {
   AdminCompany,
   AdminApplication,
   AdminJobSeeker,
   AdminProject,
+  AdminQueueSummary,
   AdminReview,
   AdminSkill,
   AdminUser,
@@ -17,6 +19,8 @@ import type {
   UpdateAdminSkillRequest,
   UpdateAdminUserRequest,
 } from "../domain/adminTypes";
+
+let queueSummaryEndpointSupported = true;
 
 export function getAdminUsersAsync() {
   return httpClient<AdminUser[]>("/api/admin/users");
@@ -44,6 +48,30 @@ export function getAdminReviewsAsync() {
 
 export function getAdminSkillsAsync() {
   return httpClient<AdminSkill[]>("/api/admin/skills");
+}
+
+export async function getAdminQueueSummaryAsync() {
+  if (queueSummaryEndpointSupported) {
+    try {
+      return await httpClient<AdminQueueSummary>("/api/admin/queues");
+    } catch {
+      queueSummaryEndpointSupported = false;
+    }
+  }
+
+  const [companies, applications, reviews] = await Promise.all([
+    getAdminCompaniesAsync(),
+    getAdminApplicationsAsync(),
+    getAdminReviewsAsync(),
+  ]);
+
+  return {
+    pendingCompanies: companies.filter((company) => !company.isVerified).length,
+    pendingApplications: applications.filter(
+      (application) => application.status === ApplicationStatuses.Pending,
+    ).length,
+    flaggedReviews: reviews.filter((review) => review.rating <= 2).length,
+  };
 }
 
 export function createAdminUserAsync(request: CreateAdminUserRequest) {

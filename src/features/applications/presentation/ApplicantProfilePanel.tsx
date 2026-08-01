@@ -9,6 +9,7 @@ import {
   MessageSquare,
   RotateCcw,
   Star,
+  UserRoundSearch,
   X,
 } from "lucide-react";
 import Button from "../../../shared/components/Button";
@@ -222,21 +223,10 @@ export default function ApplicantProfilePanel({
                 Download CV
               </Button>
             ) : null}
-            {application.hasCv && !application.canViewCv ? (
-              <div className="notice">
-                The CV stays hidden during the initial blind review.
-              </div>
-            ) : null}
             {cvError ? (
               <div className="notice notice-error">{cvError}</div>
             ) : null}
           </section>
-          {application.isIdentityHidden ? (
-            <div className="notice">
-              Personal details stay hidden during this first review. The
-              profile is revealed after the decision is recorded.
-            </div>
-          ) : null}
         </div>
 
         {isLoading ? <div className="notice">Loading profile...</div> : null}
@@ -334,6 +324,16 @@ export default function ApplicantProfilePanel({
 
         <footer className="company-applicant-actions">
           {actions}
+          {profile ? (
+            <Button
+              to={`/company/talent/${profile.id}`}
+              variant="secondary"
+              className="button-with-icon"
+            >
+              <UserRoundSearch size={17} aria-hidden="true" />
+              Full profile
+            </Button>
+          ) : null}
           {profile ? (
             <Button
               to={getApplicantMessagePath(application, profile)}

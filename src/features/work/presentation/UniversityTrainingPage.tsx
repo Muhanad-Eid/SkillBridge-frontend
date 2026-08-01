@@ -3,6 +3,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import {
@@ -41,6 +42,7 @@ export default function UniversityTrainingPage() {
   const navigate = useNavigate();
   const [records, setRecords] = useState<WorkRecord[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const selectedIdRef = useRef<number | null>(null);
   const [progressNotes, setProgressNotes] = useState("");
   const [academicRequirementsMet, setAcademicRequirementsMet] =
     useState(false);
@@ -59,7 +61,10 @@ export default function UniversityTrainingPage() {
       const data = await getUniversityWorkAsync();
       setRecords(data);
       const selectedRecord =
-        data.find((item) => item.applicationId === selectedId) ?? data[0] ?? null;
+        data.find(
+          (item) => item.applicationId === selectedIdRef.current,
+        ) ?? data[0] ?? null;
+      selectedIdRef.current = selectedRecord?.applicationId ?? null;
       setSelectedId(selectedRecord?.applicationId ?? null);
       if (selectedRecord) {
         setProgressNotes(selectedRecord.universityProgressNotes ?? "");
@@ -78,7 +83,7 @@ export default function UniversityTrainingPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedId]);
+  }, []);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => void load(), 0);
@@ -115,6 +120,7 @@ export default function UniversityTrainingPage() {
     record.workStatus !== WorkSubmissionStatuses.Approved;
 
   function selectRecord(item: WorkRecord) {
+    selectedIdRef.current = item.applicationId;
     setSelectedId(item.applicationId);
     setProgressNotes(item.universityProgressNotes ?? "");
     setAcademicRequirementsMet(item.academicRequirementsMet);

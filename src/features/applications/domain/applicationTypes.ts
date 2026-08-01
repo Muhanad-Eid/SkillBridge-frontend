@@ -31,7 +31,6 @@ export type Application = {
   proposedBudget: number | null;
   proposedDeliveryDays: number | null;
   isShortlisted: boolean;
-  isIdentityHidden: boolean;
   submittedAt: string;
   decisionNote: string | null;
   decidedAt: string | null;

@@ -1,13 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
+  BadgeCheck,
+  BriefcaseBusiness,
+  CalendarDays,
   CheckCircle2,
   Code2,
+  Eye,
   ExternalLink,
   FileCheck2,
+  GraduationCap,
   Link2,
   MapPin,
-  Star,
+  ShieldCheck,
 } from "lucide-react";
 import { useParams } from "react-router-dom";
 import Button from "../../../shared/components/Button";
@@ -15,22 +20,44 @@ import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
 import type { PortfolioItem } from "../../portfolio/domain/portfolioTypes";
 import { getPublicPortfolioAsync } from "../../portfolio/infrastructure/portfolioApi";
+import EvidenceDetailsDialog from "../../portfolio/presentation/EvidenceDetailsDialog";
 import type { JobSeekerProfile } from "../../profiles/domain/profileTypes";
-import { getPublicJobSeekerProfileAsync } from "../../profiles/infrastructure/profileApi";
+import {
+  getMyJobSeekerProfileAsync,
+  getPublicJobSeekerProfileAsync,
+} from "../../profiles/infrastructure/profileApi";
 import { getOpportunityTypeLabel } from "../../projects/domain/projectTypes";
 
-export default function TalentProfilePage() {
+type TalentProfilePageProps = {
+  mode?: "company" | "self-preview";
+};
+
+function evidenceReference(id: number) {
+  return `SB-EV-${String(id).padStart(6, "0")}`;
+}
+
+function formatDate(value: string | null) {
+  return value ? new Date(value).toLocaleDateString() : "Date unavailable";
+}
+
+export default function TalentProfilePage({
+  mode = "company",
+}: TalentProfilePageProps) {
+  const isSelfPreview = mode === "self-preview";
   const { jobSeekerId } = useParams();
   const numericJobSeekerId = Number(jobSeekerId);
   const hasValidJobSeekerId =
     Number.isInteger(numericJobSeekerId) && numericJobSeekerId > 0;
+  const canLoadProfile = isSelfPreview || hasValidJobSeekerId;
   const [profile, setProfile] = useState<JobSeekerProfile | null>(null);
   const [evidence, setEvidence] = useState<PortfolioItem[]>([]);
-  const [isLoading, setIsLoading] = useState(hasValidJobSeekerId);
+  const [isLoading, setIsLoading] = useState(canLoadProfile);
   const [error, setError] = useState("");
+  const [selectedEvidence, setSelectedEvidence] =
+    useState<PortfolioItem | null>(null);
 
   useEffect(() => {
-    if (!hasValidJobSeekerId) return;
+    if (!canLoadProfile) return;
 
     let isMounted = true;
 
@@ -41,10 +68,10 @@ export default function TalentProfilePage() {
       }
 
       try {
-        const [profileResult, portfolioResult] = await Promise.all([
-          getPublicJobSeekerProfileAsync(numericJobSeekerId),
-          getPublicPortfolioAsync(numericJobSeekerId),
-        ]);
+        const profileResult = isSelfPreview
+          ? await getMyJobSeekerProfileAsync()
+          : await getPublicJobSeekerProfileAsync(numericJobSeekerId);
+        const portfolioResult = await getPublicPortfolioAsync(profileResult.id);
 
         if (isMounted) {
           setProfile(profileResult);
@@ -69,7 +96,7 @@ export default function TalentProfilePage() {
       isMounted = false;
       window.clearTimeout(timeoutId);
     };
-  }, [hasValidJobSeekerId, numericJobSeekerId]);
+  }, [canLoadProfile, isSelfPreview, numericJobSeekerId]);
 
   const supportedSkills = useMemo(() => {
     const counts = new Map<string, number>();
@@ -83,22 +110,51 @@ export default function TalentProfilePage() {
     return counts;
   }, [evidence]);
 
+  const supportedSkillEntries = useMemo(
+    () =>
+      [...supportedSkills.entries()].sort(
+        (left, right) => right[1] - left[1] || left[0].localeCompare(right[0]),
+      ),
+    [supportedSkills],
+  );
+
+  const listedSkills = useMemo(
+    () =>
+      (profile?.skills ?? [])
+        .filter((skill) => !supportedSkills.has(skill))
+        .sort((left, right) => left.localeCompare(right)),
+    [profile?.skills, supportedSkills],
+  );
+
   return (
     <section className="page company-talent-profile-page">
       <PageHeader
-        title="Talent profile"
+        title={isSelfPreview ? "Profile preview" : "Talent profile"}
         actions={
-          <Button to="/company/talent" variant="ghost">
+          <Button
+            to={isSelfPreview ? "/job-seeker/profile" : "/company/talent"}
+            variant="ghost"
+          >
             <ArrowLeft size={16} aria-hidden="true" />
-            Back to search
+            {isSelfPreview ? "Back to profile" : "Back to search"}
           </Button>
         }
       />
 
+      {isSelfPreview ? (
+        <div className="profile-preview-notice" role="status">
+          <Eye size={19} aria-hidden="true" />
+          <div>
+            <strong>This is how organizations see your profile</strong>
+            <span>Only evidence you marked as shared appears in this preview.</span>
+          </div>
+        </div>
+      ) : null}
+
       <DataState
         isLoading={isLoading}
         error={
-          hasValidJobSeekerId
+          canLoadProfile
             ? error
             : "This talent profile link is invalid."
         }
@@ -113,20 +169,39 @@ export default function TalentProfilePage() {
             <span className="company-talent-profile-avatar" aria-hidden="true">
               {profile.fullName.trim().charAt(0).toUpperCase()}
             </span>
-            <div>
+            <div className="company-talent-profile-identity">
+              <span className="company-talent-profile-kicker">
+                <ShieldCheck size={14} aria-hidden="true" />
+                Evidence-backed professional profile
+              </span>
               <h1>{profile.fullName}</h1>
-              <p><MapPin size={15} aria-hidden="true" />{profile.city}</p>
+              <div className="company-talent-profile-meta">
+                <span>
+                  <MapPin size={15} aria-hidden="true" />
+                  {profile.city || "Location not provided"}
+                </span>
+                {profile.universityName ? (
+                  <span>
+                    <GraduationCap size={15} aria-hidden="true" />
+                    {profile.universityName}
+                  </span>
+                ) : null}
+              </div>
             </div>
-            <dl>
+            <dl className="company-talent-profile-metrics">
               <div>
-                <dt><FileCheck2 size={15} aria-hidden="true" />Shared evidence</dt>
+                <dt>Approved evidence</dt>
                 <dd>{evidence.length}</dd>
               </div>
               <div>
-                <dt><Star size={15} aria-hidden="true" />Reviews</dt>
+                <dt>Supported skills</dt>
+                <dd>{supportedSkillEntries.length}</dd>
+              </div>
+              <div>
+                <dt>Reviews</dt>
                 <dd>
                   {profile.averageRating
-                    ? `${profile.averageRating.toFixed(1)} / 5`
+                    ? profile.averageRating.toFixed(1)
                     : profile.reviewsCount}
                 </dd>
               </div>
@@ -135,32 +210,67 @@ export default function TalentProfilePage() {
 
           <div className="company-talent-profile-body">
             <aside>
-              <section>
-                <h2>About</h2>
-                <p>{profile.bio}</p>
+              <section className="company-talent-profile-section">
+                <div className="company-talent-section-heading">
+                  <h2>Professional summary</h2>
+                </div>
+                <p>
+                  {profile.bio ||
+                    "This individual has not added a professional summary yet."}
+                </p>
               </section>
 
-              <section>
-                <h2>Skills</h2>
-                <div className="company-talent-profile-skills">
-                  {profile.skills.map((skill) => {
-                    const count = supportedSkills.get(skill) ?? 0;
-                    return (
-                      <span key={skill} className={count > 0 ? "is-supported" : ""}>
-                        {count > 0 ? (
-                          <CheckCircle2 size={14} aria-hidden="true" />
-                        ) : null}
-                        {skill}
-                        {count > 0 ? <small>{count}</small> : null}
-                      </span>
-                    );
-                  })}
+              <section className="company-talent-profile-section">
+                <div className="company-talent-section-heading">
+                  <div>
+                    <h2>Skills</h2>
+                    <span>Evidence coverage</span>
+                  </div>
+                  <strong>{profile.skills?.length ?? 0}</strong>
                 </div>
+
+                {supportedSkillEntries.length > 0 ? (
+                  <div className="company-talent-skill-group">
+                    <span className="company-talent-skill-label">
+                      <BadgeCheck size={14} aria-hidden="true" />
+                      Supported by approved work
+                    </span>
+                    <div className="company-talent-profile-skills">
+                      {supportedSkillEntries.map(([skill, count]) => (
+                        <span key={skill} className="is-supported">
+                          <CheckCircle2 size={14} aria-hidden="true" />
+                          {skill}
+                          <small>{count}</small>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                {listedSkills.length > 0 ? (
+                  <div className="company-talent-skill-group">
+                    <span className="company-talent-skill-label">
+                      Listed skills
+                    </span>
+                    <div className="company-talent-profile-skills">
+                      {listedSkills.map((skill) => (
+                        <span key={skill}>{skill}</span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                {supportedSkillEntries.length === 0 &&
+                listedSkills.length === 0 ? (
+                  <p>No skills have been added yet.</p>
+                ) : null}
               </section>
 
               {profile.linkedInUrl || profile.gitHubUrl ? (
-                <section>
-                  <h2>Links</h2>
+                <section className="company-talent-profile-section">
+                  <div className="company-talent-section-heading">
+                    <h2>Professional links</h2>
+                  </div>
                   <div className="company-talent-profile-links">
                     {profile.linkedInUrl ? (
                       <a href={profile.linkedInUrl} target="_blank" rel="noreferrer">
@@ -184,10 +294,17 @@ export default function TalentProfilePage() {
             <section className="company-talent-evidence">
               <header>
                 <div>
-                  <span>Approved work</span>
-                  <h2>Shared Evidence Portfolio</h2>
+                  <span>Provider-approved work</span>
+                  <h2>Evidence Portfolio</h2>
+                  <p>
+                    Completed work connected to contribution, evaluation, and
+                    approval records.
+                  </p>
                 </div>
-                <strong>{evidence.length}</strong>
+                <span className="company-talent-evidence-total">
+                  <FileCheck2 size={16} aria-hidden="true" />
+                  {evidence.length} {evidence.length === 1 ? "record" : "records"}
+                </span>
               </header>
 
               {evidence.length === 0 ? (
@@ -204,42 +321,103 @@ export default function TalentProfilePage() {
                     <article key={item.id}>
                       <header>
                         <div>
-                          <span>{getOpportunityTypeLabel(item.opportunityType)}</span>
+                          <div className="company-talent-evidence-labels">
+                            <span>
+                              {getOpportunityTypeLabel(item.opportunityType)}
+                            </span>
+                            <small>{evidenceReference(item.id)}</small>
+                          </div>
                           <h3>{item.projectTitle}</h3>
-                          <p>{item.companyName}</p>
+                          <p>
+                            <BriefcaseBusiness size={14} aria-hidden="true" />
+                            {item.companyName}
+                            <span aria-hidden="true">·</span>
+                            <CalendarDays size={14} aria-hidden="true" />
+                            {formatDate(item.approvedAt)}
+                          </p>
                         </div>
-                        <CheckCircle2 size={20} aria-label="Approved evidence" />
+                        <span className="company-talent-approved-label">
+                          <ShieldCheck size={16} aria-hidden="true" />
+                          Provider approved
+                        </span>
                       </header>
-                      <dl>
-                        <div>
-                          <dt>Completed work</dt>
-                          <dd>{item.description ?? "Approved completed work."}</dd>
-                        </div>
+
+                      <div className="company-talent-evidence-summary">
+                        <span>Completed work</span>
+                        <p>
+                          {item.ownerSummary ??
+                            item.description ??
+                            item.deliverables ??
+                            "Approved completed work."}
+                        </p>
+                      </div>
+
+                      <dl className="company-talent-evidence-details">
                         <div>
                           <dt>Individual contribution</dt>
-                          <dd>{item.contribution ?? item.description}</dd>
+                          <dd>
+                            {item.contribution ??
+                              "Contribution recorded in the approved work record."}
+                          </dd>
                         </div>
                         <div>
                           <dt>Evaluation</dt>
-                          <dd>{item.evaluationResult ?? "Final approval recorded."}</dd>
+                          <dd>
+                            {item.evaluationResult ??
+                              (item.criterionEvaluations.length > 0
+                                ? `${item.criterionEvaluations.length} criteria evaluated`
+                                : "Final approval recorded.")}
+                          </dd>
                         </div>
                         <div>
                           <dt>Approved by</dt>
                           <dd>{item.evaluatorName ?? item.companyName}</dd>
                         </div>
                       </dl>
+
+                      <div
+                        className="company-talent-evidence-chain"
+                        aria-label="Evidence process"
+                      >
+                        <span>
+                          <CheckCircle2 size={14} aria-hidden="true" />
+                          Work completed
+                        </span>
+                        <span>
+                          <CheckCircle2 size={14} aria-hidden="true" />
+                          Evaluated
+                        </span>
+                        <span>
+                          <CheckCircle2 size={14} aria-hidden="true" />
+                          Final approval
+                        </span>
+                      </div>
+
                       <footer>
                         <div>
                           {item.skills.map((skill) => (
                             <span key={skill.id}>{skill.name}</span>
                           ))}
                         </div>
-                        {item.projectUrl ? (
-                          <a href={item.projectUrl} target="_blank" rel="noreferrer">
-                            Open deliverable
-                            <ExternalLink size={14} aria-hidden="true" />
-                          </a>
-                        ) : null}
+                        <div className="company-talent-evidence-actions">
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setSelectedEvidence(item)}
+                          >
+                            View evidence
+                          </Button>
+                          {item.projectUrl ? (
+                            <a
+                              href={item.projectUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              Open deliverable
+                              <ExternalLink size={14} aria-hidden="true" />
+                            </a>
+                          ) : null}
+                        </div>
                       </footer>
                     </article>
                   ))}
@@ -248,6 +426,13 @@ export default function TalentProfilePage() {
             </section>
           </div>
         </>
+      ) : null}
+
+      {selectedEvidence ? (
+        <EvidenceDetailsDialog
+          item={selectedEvidence}
+          onClose={() => setSelectedEvidence(null)}
+        />
       ) : null}
     </section>
   );

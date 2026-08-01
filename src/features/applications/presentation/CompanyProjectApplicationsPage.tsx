@@ -261,7 +261,7 @@ export default function CompanyProjectApplicationsPage() {
     setSelectedProfile(null);
     setProfileError("");
 
-    if (application.isIdentityHidden || application.jobSeekerId === null) {
+    if (application.jobSeekerId === null) {
       setIsProfileLoading(false);
       return;
     }
@@ -698,11 +698,7 @@ export default function CompanyProjectApplicationsPage() {
                       </span>
                       <span>
                         <strong>{application.jobSeekerName}</strong>
-                        <small>
-                          {application.isIdentityHidden
-                            ? "Identity hidden for first review"
-                            : `Application #${application.id}`}
-                        </small>
+                        <small>Application #{application.id}</small>
                       </span>
                     </button>
                     <p>
@@ -864,7 +860,18 @@ export default function CompanyProjectApplicationsPage() {
                       ) : null}
 
                       <Button
-                        type="button"
+                        to={
+                          project.type !== OpportunityTypes.FreelanceTask &&
+                          application.jobSeekerId
+                            ? `/company/talent/${application.jobSeekerId}`
+                            : undefined
+                        }
+                        type={
+                          project.type !== OpportunityTypes.FreelanceTask &&
+                          application.jobSeekerId
+                            ? undefined
+                            : "button"
+                        }
                         variant={
                           project.type === OpportunityTypes.FreelanceTask
                             ? "secondary"
@@ -885,7 +892,12 @@ export default function CompanyProjectApplicationsPage() {
                             ? "View proposal"
                             : "View profile"
                         }
-                        onClick={() => openApplicantProfile(application)}
+                        onClick={
+                          project.type !== OpportunityTypes.FreelanceTask &&
+                          application.jobSeekerId
+                            ? undefined
+                            : () => openApplicantProfile(application)
+                        }
                       >
                         {project.type === OpportunityTypes.FreelanceTask ? (
                           <>

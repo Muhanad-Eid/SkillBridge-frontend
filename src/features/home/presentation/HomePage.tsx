@@ -120,8 +120,8 @@ export default function HomePage() {
               <BriefcaseBusiness size={28} aria-hidden="true" />
               <h3>Apply with evidence</h3>
               <p>
-                Individuals provide previous work or complete a short task.
-                Selected personal details stay hidden during the first review.
+                Individuals can share their profile, CV, previous work, or a
+                short task so providers can review the full application.
               </p>
             </li>
             <li>

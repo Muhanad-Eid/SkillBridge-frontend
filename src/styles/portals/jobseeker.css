@@ -55,56 +55,6 @@
   font-size: 11px;
 }
 
-.jobseeker-account-summary {
-  min-width: 0;
-  display: grid;
-  grid-template-columns: 36px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 10px;
-  border: 1px solid #2b4357;
-  border-radius: 4px;
-  background: #0e2a42;
-  padding: 12px;
-}
-
-.jobseeker-avatar {
-  width: 36px;
-  height: 36px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--gold);
-  color: #102236;
-  font-size: 14px;
-  font-weight: 950;
-}
-
-.jobseeker-account-summary > div {
-  min-width: 0;
-}
-
-.jobseeker-account-summary strong,
-.jobseeker-account-summary small {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.jobseeker-account-summary strong {
-  font-size: 13px;
-}
-
-.jobseeker-account-summary small {
-  margin-top: 3px;
-  color: #aebdca;
-  font-size: 11px;
-}
-
-.jobseeker-account-summary > svg {
-  color: var(--gold);
-}
-
 .jobseeker-sidebar-nav {
   min-height: 0;
   display: grid;
@@ -1956,10 +1906,6 @@
 
   .jobseeker-brand {
     padding: 0;
-  }
-
-  .jobseeker-account-summary {
-    display: none;
   }
 
   .jobseeker-sidebar-nav {

@@ -631,6 +631,24 @@ input {
   height: 56px;
 }
 
+.app-error-page > span {
+  color: var(--text-muted);
+  font-weight: 800;
+}
+
+.app-error-page > p {
+  max-width: 38rem;
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.app-error-page > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
 .public-shell .site-footer {
   padding: 14px clamp(16px, 2.5vw, 32px);
 }

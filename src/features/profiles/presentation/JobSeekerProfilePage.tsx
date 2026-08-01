@@ -2,6 +2,7 @@ import { type FormEvent, useEffect, useMemo, useState } from "react";
 import {
   CheckCircle2,
   Code2,
+  Eye,
   GraduationCap,
   Link2,
   MapPin,
@@ -192,15 +193,25 @@ export default function JobSeekerProfilePage() {
         title={isRequiredFlow ? "Complete your profile" : "Profile"}
         actions={
           profile && !isEditing ? (
-            <Button
-              type="button"
-              variant="secondary"
-              className="button-with-icon"
-              onClick={handleStartEditing}
-            >
-              <PencilLine size={16} aria-hidden="true" />
-              Edit profile
-            </Button>
+            <>
+              <Button
+                to="/job-seeker/profile/preview"
+                variant="secondary"
+                className="button-with-icon"
+              >
+                <Eye size={16} aria-hidden="true" />
+                Preview profile
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                className="button-with-icon"
+                onClick={handleStartEditing}
+              >
+                <PencilLine size={16} aria-hidden="true" />
+                Edit profile
+              </Button>
+            </>
           ) : null
         }
       />

@@ -14,6 +14,7 @@ import Button from "../../../shared/components/Button";
 import Card from "../../../shared/components/Card";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
+import useVisibilityPolling from "../../../shared/hooks/useVisibilityPolling";
 import type { Message } from "../domain/messageTypes";
 import {
   getConversationAsync,
@@ -39,7 +40,8 @@ const messageDateFormatter = new Intl.DateTimeFormat(undefined, {
   timeStyle: "short",
 });
 
-const liveRefreshMs = 3000;
+const conversationRefreshMs = 5000;
+const messageListRefreshMs = 15000;
 
 function formatMessageTime(value: string) {
   return messageDateFormatter.format(new Date(value));
@@ -177,25 +179,21 @@ export default function MessagesPage() {
     return () => window.clearTimeout(timeoutId);
   }, [activeConversation, loadConversation]);
 
-  useEffect(() => {
-    const intervalId = window.setInterval(() => {
-      loadMessages({ silent: true });
-    }, liveRefreshMs);
-
-    return () => window.clearInterval(intervalId);
-  }, [loadMessages]);
-
-  useEffect(() => {
-    if (!activeConversation) {
-      return;
-    }
-
-    const intervalId = window.setInterval(() => {
-      loadConversation(activeConversation, { silent: true });
-    }, liveRefreshMs);
-
-    return () => window.clearInterval(intervalId);
+  const refreshMessageList = useCallback(
+    () => loadMessages({ silent: true }),
+    [loadMessages],
+  );
+  const refreshActiveConversation = useCallback(() => {
+    if (!activeConversation) return;
+    return loadConversation(activeConversation, { silent: true });
   }, [activeConversation, loadConversation]);
+
+  useVisibilityPolling(refreshMessageList, messageListRefreshMs);
+  useVisibilityPolling(
+    refreshActiveConversation,
+    conversationRefreshMs,
+    { enabled: Boolean(activeConversation) },
+  );
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({

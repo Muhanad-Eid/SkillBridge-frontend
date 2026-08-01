@@ -138,7 +138,7 @@ export default function CompanyApplicationsPage() {
     setSelectedApplication(application);
     setSelectedProfile(null);
     setProfileError("");
-    if (application.isIdentityHidden || application.jobSeekerId === null) {
+    if (application.jobSeekerId === null) {
       setIsProfileLoading(false);
       return;
     }
@@ -382,12 +382,21 @@ export default function CompanyApplicationsPage() {
                     </>
                   ) : (
                     <Button
-                      type="button"
+                      to={
+                        application.jobSeekerId
+                          ? `/company/talent/${application.jobSeekerId}`
+                          : undefined
+                      }
+                      type={application.jobSeekerId ? undefined : "button"}
                       variant="ghost"
                       className="company-icon-action"
                       aria-label={`View ${application.jobSeekerName}`}
                       title="View profile"
-                      onClick={() => openApplicantProfile(application)}
+                      onClick={
+                        application.jobSeekerId
+                          ? undefined
+                          : () => openApplicantProfile(application)
+                      }
                     >
                       <UserRoundSearch size={18} aria-hidden="true" />
                     </Button>

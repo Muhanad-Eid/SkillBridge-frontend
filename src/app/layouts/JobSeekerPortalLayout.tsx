@@ -12,7 +12,6 @@ import {
   Menu,
   MessageSquare,
   Search,
-  Sparkles,
   Star,
   UserRound,
   Wrench,
@@ -32,14 +31,15 @@ import {
   type JobSeekerProfile,
 } from "../../features/profiles/domain/profileTypes";
 import { getMyJobSeekerProfileAsync } from "../../features/profiles/infrastructure/profileApi";
-import { getMyMessagesAsync } from "../../features/messages/infrastructure/messageApi";
-import { getMyNotificationsAsync } from "../../features/notifications/infrastructure/notificationApi";
+import { getUnreadMessageCountAsync } from "../../features/messages/infrastructure/messageApi";
+import { getUnreadNotificationCountAsync } from "../../features/notifications/infrastructure/notificationApi";
 import { useAuth } from "../../shared/auth/AuthContext";
 import Button from "../../shared/components/Button";
 import BrandIcon from "../../shared/components/BrandIcon";
 import ConfirmDialog from "../../shared/components/ConfirmDialog";
 import ThemeToggle from "../../shared/components/ThemeToggle";
 import useSidebarPreference from "../../shared/hooks/useSidebarPreference";
+import useVisibilityPolling from "../../shared/hooks/useVisibilityPolling";
 
 type JobSeekerNavItem = {
   label: string;
@@ -107,23 +107,16 @@ export default function JobSeekerPortalLayout() {
 
   const refreshBadges = useCallback(async () => {
     const [messageResult, notificationResult] = await Promise.allSettled([
-      getMyMessagesAsync(),
-      getMyNotificationsAsync(),
+      getUnreadMessageCountAsync(user?.userId),
+      getUnreadNotificationCountAsync(),
     ]);
 
     if (messageResult.status === "fulfilled") {
-      setUnreadMessages(
-        messageResult.value.filter(
-          (message) => !message.isRead && message.receiverId === user?.userId,
-        ).length,
-      );
+      setUnreadMessages(messageResult.value);
     }
 
     if (notificationResult.status === "fulfilled") {
-      setUnreadNotifications(
-        notificationResult.value.filter((notification) => !notification.isRead)
-          .length,
-      );
+      setUnreadNotifications(notificationResult.value);
     }
   }, [user?.userId]);
 
@@ -132,15 +125,7 @@ export default function JobSeekerPortalLayout() {
     return () => window.clearTimeout(timeoutId);
   }, [refreshProfileCompletion]);
 
-  useEffect(() => {
-    const timeoutId = window.setTimeout(refreshBadges, 0);
-    const intervalId = window.setInterval(refreshBadges, 5000);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-      window.clearInterval(intervalId);
-    };
-  }, [refreshBadges]);
+  useVisibilityPolling(refreshBadges, 30000, { runImmediately: true });
 
   useEffect(() => {
     if (!isSidebarOpen) return;
@@ -164,10 +149,6 @@ export default function JobSeekerPortalLayout() {
           item.to === "/job-seeker/profile" || item.to === "/job-seeker/security",
       );
 
-  const profileInitial = (profile?.fullName || user?.fullName || "J")
-    .trim()
-    .charAt(0)
-    .toUpperCase();
   const closeLogoutDialog = useCallback(
     () => setIsLogoutDialogOpen(false),
     [],
@@ -231,17 +212,6 @@ export default function JobSeekerPortalLayout() {
             <small>Job seeker portal</small>
           </span>
         </Link>
-
-        <div className="jobseeker-account-summary">
-          <span className="jobseeker-avatar" aria-hidden="true">
-            {profileInitial}
-          </span>
-          <div>
-            <strong>{profile?.fullName || user?.fullName || "Job seeker"}</strong>
-            <small>{profile?.city || "Complete your profile"}</small>
-          </div>
-          {profileIsComplete ? <Sparkles size={17} aria-label="Profile complete" /> : null}
-        </div>
 
         <nav className="jobseeker-sidebar-nav" aria-label="Job seeker navigation">
           {navItems.map((item) => {

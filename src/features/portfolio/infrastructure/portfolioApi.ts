@@ -2,12 +2,20 @@ import { httpClient } from "../../../shared/api/httpClient";
 import type {
   CreatePortfolioItemRequest,
   EligiblePortfolioProject,
-  PortfolioItem,
   UpdatePortfolioItemRequest,
 } from "../domain/portfolioTypes";
+import {
+  normalizePortfolioItem,
+  normalizePortfolioItems,
+  type PortfolioItemPayload,
+} from "../domain/portfolioNormalization";
 
-export function getMyPortfolioAsync() {
-  return httpClient<PortfolioItem[]>("/api/portfolio/my");
+export async function getMyPortfolioAsync() {
+  const items = await httpClient<PortfolioItemPayload[] | null>(
+    "/api/portfolio/my",
+  );
+
+  return normalizePortfolioItems(items);
 }
 
 export function getEligiblePortfolioProjectsAsync() {
@@ -16,18 +24,24 @@ export function getEligiblePortfolioProjectsAsync() {
   );
 }
 
-export function getPublicPortfolioAsync(jobSeekerId: number) {
-  return httpClient<PortfolioItem[]>(
+export async function getPublicPortfolioAsync(jobSeekerId: number) {
+  const items = await httpClient<PortfolioItemPayload[] | null>(
     `/api/portfolio/job-seekers/${jobSeekerId}`,
     { skipAuth: true },
   );
+
+  return normalizePortfolioItems(items);
 }
 
-export function createPortfolioItemAsync(request: CreatePortfolioItemRequest) {
-  return httpClient<PortfolioItem>("/api/portfolio", {
+export async function createPortfolioItemAsync(
+  request: CreatePortfolioItemRequest,
+) {
+  const item = await httpClient<PortfolioItemPayload>("/api/portfolio", {
     method: "POST",
     body: JSON.stringify(request),
   });
+
+  return normalizePortfolioItem(item);
 }
 
 export function updatePortfolioItemAsync(

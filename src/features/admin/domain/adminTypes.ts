@@ -98,6 +98,12 @@ export type AdminSkill = {
   projectsCount: number;
 };
 
+export type AdminQueueSummary = {
+  pendingCompanies: number;
+  pendingApplications: number;
+  flaggedReviews: number;
+};
+
 export const AdminUserRoles = {
   Admin: 1,
   Company: 2,

@@ -30,7 +30,12 @@ export default function Button({
 
   if (to) {
     return (
-      <Link className={classes} to={to}>
+      <Link
+        className={classes}
+        to={to}
+        aria-label={props["aria-label"]}
+        title={props.title}
+      >
         {children}
       </Link>
     );

@@ -53,7 +53,6 @@ export type Project = {
   evaluationCriteria: string;
   milestonePlan: string;
   applicationTask: string;
-  hideApplicantIdentity: boolean;
   requiredTrainingHours: number | null;
   academicRequirements: string | null;
   location: string | null;
@@ -103,7 +102,6 @@ export type CreateProjectRequest = {
   evaluationCriteria: string;
   milestonePlan: string;
   applicationTask: string;
-  hideApplicantIdentity: boolean;
   requiredTrainingHours?: number | null;
   academicRequirements?: string | null;
   location?: string | null;

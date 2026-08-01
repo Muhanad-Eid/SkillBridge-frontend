@@ -670,7 +670,11 @@ export default function WorkHubPage() {
                             </StatusBadge>
                             <div className="work-hub-worker-actions">
                               <Button
-                                to={`/company/applications?application=${application.id}`}
+                                to={
+                                  profile
+                                    ? `/company/talent/${profile.id}`
+                                    : `/company/applications?application=${application.id}`
+                                }
                                 variant="secondary"
                               >
                                 View profile
