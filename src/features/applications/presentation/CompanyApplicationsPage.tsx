@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Check, Search, UserRoundSearch, X } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
+import { useOutletContext, useSearchParams } from "react-router-dom";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
@@ -28,6 +28,10 @@ const pipelineTabs: Array<{ label: string; value: "All" | ApplicationStatus }> =
   { label: "Withdrawn", value: ApplicationStatuses.Withdrawn },
 ];
 
+type CompanyPortalContext = {
+  isCompanyVerified: boolean;
+};
+
 function getApplicationTone(status: ApplicationStatus) {
   if (status === ApplicationStatuses.Accepted) return "green";
   if (status === ApplicationStatuses.Pending) return "amber";
@@ -36,6 +40,7 @@ function getApplicationTone(status: ApplicationStatus) {
 }
 
 export default function CompanyApplicationsPage() {
+  const { isCompanyVerified } = useOutletContext<CompanyPortalContext>();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialStatus = searchParams.get("status");
   const [applications, setApplications] = useState<Application[]>([]);
@@ -64,7 +69,14 @@ export default function CompanyApplicationsPage() {
   const [actionMessage, setActionMessage] = useState("");
   const profileQueryApplicationIdRef = useRef<number | null>(null);
 
-  async function loadApplications() {
+  const loadApplications = useCallback(async () => {
+    if (!isCompanyVerified) {
+      setApplications([]);
+      setError("");
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     setError("");
 
@@ -79,12 +91,12 @@ export default function CompanyApplicationsPage() {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [isCompanyVerified]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(loadApplications, 0);
     return () => window.clearTimeout(timeoutId);
-  }, []);
+  }, [loadApplications]);
 
   const projects = useMemo(() => {
     const projectMap = new Map<number, string>();
@@ -239,6 +251,21 @@ export default function CompanyApplicationsPage() {
     } finally {
       setBusyApplicationId(null);
     }
+  }
+
+  if (!isCompanyVerified) {
+    return (
+      <section className="page company-pipeline-page">
+        <PageHeader title="Applications" />
+        <DataState
+          isLoading={false}
+          error=""
+          empty
+          emptyTitle="Company verification required"
+          emptyDescription="Applications will become available after an administrator verifies your company."
+        />
+      </section>
+    );
   }
 
   return (

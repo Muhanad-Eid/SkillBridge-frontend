@@ -1958,6 +1958,10 @@
     padding: 22px 16px 36px;
   }
 
+  .jobseeker-applications-page > * {
+    min-width: 0;
+  }
+
   .jobseeker-portal-v2 .page-header {
     align-items: flex-start;
   }

@@ -438,6 +438,16 @@
   color: var(--sb-color-text);
 }
 
+:root[data-theme="dark"] .company-search-field {
+  border-color: var(--sb-color-border);
+  background: var(--sb-color-surface-subtle);
+  color: var(--sb-color-text-muted);
+}
+
+:root[data-theme="dark"] .company-search-field input {
+  color: var(--sb-color-text);
+}
+
 @media (max-width: 1180px) {
   .jobseeker-kpi-grid,
   .company-kpi-grid,

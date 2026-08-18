@@ -13,6 +13,7 @@ import {
   UserRoundSearch,
   X,
 } from "lucide-react";
+import { useOutletContext } from "react-router-dom";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
@@ -21,7 +22,12 @@ import { getSkillsAsync } from "../../skills/infrastructure/skillApi";
 import type { TalentSearchResult } from "../domain/talentTypes";
 import { searchTalentAsync } from "../infrastructure/talentApi";
 
+type CompanyPortalContext = {
+  isCompanyVerified: boolean;
+};
+
 export default function TalentSearchPage() {
+  const { isCompanyVerified } = useOutletContext<CompanyPortalContext>();
   const [results, setResults] = useState<TalentSearchResult[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [query, setQuery] = useState("");
@@ -36,6 +42,13 @@ export default function TalentSearchPage() {
       nextSkillId: string,
       nextEvidenceOnly: boolean,
     ) => {
+      if (!isCompanyVerified) {
+        setResults([]);
+        setError("");
+        setIsLoading(false);
+        return;
+      }
+
       setIsLoading(true);
       setError("");
 
@@ -57,10 +70,14 @@ export default function TalentSearchPage() {
         setIsLoading(false);
       }
     },
-    [],
+    [isCompanyVerified],
   );
 
   useEffect(() => {
+    if (!isCompanyVerified) {
+      return;
+    }
+
     const timeoutId = window.setTimeout(() => {
       void Promise.all([
         loadTalent("", "", false),
@@ -69,7 +86,7 @@ export default function TalentSearchPage() {
     }, 0);
 
     return () => window.clearTimeout(timeoutId);
-  }, [loadTalent]);
+  }, [isCompanyVerified, loadTalent]);
 
   function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -84,6 +101,21 @@ export default function TalentSearchPage() {
   }
 
   const hasFilters = Boolean(query.trim() || skillId || evidenceOnly);
+
+  if (!isCompanyVerified) {
+    return (
+      <section className="page company-talent-page">
+        <PageHeader title="Find talent" />
+        <DataState
+          isLoading={false}
+          error=""
+          empty
+          emptyTitle="Company verification required"
+          emptyDescription="Talent search will become available after an administrator verifies your company."
+        />
+      </section>
+    );
+  }
 
   return (
     <section className="page company-talent-page">

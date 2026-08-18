@@ -10,6 +10,7 @@ import {
   Search,
   UsersRound,
 } from "lucide-react";
+import { useOutletContext } from "react-router-dom";
 import { useAuth } from "../../../shared/auth/AuthContext";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
@@ -186,7 +187,12 @@ export default function WorkOverviewPage({
   mode = "work",
 }: WorkOverviewPageProps) {
   const { user } = useAuth();
+  const { isCompanyVerified } = useOutletContext<{
+    isCompanyVerified?: boolean;
+  }>();
   const isCompany = user?.role === "Company";
+  const isCompanyVerificationRequired =
+    isCompany && isCompanyVerified === false;
   const isFreelanceView = mode === "freelance";
   const [records, setRecords] = useState<WorkRecord[]>([]);
   const [view, setView] = useState<WorkView>("all");
@@ -196,6 +202,10 @@ export default function WorkOverviewPage({
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (isCompanyVerificationRequired) {
+      return;
+    }
+
     let isMounted = true;
 
     async function loadWork() {
@@ -222,7 +232,7 @@ export default function WorkOverviewPage({
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [isCompanyVerificationRequired]);
 
   const scopedRecords = useMemo(
     () =>
@@ -303,6 +313,21 @@ export default function WorkOverviewPage({
     });
 
     return `/${isCompany ? "company" : "job-seeker"}/messages?${params.toString()}`;
+  }
+
+  if (isCompanyVerificationRequired) {
+    return (
+      <section className="page work-overview-page">
+        <PageHeader title={isFreelanceView ? "Freelance contracts" : "Work"} />
+        <DataState
+          isLoading={false}
+          error=""
+          empty
+          emptyTitle="Company verification required"
+          emptyDescription="Work records will become available after an administrator verifies your company."
+        />
+      </section>
+    );
   }
 
   return (

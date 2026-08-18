@@ -57,12 +57,15 @@ export default function CompanyDashboardPage() {
     let isMounted = true;
 
     async function loadCompanyWorkspace() {
+      setIsLoading(true);
       setError("");
 
       try {
         const [projectData, applicationData] = await Promise.all([
           getMyCompanyProjectsAsync(),
-          getCompanyApplicationsAsync(),
+          isCompanyVerified
+            ? getCompanyApplicationsAsync()
+            : Promise.resolve<Application[]>([]),
         ]);
 
         if (isMounted) {
@@ -88,7 +91,7 @@ export default function CompanyDashboardPage() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [isCompanyVerified]);
 
   const workspace = useMemo(() => {
     const pending = applications.filter(
