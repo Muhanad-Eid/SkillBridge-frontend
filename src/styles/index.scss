@@ -1,0 +1,11 @@
+/* SkillBridge design-system foundation and migration layer. */
+
+@use "./foundation/tokens";
+@use "./foundation/themes";
+@use "./foundation/bootstrap";
+@use "./foundation/typography";
+@use "./foundation/base";
+@use "./foundation/utilities";
+@use "./migration/legacy-bridge";
+@use "./migration/modern-overrides";
+@use "./portals/workspace";

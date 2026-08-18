@@ -1,27 +1,21 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   Bell,
-  BriefcaseBusiness,
   CircleDollarSign,
   FileCheck2,
   FolderKanban,
   KeyRound,
   LayoutDashboard,
   ListChecks,
-  LogOut,
-  Menu,
   MessageSquare,
   Search,
   Star,
   UserRound,
   Wrench,
-  X,
   type LucideIcon,
 } from "lucide-react";
 import {
-  Link,
   Navigate,
-  NavLink,
   Outlet,
   useLocation,
   useNavigate,
@@ -34,12 +28,9 @@ import { getMyJobSeekerProfileAsync } from "../../features/profiles/infrastructu
 import { getUnreadMessageCountAsync } from "../../features/messages/infrastructure/messageApi";
 import { getUnreadNotificationCountAsync } from "../../features/notifications/infrastructure/notificationApi";
 import { useAuth } from "../../shared/auth/AuthContext";
-import Button from "../../shared/components/Button";
-import BrandIcon from "../../shared/components/BrandIcon";
 import ConfirmDialog from "../../shared/components/ConfirmDialog";
-import ThemeToggle from "../../shared/components/ThemeToggle";
-import useSidebarPreference from "../../shared/hooks/useSidebarPreference";
 import useVisibilityPolling from "../../shared/hooks/useVisibilityPolling";
+import PortalShell from "../../shared/layout/PortalShell";
 
 type JobSeekerNavItem = {
   label: string;
@@ -82,10 +73,7 @@ export default function JobSeekerPortalLayout() {
   const [profileError, setProfileError] = useState("");
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] =
-    useSidebarPreference("job-seeker");
 
   const refreshProfileCompletion = useCallback(async () => {
     setIsCheckingProfile(true);
@@ -127,17 +115,6 @@ export default function JobSeekerPortalLayout() {
 
   useVisibilityPolling(refreshBadges, 30000, { runImmediately: true });
 
-  useEffect(() => {
-    if (!isSidebarOpen) return;
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") setIsSidebarOpen(false);
-    }
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isSidebarOpen]);
-
   const profileIsComplete = isJobSeekerProfileComplete(profile);
   const isProfileRoute = location.pathname === "/job-seeker/profile";
   const isSecurityRoute = location.pathname === "/job-seeker/security";
@@ -175,137 +152,39 @@ export default function JobSeekerPortalLayout() {
   }
 
   return (
-    <div
-      className={`jobseeker-portal jobseeker-portal-v2 ${
-        isSidebarCollapsed ? "is-sidebar-collapsed" : ""
-      }`}
+    <PortalShell
+      role="job-seeker"
+      portalLabel="Job seeker portal"
+      homePath={profileIsComplete ? "/job-seeker/dashboard" : "/job-seeker/profile"}
+      userName={user?.fullName}
+      userEmail={user?.email}
+      onLogout={handleLogout}
+      navItems={navItems.map((item) => ({
+        label: item.label,
+        to: item.to,
+        icon: item.icon,
+        badgeCount:
+          item.badge === "messages"
+            ? unreadMessages
+            : item.badge === "notifications"
+              ? unreadNotifications
+              : undefined,
+      }))}
     >
-      <aside
-        className={`jobseeker-sidebar ${isSidebarOpen ? "is-mobile-open" : ""}`}
-        id="jobseeker-sidebar"
-      >
-        <button
-          className="portal-desktop-sidebar-close"
-          type="button"
-          aria-label="Collapse navigation"
-          title="Collapse navigation"
-          onClick={() => setIsSidebarCollapsed(true)}
-        >
-          <Menu size={20} aria-hidden="true" />
-        </button>
-        <button
-          className="portal-sidebar-close"
-          type="button"
-          aria-label="Close navigation"
-          onClick={() => setIsSidebarOpen(false)}
-        >
-          <X size={20} aria-hidden="true" />
-        </button>
-        <Link
-          className="jobseeker-brand"
-          to={profileIsComplete ? "/job-seeker/dashboard" : "/job-seeker/profile"}
-          onClick={() => setIsSidebarOpen(false)}
-        >
-          <BrandIcon />
-          <span>
-            <strong>SkillBridge</strong>
-            <small>Job seeker portal</small>
-          </span>
-        </Link>
-
-        <nav className="jobseeker-sidebar-nav" aria-label="Job seeker navigation">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const badgeCount =
-              item.badge === "messages"
-                ? unreadMessages
-                : item.badge === "notifications"
-                  ? unreadNotifications
-                  : 0;
-
-            return (
-              <NavLink key={item.to} to={item.to} onClick={() => setIsSidebarOpen(false)}>
-                <Icon size={18} aria-hidden="true" />
-                <span>{item.label}</span>
-                {badgeCount > 0 ? (
-                  <strong className="jobseeker-nav-badge">{badgeCount}</strong>
-                ) : null}
-              </NavLink>
-            );
-          })}
-        </nav>
-
-        <div className="jobseeker-sidebar-footer">
-          <div>
-            <BriefcaseBusiness size={17} aria-hidden="true" />
-            <span>
-              <strong>{user?.fullName}</strong>
-              <small>{user?.email}</small>
-            </span>
-          </div>
-          <ThemeToggle className="portal-theme-toggle" />
-          <Button
-            aria-label="Log out"
-            title="Log out"
-            type="button"
-            variant="ghost"
-            className="jobseeker-logout-button"
-            onClick={handleLogout}
-          >
-            <LogOut size={18} aria-hidden="true" />
-          </Button>
-        </div>
-      </aside>
-
-      {isSidebarOpen ? (
-        <button
-          className="portal-sidebar-backdrop"
-          type="button"
-          aria-label="Close navigation"
-          onClick={() => setIsSidebarOpen(false)}
+      {isCheckingProfile ? (
+        <div className="notice">Checking job seeker profile...</div>
+      ) : profileError && !isAccountSetupRoute ? (
+        <div className="notice notice-error">{profileError}</div>
+      ) : (
+        <Outlet
+          context={{
+            profile,
+            profileIsComplete,
+            refreshProfileCompletion,
+            refreshBadges,
+          }}
         />
-      ) : null}
-
-      <div className="jobseeker-workspace">
-        <main className="jobseeker-content">
-          {isSidebarCollapsed ? (
-            <button
-              className="portal-desktop-sidebar-open"
-              type="button"
-              aria-label="Open navigation"
-              title="Open navigation"
-              aria-controls="jobseeker-sidebar"
-              onClick={() => setIsSidebarCollapsed(false)}
-            >
-              <Menu size={20} aria-hidden="true" />
-            </button>
-          ) : null}
-          <button
-            className="portal-mobile-menu-button portal-content-menu-button"
-            type="button"
-            aria-label="Open navigation"
-            aria-controls="jobseeker-sidebar"
-            aria-expanded={isSidebarOpen}
-            onClick={() => setIsSidebarOpen(true)}
-          >
-            <Menu size={21} aria-hidden="true" />
-          </button>
-          {isCheckingProfile ? (
-            <div className="notice">Checking job seeker profile...</div>
-          ) : profileError && !isAccountSetupRoute ? (
-            <div className="notice notice-error">{profileError}</div>
-          ) : (
-            <Outlet
-              context={{
-                profile,
-                profileIsComplete,
-                refreshProfileCompletion,
-                refreshBadges,
-              }}
-            />
-          )}
-        </main>
-      </div>
+      )}
       <ConfirmDialog
         isOpen={isLogoutDialogOpen}
         title="Log out?"
@@ -314,6 +193,6 @@ export default function JobSeekerPortalLayout() {
         onCancel={closeLogoutDialog}
         onConfirm={confirmLogout}
       />
-    </div>
+    </PortalShell>
   );
 }

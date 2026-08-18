@@ -5,6 +5,7 @@ import {
   type InputHTMLAttributes,
 } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import SbInput from "./primitives/SbInput/SbInput";
 
 type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   label: string;
@@ -28,12 +29,14 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       <label className={`field ${className}`} htmlFor={inputId}>
         <span>{label}</span>
         <span className={`field-input ${isPassword ? "has-password-toggle" : ""}`}>
-          <input
+          <SbInput
             ref={ref}
             id={inputId}
             name={name}
             type={isPassword && isPasswordVisible ? "text" : type}
             disabled={disabled}
+            isInvalid={Boolean(error)}
+            errorId={error && inputId ? `${inputId}-error` : undefined}
             {...props}
           />
           {isPassword ? (
@@ -53,7 +56,11 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             </button>
           ) : null}
         </span>
-        {error ? <small className="field-error">{error}</small> : null}
+        {error ? (
+          <small className="field-error" id={inputId ? `${inputId}-error` : undefined}>
+            {error}
+          </small>
+        ) : null}
       </label>
     );
   },

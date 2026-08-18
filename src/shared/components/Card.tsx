@@ -1,4 +1,5 @@
 import { type ReactNode } from "react";
+import SbCard from "./primitives/SbCard/SbCard";
 
 type CardProps = {
   title?: string;
@@ -18,7 +19,7 @@ export default function Card({
   className = "",
 }: CardProps) {
   return (
-    <article className={`card ${className}`}>
+    <SbCard className={`card ${className}`} padding="none">
       {(eyebrow || title || description || actions) && (
         <header className="card-header">
           <div>
@@ -30,6 +31,6 @@ export default function Card({
         </header>
       )}
       {children ? <div className="card-body">{children}</div> : null}
-    </article>
+    </SbCard>
   );
 }

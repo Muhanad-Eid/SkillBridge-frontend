@@ -27,8 +27,12 @@ export default function PublicLayout() {
           <NavLink className="site-nav-home" to="/">
             About
           </NavLink>
-          <NavLink to="/opportunities">Opportunities</NavLink>
-          <NavLink to="/freelance">Freelance</NavLink>
+          <NavLink className="site-nav-opportunities" to="/opportunities">
+            Opportunities
+          </NavLink>
+          <NavLink className="site-nav-freelance" to="/freelance">
+            Freelance
+          </NavLink>
           {!user ? (
             <>
               <NavLink to="/portal/login">Log in</NavLink>

@@ -1,4 +1,5 @@
 import { type ReactNode } from "react";
+import SbBadge, { type SbBadgeTone } from "./primitives/SbBadge/SbBadge";
 
 type StatusBadgeProps = {
   children: ReactNode;
@@ -9,5 +10,17 @@ export default function StatusBadge({
   children,
   tone = "neutral",
 }: StatusBadgeProps) {
-  return <span className={`status-badge status-${tone}`}>{children}</span>;
+  const toneMap: Record<NonNullable<StatusBadgeProps["tone"]>, SbBadgeTone> = {
+    blue: "info",
+    green: "approved",
+    amber: "pending",
+    red: "rejected",
+    neutral: "neutral",
+  };
+
+  return (
+    <SbBadge className={`status-badge status-${tone}`} tone={toneMap[tone]}>
+      {children}
+    </SbBadge>
+  );
 }

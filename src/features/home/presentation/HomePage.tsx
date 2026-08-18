@@ -18,15 +18,15 @@ import {
 import Button from "../../../shared/components/Button";
 
 const providerFeatures = [
-  "Post internships, training, and project work",
-  "Review submitted evidence before profile details",
-  "Track milestones and approve completed results",
+  "Define versioned requirements before work begins",
+  "Evaluate every criterion against accepted rules",
+  "Approve evidence through accountable workflows",
 ];
 
 const individualFeatures = [
   "Find opportunities that match your skills",
-  "Apply with previous work or a short task",
-  "Choose which approved Evidence Cards to share",
+  "Complete milestones and participant-specific work",
+  "Share traceable evidence with clear claim limits",
 ];
 
 const universityFeatures = [
@@ -49,11 +49,12 @@ export default function HomePage() {
             </p>
             <h1>SkillBridge</h1>
             <p className="landing-lead">
-              Real opportunities. Experience you can prove.
+              Practical work. Evidence with a trace.
             </p>
             <p className="landing-description">
-              Verified providers offer practical work. Individuals complete it
-              and build approved evidence they can choose to share.
+              SkillBridge controls when completed work is allowed to become
+              evidence, preserving the requirement, submission, evaluation,
+              evaluator, and approval behind every card.
             </p>
 
             <div className="landing-actions">
@@ -81,11 +82,11 @@ export default function HomePage() {
               </li>
               <li>
                 <ClipboardCheck size={18} aria-hidden="true" />
-                Application tracking
+                Criterion-level evaluation
               </li>
               <li>
                 <MessageSquare size={18} aria-hidden="true" />
-                Direct communication
+                Visible evidence trace
               </li>
             </ul>
           </div>
@@ -97,11 +98,11 @@ export default function HomePage() {
           <header className="landing-section-heading">
             <p>How it works</p>
             <h2 id="process-title">
-              One clear path from posting to completed work.
+              One controlled path from requirement to evidence.
             </h2>
             <span>
-              SkillBridge keeps the opportunity, application, communication,
-              and result connected.
+              A card is issued only when the complete evidence lineage satisfies
+              the defined rules.
             </span>
           </header>
 
@@ -118,19 +119,19 @@ export default function HomePage() {
             <li>
               <span className="landing-step-number">02</span>
               <BriefcaseBusiness size={28} aria-hidden="true" />
-              <h3>Apply with evidence</h3>
+              <h3>Complete participant-specific work</h3>
               <p>
-                Individuals can share their profile, CV, previous work, or a
-                short task so providers can review the full application.
+                Accepted participants complete milestones, submissions,
+                revisions, and contribution attribution when applicable.
               </p>
             </li>
             <li>
               <span className="landing-step-number">03</span>
               <BadgeCheck size={28} aria-hidden="true" />
-              <h3>Complete and approve</h3>
+              <h3>Evaluate, approve, and issue</h3>
               <p>
-                Approved work creates a private Skill Evidence Card that the
-                individual can share from their portfolio.
+                Required criteria, lineage, attribution, and approvals must pass
+                before a protected Skill Evidence Card is created.
               </p>
             </li>
           </ol>

@@ -1,0 +1,784 @@
+/* Final migration layer. It intentionally follows legacy CSS while pages are moved incrementally. */
+
+html,
+body,
+#root {
+  min-height: 100%;
+  background: var(--sb-color-canvas);
+  color: var(--sb-color-text);
+}
+
+body {
+  margin: 0;
+  font-family: var(--sb-font-sans);
+  font-size: var(--sb-font-size-md);
+  line-height: var(--sb-line-height-body);
+}
+
+a {
+  color: var(--sb-color-action);
+}
+
+a:hover {
+  color: var(--sb-color-action-hover);
+}
+
+.page,
+.public-main,
+.app-shell {
+  background: var(--sb-color-canvas);
+  color: var(--sb-color-text);
+}
+
+.page {
+  width: min(100%, 1440px);
+  margin-inline: auto;
+}
+
+.page-header {
+  min-height: auto;
+  margin: 0 0 var(--sb-space-6);
+  padding: 0 0 var(--sb-space-5);
+  border: 0;
+  border-bottom: 1px solid var(--sb-color-border);
+  background: transparent;
+  box-shadow: none;
+}
+
+.page-header h1,
+.card-header h3,
+.card h2,
+.card h3,
+.card h4 {
+  color: var(--sb-color-text);
+  letter-spacing: 0;
+}
+
+.page-header h1 {
+  font-size: clamp(1.5rem, 2vw, 2rem);
+  line-height: 1.2;
+}
+
+.page-header p,
+.card-header p,
+.card p,
+.card small {
+  color: var(--sb-color-text-muted);
+}
+
+.card,
+.panel,
+.dashboard-card,
+.metric-card,
+.summary-card,
+.stat-card,
+.table-shell,
+.data-table-shell {
+  border: 1px solid var(--sb-color-border);
+  border-radius: var(--sb-radius-card);
+  background: var(--sb-color-surface);
+  color: var(--sb-color-text);
+  box-shadow: var(--sb-shadow-xs);
+}
+
+.card:hover,
+.panel:hover {
+  border-color: var(--sb-color-border-strong);
+}
+
+.card-header {
+  border-bottom-color: var(--sb-color-border);
+}
+
+.card-eyebrow,
+.eyebrow,
+.section-kicker {
+  color: var(--sb-color-action);
+  letter-spacing: 0;
+}
+
+.button {
+  min-height: var(--sb-control-height-md);
+  border-radius: var(--sb-radius-md);
+  font-weight: 650;
+  letter-spacing: 0;
+  box-shadow: none;
+}
+
+.button-primary {
+  border-color: var(--sb-color-action);
+  background: var(--sb-color-action);
+  color: var(--sb-color-on-action);
+}
+
+.button-primary:hover {
+  border-color: var(--sb-color-action-hover);
+  background: var(--sb-color-action-hover);
+  color: var(--sb-color-on-action);
+}
+
+.button-secondary {
+  border-color: var(--sb-color-border-strong);
+  background: var(--sb-color-surface);
+  color: var(--sb-color-text);
+}
+
+.button-secondary:hover,
+.button-ghost:hover {
+  border-color: var(--sb-color-border-strong);
+  background: var(--sb-color-surface-subtle);
+  color: var(--sb-color-text);
+}
+
+.button-ghost {
+  color: var(--sb-color-text-secondary);
+}
+
+.button-danger {
+  border-color: var(--sb-color-rejected);
+  background: var(--sb-color-rejected);
+  color: #fff;
+}
+
+.field > span:first-child,
+.field > label,
+.field-label {
+  color: var(--sb-color-text-secondary);
+  font-size: var(--sb-font-size-sm);
+  font-weight: 650;
+  letter-spacing: 0;
+}
+
+.field input,
+.field select,
+.field textarea,
+input,
+select,
+textarea {
+  border-color: var(--sb-color-border-strong);
+  border-radius: var(--sb-radius-md);
+  background: var(--sb-color-surface);
+  color: var(--sb-color-text);
+  box-shadow: none;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--sb-color-focus);
+  outline: 3px solid color-mix(in srgb, var(--sb-color-focus) 18%, transparent);
+  outline-offset: 1px;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--sb-color-text-muted);
+  opacity: 0.8;
+}
+
+.notice {
+  border: 1px solid var(--sb-color-border);
+  border-radius: var(--sb-radius-md);
+  background: var(--sb-color-info-soft);
+  color: var(--sb-color-text-secondary);
+}
+
+.notice-error,
+.auth-error {
+  border-color: color-mix(in srgb, var(--sb-color-rejected) 38%, var(--sb-color-border));
+  background: var(--sb-color-rejected-soft);
+  color: var(--sb-color-rejected);
+}
+
+.auth-success {
+  border-color: color-mix(in srgb, var(--sb-color-approved) 38%, var(--sb-color-border));
+  background: var(--sb-color-approved-soft);
+  color: var(--sb-color-approved);
+}
+
+.status-badge,
+.badge,
+.chip,
+.pill {
+  border-radius: 999px;
+  box-shadow: none;
+  letter-spacing: 0;
+}
+
+.status-blue,
+.status-info {
+  background: var(--sb-color-info-soft);
+  color: var(--sb-color-info);
+}
+
+.status-green,
+.status-approved,
+.status-verified {
+  background: var(--sb-color-approved-soft);
+  color: var(--sb-color-approved);
+}
+
+.status-amber,
+.status-pending {
+  background: var(--sb-color-pending-soft);
+  color: var(--sb-color-pending);
+}
+
+.status-red,
+.status-rejected,
+.status-revoked {
+  background: var(--sb-color-rejected-soft);
+  color: var(--sb-color-rejected);
+}
+
+.status-neutral {
+  background: var(--sb-color-neutral-soft);
+  color: var(--sb-color-neutral);
+}
+
+table {
+  border-color: var(--sb-color-border);
+  background: var(--sb-color-surface);
+  color: var(--sb-color-text);
+}
+
+th {
+  background: var(--sb-color-surface-subtle);
+  color: var(--sb-color-text-secondary);
+  font-size: var(--sb-font-size-sm);
+  letter-spacing: 0;
+}
+
+td,
+th {
+  border-color: var(--sb-color-border);
+}
+
+tbody tr:hover {
+  background: color-mix(in srgb, var(--sb-color-action-soft) 55%, transparent);
+}
+
+/* Feature surfaces */
+:is(
+  .jobseeker-panel-card,
+  .jobseeker-readiness-panel,
+  .jobseeker-profile-form-panel,
+  .jobseeker-apply-panel,
+  .company-panel,
+  .company-profile-form-panel,
+  .admin-ops-panel,
+  .admin-health-panel,
+  .work-hub-panel,
+  .work-progress-panel,
+  .training-report-panel,
+  .training-supervisor-card,
+  .portfolio-editor-panel,
+  .portfolio-evidence-card,
+  .evidence-card,
+  .public-portfolio-shell,
+  .company-opportunity-drawer,
+  .company-applicant-drawer,
+  .company-review-dialog,
+  .portfolio-edit-dialog,
+  .evidence-dialog,
+  .company-proposal-compare-dialog,
+  .company-proposal-accept-dialog,
+  .company-application-decision-dialog
+) {
+  border-color: var(--sb-color-border);
+  border-radius: var(--sb-radius-card);
+  background: var(--sb-color-surface);
+  color: var(--sb-color-text);
+  box-shadow: var(--sb-shadow-xs);
+}
+
+:is(
+  .jobseeker-panel-card,
+  .jobseeker-profile-form-panel,
+  .company-panel,
+  .company-profile-form-panel,
+  .admin-ops-panel,
+  .admin-health-panel,
+  .work-hub-panel,
+  .training-report-panel,
+  .portfolio-editor-panel,
+  .evidence-card,
+  .company-opportunity-drawer,
+  .company-applicant-drawer,
+  .company-review-dialog,
+  .portfolio-edit-dialog,
+  .evidence-dialog
+) > header {
+  border-bottom-color: var(--sb-color-border);
+  background: transparent;
+}
+
+:is(
+  .jobseeker-status-tabs,
+  .company-pipeline-tabs,
+  .notification-filter-tabs,
+  .work-hub-section-tabs,
+  .work-record-tabs,
+  .work-overview-tabs,
+  .freelance-section-tabs
+) {
+  border: 1px solid var(--sb-color-border);
+  border-radius: var(--sb-radius-control);
+  background: var(--sb-color-surface-subtle);
+  box-shadow: none;
+}
+
+:is(
+  .jobseeker-status-tabs,
+  .company-pipeline-tabs,
+  .notification-filter-tabs,
+  .work-hub-section-tabs,
+  .work-record-tabs,
+  .work-overview-tabs
+) button,
+.freelance-section-tabs a {
+  border: 0;
+  border-radius: var(--sb-radius-sm);
+  background: transparent;
+  color: var(--sb-color-text-secondary);
+  box-shadow: none;
+}
+
+:is(
+  .jobseeker-status-tabs,
+  .company-pipeline-tabs,
+  .notification-filter-tabs,
+  .work-hub-section-tabs,
+  .work-record-tabs,
+  .work-overview-tabs
+) button.active,
+.freelance-section-tabs a.active {
+  background: var(--sb-color-surface);
+  color: var(--sb-color-action);
+  box-shadow: var(--sb-shadow-xs);
+}
+
+:is(
+  .jobseeker-discovery-toolbar,
+  .jobseeker-filter-panel,
+  .company-list-toolbar,
+  .company-pipeline-toolbar,
+  .company-talent-toolbar,
+  .work-overview-filters,
+  .portfolio-toolbar,
+  .public-portfolio-toolbar,
+  .university-training-toolbar
+) {
+  border-color: var(--sb-color-border);
+  border-radius: var(--sb-radius-card);
+  background: var(--sb-color-surface);
+  color: var(--sb-color-text);
+  box-shadow: var(--sb-shadow-xs);
+}
+
+:is(
+  .company-project-table,
+  .company-candidate-table,
+  .jobseeker-application-table,
+  .company-proposal-compare-table
+) {
+  border-color: var(--sb-color-border);
+  border-radius: var(--sb-radius-card);
+  background: var(--sb-color-surface);
+  overflow: hidden;
+}
+
+:is(
+  .company-project-table-head,
+  .company-candidate-table-head,
+  .jobseeker-application-table-head
+) {
+  background: var(--sb-color-surface-subtle);
+  color: var(--sb-color-text-secondary);
+}
+
+:is(
+  .company-project-table,
+  .company-candidate-table,
+  .jobseeker-application-table
+) > article {
+  border-color: var(--sb-color-border);
+  background: var(--sb-color-surface);
+  color: var(--sb-color-text);
+}
+
+.company-verification-banner {
+  border: 1px solid color-mix(in srgb, var(--sb-color-pending) 32%, var(--sb-color-border));
+  border-radius: var(--sb-radius-card);
+  background: var(--sb-color-pending-soft);
+  color: var(--sb-color-text);
+  box-shadow: none;
+}
+
+.company-verification-banner span {
+  color: var(--sb-color-text-secondary);
+}
+
+.empty-state,
+.jobseeker-empty-panel,
+.company-empty-panel {
+  border-color: var(--sb-color-border);
+  border-radius: var(--sb-radius-card);
+  background: var(--sb-color-surface-subtle);
+  color: var(--sb-color-text);
+}
+
+.evidence-card-mark,
+.evidence-dialog-verification {
+  border-color: color-mix(in srgb, var(--sb-color-approved) 30%, var(--sb-color-border));
+  background: var(--sb-color-approved-soft);
+  color: var(--sb-color-approved);
+}
+
+/* Public shell */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  min-height: 68px;
+  border-bottom: 1px solid var(--sb-color-border);
+  background: color-mix(in srgb, var(--sb-color-surface) 94%, transparent);
+  color: var(--sb-color-text);
+  box-shadow: none;
+  backdrop-filter: blur(12px);
+}
+
+.brand,
+.site-nav a {
+  color: var(--sb-color-text-secondary);
+}
+
+.brand strong,
+.site-nav a.active,
+.site-nav a:hover {
+  color: var(--sb-color-text);
+}
+
+.brand small,
+.site-footer small,
+.site-footer-brand small {
+  color: var(--sb-color-text-muted);
+}
+
+.site-register-link {
+  border-color: var(--sb-color-action);
+  background: var(--sb-color-action);
+  color: var(--sb-color-on-action) !important;
+}
+
+.site-footer {
+  border-top: 1px solid var(--sb-color-border);
+  background: var(--sb-color-surface);
+  color: var(--sb-color-text);
+}
+
+/* Authentication */
+.auth-page {
+  min-height: calc(100vh - 68px);
+  background: var(--sb-color-canvas);
+}
+
+.auth-simple::before {
+  background-image: url('/skillbridge-hero-light.webp');
+}
+
+.auth-simple::after {
+  background: rgb(7 17 31 / 0.52);
+}
+
+:root[data-theme="dark"] .auth-simple::before {
+  background-image: url('/skillbridge-hero.webp');
+}
+
+:root[data-theme="dark"] .auth-simple::after {
+  background: rgb(4 9 17 / 0.7);
+}
+
+.auth-card {
+  width: min(100%, 460px);
+  border: 1px solid var(--sb-color-border);
+  border-radius: var(--sb-radius-card);
+  background: var(--sb-color-surface);
+  color: var(--sb-color-text);
+  box-shadow: var(--sb-shadow-md);
+}
+
+.auth-card h1,
+.auth-card h2,
+.auth-card strong,
+.auth-switch {
+  color: var(--sb-color-text);
+}
+
+.auth-card p,
+.auth-card small {
+  color: var(--sb-color-text-muted);
+}
+
+/* Landing */
+.landing-page {
+  color: var(--sb-color-text);
+  background: var(--sb-color-canvas);
+}
+
+.landing-hero {
+  min-height: min(760px, calc(100vh - 68px));
+  display: grid;
+  align-items: center;
+  padding: clamp(4rem, 10vh, 7rem) clamp(1.25rem, 6vw, 6rem);
+  background-image: linear-gradient(90deg, rgb(7 17 31 / 0.9) 0%, rgb(7 17 31 / 0.68) 48%, rgb(7 17 31 / 0.16) 100%), url('/skillbridge-hero-light.webp');
+  background-position: center;
+  background-size: cover;
+}
+
+:root[data-theme="dark"] .landing-hero {
+  background-image: linear-gradient(90deg, rgb(4 9 17 / 0.94) 0%, rgb(4 9 17 / 0.74) 48%, rgb(4 9 17 / 0.28) 100%), url('/skillbridge-hero.webp');
+}
+
+.landing-hero::after {
+  display: none;
+}
+
+.landing-hero-inner {
+  width: min(100%, 1240px);
+  margin: 0 auto;
+}
+
+.landing-hero-copy {
+  max-width: 690px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.landing-context {
+  width: fit-content;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid rgb(255 255 255 / 0.34);
+  border-radius: var(--sb-radius-round);
+  background: rgb(8 20 38 / 0.52);
+  color: #e2e8f0;
+}
+
+.landing-hero h1,
+.landing-lead {
+  color: #fff;
+  letter-spacing: 0;
+  text-shadow: none;
+}
+
+.landing-hero h1 {
+  font-size: clamp(3rem, 7vw, 5.5rem);
+}
+
+.landing-description {
+  max-width: 620px;
+  color: #dbe7f5;
+  font-size: 1.08rem;
+}
+
+.landing-actions .button-secondary {
+  border-color: rgb(255 255 255 / 0.42);
+  background: rgb(255 255 255 / 0.1);
+  color: #fff;
+}
+
+.landing-actions .button-primary,
+.landing-cta .button-primary {
+  border-color: var(--sb-color-action);
+  background: var(--sb-color-action);
+  color: var(--sb-color-on-action);
+}
+
+.landing-actions .button-primary:hover,
+.landing-cta .button-primary:hover {
+  border-color: var(--sb-color-action-hover);
+  background: var(--sb-color-action-hover);
+  color: var(--sb-color-on-action);
+}
+
+.landing-proof {
+  color: #e2e8f0;
+}
+
+.landing-process-list li,
+.landing-audience-grid article {
+  border-color: var(--sb-color-border);
+  border-radius: var(--sb-radius-card);
+  background: var(--sb-color-surface);
+  color: var(--sb-color-text);
+  box-shadow: var(--sb-shadow-xs);
+}
+
+.landing-proof {
+  padding-top: var(--sb-space-5);
+  border-top: 1px solid rgb(255 255 255 / 0.34);
+}
+
+.landing-proof li {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #e2e8f0;
+  box-shadow: none;
+}
+
+.landing-process,
+.landing-audience {
+  padding-block: clamp(4rem, 8vw, 7rem);
+  background: var(--sb-color-canvas);
+}
+
+.landing-audience {
+  border-top: 1px solid var(--sb-color-border);
+  background: var(--sb-color-surface-subtle);
+}
+
+.landing-section-heading > p,
+.landing-audience-grid article > span,
+.landing-step-number {
+  color: var(--sb-color-action);
+}
+
+.landing-section-heading h2,
+.landing-process-list h3,
+.landing-audience-grid h3,
+.landing-cta h2 {
+  color: var(--sb-color-text);
+}
+
+.landing-section-heading > span,
+.landing-process-list p,
+.landing-audience-grid article > p {
+  color: var(--sb-color-text-muted);
+}
+
+.landing-audience-icon {
+  border-radius: var(--sb-radius-md);
+  background: var(--sb-color-action-soft);
+  color: var(--sb-color-action);
+}
+
+.landing-cta {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--sb-color-text);
+  color: var(--sb-color-on-action);
+  box-shadow: none;
+}
+
+.landing-cta h2,
+.landing-cta > div > span {
+  color: #fff;
+}
+
+/* Dark-mode cleanup for legacy hard-coded surfaces. */
+:root[data-theme="dark"] :is(
+  .card,
+  .panel,
+  .dashboard-card,
+  .metric-card,
+  .summary-card,
+  .stat-card,
+  .table-shell,
+  .data-table-shell,
+  .auth-card,
+  .modal,
+  .dialog,
+  .drawer,
+  .popover,
+  .dropdown-menu
+) {
+  border-color: var(--sb-color-border);
+  background: var(--sb-color-surface);
+  color: var(--sb-color-text);
+}
+
+:root[data-theme="dark"] :is(input, select, textarea, option) {
+  background: var(--sb-color-surface-subtle);
+  color: var(--sb-color-text);
+}
+
+@media (max-width: 760px) {
+  .site-header {
+    min-height: 60px;
+  }
+
+  .landing-hero {
+    min-height: 680px;
+    padding: 4.5rem 1.25rem 3.5rem;
+    background-position: 64% center;
+  }
+
+  .landing-hero-inner {
+    min-width: 0;
+    padding: 0;
+  }
+
+  .landing-hero-copy {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .landing-context {
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  .landing-hero h1 {
+    font-size: 3rem;
+  }
+
+  .landing-actions,
+  .landing-actions .button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .public-shell .site-header {
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.65rem 1rem;
+  }
+
+  .public-shell .site-nav {
+    width: auto;
+    flex: 0 0 auto;
+    gap: 0.75rem;
+    margin-left: 0;
+    font-size: 0.75rem;
+  }
+
+  .public-shell .site-nav-freelance,
+  .public-shell .site-nav-opportunities,
+  .public-shell .public-theme-toggle {
+    display: none;
+  }
+
+  .public-shell .site-nav .site-register-link {
+    display: inline-flex;
+    min-height: 36px;
+    padding-inline: 0.75rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .public-shell .site-nav {
+    gap: 0.55rem;
+  }
+
+  .public-shell .site-nav a {
+    font-size: 0.72rem;
+  }
+}

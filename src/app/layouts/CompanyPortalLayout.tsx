@@ -8,29 +8,20 @@ import {
   KeyRound,
   LayoutDashboard,
   ListChecks,
-  LogOut,
-  Menu,
   MessageSquare,
   ShieldCheck,
   UserRoundSearch,
-  UserRound,
-  X,
   type LucideIcon,
 } from "lucide-react";
 import {
-  Link,
   Navigate,
-  NavLink,
   Outlet,
   useLocation,
   useNavigate,
 } from "react-router-dom";
 import { useAuth } from "../../shared/auth/AuthContext";
 import Button from "../../shared/components/Button";
-import BrandIcon from "../../shared/components/BrandIcon";
 import ConfirmDialog from "../../shared/components/ConfirmDialog";
-import ThemeToggle from "../../shared/components/ThemeToggle";
-import useSidebarPreference from "../../shared/hooks/useSidebarPreference";
 import {
   isCompanyProfileComplete,
   type CompanyProfile,
@@ -39,6 +30,7 @@ import { getMyCompanyProfileAsync } from "../../features/profiles/infrastructure
 import { getUnreadMessageCountAsync } from "../../features/messages/infrastructure/messageApi";
 import { getUnreadNotificationCountAsync } from "../../features/notifications/infrastructure/notificationApi";
 import useVisibilityPolling from "../../shared/hooks/useVisibilityPolling";
+import PortalShell from "../../shared/layout/PortalShell";
 
 type CompanyNavItem = {
   label: string;
@@ -79,10 +71,7 @@ export default function CompanyPortalLayout() {
   const [profileError, setProfileError] = useState("");
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] =
-    useSidebarPreference("company");
 
   const refreshProfileCompletion = useCallback(async () => {
     setIsCheckingProfile(true);
@@ -123,17 +112,6 @@ export default function CompanyPortalLayout() {
   }, [refreshProfileCompletion]);
 
   useVisibilityPolling(refreshBadges, 30000, { runImmediately: true });
-
-  useEffect(() => {
-    if (!isSidebarOpen) return;
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") setIsSidebarOpen(false);
-    }
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isSidebarOpen]);
 
   const profileIsComplete = isCompanyProfileComplete(profile);
   const isCompanyVerified = Boolean(profile?.isVerified);
@@ -179,117 +157,26 @@ export default function CompanyPortalLayout() {
   }
 
   return (
-    <div
-      className={`company-portal company-portal-v2 ${
-        isSidebarCollapsed ? "is-sidebar-collapsed" : ""
-      }`}
-    >
-      <aside
-        className={`company-sidebar ${isSidebarOpen ? "is-mobile-open" : ""}`}
-        id="company-sidebar"
-      >
-        <button
-          className="portal-desktop-sidebar-close"
-          type="button"
-          aria-label="Collapse navigation"
-          title="Collapse navigation"
-          onClick={() => setIsSidebarCollapsed(true)}
-        >
-          <Menu size={20} aria-hidden="true" />
-        </button>
-        <button
-          className="portal-sidebar-close"
-          type="button"
-          aria-label="Close navigation"
-          onClick={() => setIsSidebarOpen(false)}
-        >
-          <X size={20} aria-hidden="true" />
-        </button>
-        <Link
-          className="company-brand"
-          to={profileIsComplete ? "/company/dashboard" : "/company/profile"}
-          onClick={() => setIsSidebarOpen(false)}
-        >
-          <BrandIcon />
-          <span>
-            <strong>SkillBridge</strong>
-            <small>{providerLabel} portal</small>
-          </span>
-        </Link>
-
-        <div className="company-account-summary">
-          <span className="company-account-icon" aria-hidden="true">
-            <Building2 size={19} />
-          </span>
-          <div>
-            <strong>{profile?.companyName || user?.fullName || providerLabel}</strong>
-            <small>
-              {isCompanyVerified
-                ? `Verified ${providerLabelLower}`
-                : "Verification pending"}
-            </small>
-          </div>
-          {isCompanyVerified ? <ShieldCheck size={18} aria-label="Verified" /> : null}
-        </div>
-
-        <nav
-          className="company-sidebar-nav"
-          aria-label={`${providerLabel} navigation`}
-        >
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const badgeCount =
-              item.badge === "messages"
-                ? unreadMessages
-                : item.badge === "notifications"
-                  ? unreadNotifications
-                  : 0;
-
-            return (
-              <NavLink key={item.to} to={item.to} onClick={() => setIsSidebarOpen(false)}>
-                <Icon size={18} aria-hidden="true" />
-                <span>{item.label}</span>
-                {badgeCount > 0 ? (
-                  <strong className="company-nav-badge">{badgeCount}</strong>
-                ) : null}
-              </NavLink>
-            );
-          })}
-        </nav>
-
-        <div className="company-sidebar-footer">
-          <div>
-            <UserRound size={17} aria-hidden="true" />
-            <span>
-              <strong>{user?.fullName}</strong>
-              <small>{user?.email}</small>
-            </span>
-          </div>
-          <ThemeToggle className="portal-theme-toggle" />
-          <Button
-            aria-label="Log out"
-            title="Log out"
-            type="button"
-            variant="ghost"
-            className="company-logout-button"
-            onClick={handleLogout}
-          >
-            <LogOut size={18} aria-hidden="true" />
-          </Button>
-        </div>
-      </aside>
-
-      {isSidebarOpen ? (
-        <button
-          className="portal-sidebar-backdrop"
-          type="button"
-          aria-label="Close navigation"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      ) : null}
-
-      <div className="company-workspace">
-        {!isCheckingProfile &&
+    <PortalShell
+      role="company"
+      portalLabel={`${providerLabel} portal`}
+      homePath={profileIsComplete ? "/company/dashboard" : "/company/profile"}
+      userName={profile?.companyName || user?.fullName}
+      userEmail={user?.email}
+      onLogout={handleLogout}
+      navItems={navItems.map((item) => ({
+        label: item.label,
+        to: item.to,
+        icon: item.icon,
+        badgeCount:
+          item.badge === "messages"
+            ? unreadMessages
+            : item.badge === "notifications"
+              ? unreadNotifications
+              : undefined,
+      }))}
+      banner={
+        !isCheckingProfile &&
         profileIsComplete &&
         !isCompanyVerified &&
         !isAccountSetupRoute ? (
@@ -306,49 +193,25 @@ export default function CompanyPortalLayout() {
               Review profile
             </Button>
           </div>
-        ) : null}
-
-        <main className="company-content">
-          {isSidebarCollapsed ? (
-            <button
-              className="portal-desktop-sidebar-open"
-              type="button"
-              aria-label="Open navigation"
-              title="Open navigation"
-              aria-controls="company-sidebar"
-              onClick={() => setIsSidebarCollapsed(false)}
-            >
-              <Menu size={20} aria-hidden="true" />
-            </button>
-          ) : null}
-          <button
-            className="portal-mobile-menu-button portal-content-menu-button"
-            type="button"
-            aria-label="Open navigation"
-            aria-controls="company-sidebar"
-            aria-expanded={isSidebarOpen}
-            onClick={() => setIsSidebarOpen(true)}
-          >
-            <Menu size={21} aria-hidden="true" />
-          </button>
-          {isCheckingProfile ? (
-            <div className="notice">Checking company profile...</div>
-          ) : profileError && !isAccountSetupRoute ? (
-            <div className="notice notice-error">{profileError}</div>
-          ) : (
-            <Outlet
-              context={{
-                profile,
-                profileIsComplete,
-                isCompanyVerified,
-                isTrainingProvider,
-                refreshProfileCompletion,
-                refreshBadges,
-              }}
-            />
-          )}
-        </main>
-      </div>
+        ) : null
+      }
+    >
+      {isCheckingProfile ? (
+        <div className="notice">Checking company profile...</div>
+      ) : profileError && !isAccountSetupRoute ? (
+        <div className="notice notice-error">{profileError}</div>
+      ) : (
+        <Outlet
+          context={{
+            profile,
+            profileIsComplete,
+            isCompanyVerified,
+            isTrainingProvider,
+            refreshProfileCompletion,
+            refreshBadges,
+          }}
+        />
+      )}
       <ConfirmDialog
         isOpen={isLogoutDialogOpen}
         title="Log out?"
@@ -357,6 +220,6 @@ export default function CompanyPortalLayout() {
         onCancel={closeLogoutDialog}
         onConfirm={confirmLogout}
       />
-    </div>
+    </PortalShell>
   );
 }

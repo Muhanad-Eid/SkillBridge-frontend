@@ -1,0 +1,80 @@
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --sb-color-canvas: #f5f7fa;
+  --sb-color-surface: #ffffff;
+  --sb-color-surface-subtle: #f7f9fc;
+  --sb-color-surface-raised: #ffffff;
+  --sb-color-text: #13213c;
+  --sb-color-text-secondary: #34445f;
+  --sb-color-text-muted: #68758c;
+  --sb-color-border: #dce3ec;
+  --sb-color-border-strong: #c5d0dc;
+
+  --sb-color-action: #0b5bd3;
+  --sb-color-action-hover: #0849aa;
+  --sb-color-action-active: #073d8d;
+  --sb-color-action-soft: #edf4ff;
+  --sb-color-on-action: #ffffff;
+
+  --sb-color-approved: #087f68;
+  --sb-color-approved-soft: #eaf8f4;
+  --sb-color-pending: #a66508;
+  --sb-color-pending-soft: #fffbeb;
+  --sb-color-rejected: #bb2d3b;
+  --sb-color-rejected-soft: #fef2f2;
+  --sb-color-info: #0b6b9a;
+  --sb-color-info-soft: #f0f9ff;
+  --sb-color-neutral: #536178;
+  --sb-color-neutral-soft: #f1f5f9;
+
+  --sb-color-focus: #0b5bd3;
+  --sb-color-disabled: #94a3b8;
+  --sb-color-disabled-surface: #e2e8f0;
+  --sb-color-selection: #dbeafe;
+  --sb-color-on-selection: #172554;
+  --sb-color-overlay: rgb(15 23 42 / 0.56);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --sb-color-canvas: #0f141c;
+  --sb-color-surface: #161d27;
+  --sb-color-surface-subtle: #1c2531;
+  --sb-color-surface-raised: #202a37;
+  --sb-color-text: #f4f7fb;
+  --sb-color-text-secondary: #d2dae5;
+  --sb-color-text-muted: #9ca9ba;
+  --sb-color-border: #2d3948;
+  --sb-color-border-strong: #465568;
+
+  --sb-color-action: #71a7ff;
+  --sb-color-action-hover: #9dc2ff;
+  --sb-color-action-active: #c7dbff;
+  --sb-color-action-soft: #19345c;
+  --sb-color-on-action: #081321;
+
+  --sb-color-approved: #34d399;
+  --sb-color-approved-soft: #12362f;
+  --sb-color-pending: #fbbf24;
+  --sb-color-pending-soft: #3b2f13;
+  --sb-color-rejected: #f87171;
+  --sb-color-rejected-soft: #3f2024;
+  --sb-color-info: #7dd3fc;
+  --sb-color-info-soft: #153244;
+  --sb-color-neutral: #cbd5e1;
+  --sb-color-neutral-soft: #29303a;
+
+  --sb-color-focus: #60a5fa;
+  --sb-color-disabled: #737d8b;
+  --sb-color-disabled-surface: #292e36;
+  --sb-color-selection: #1e3a5f;
+  --sb-color-on-selection: #eff6ff;
+  --sb-color-overlay: rgb(0 0 0 / 0.7);
+
+  --sb-shadow-xs: 0 1px 2px rgb(0 0 0 / 0.22);
+  --sb-shadow-sm: 0 5px 16px rgb(0 0 0 / 0.25);
+  --sb-shadow-md: 0 14px 32px rgb(0 0 0 / 0.32);
+}
