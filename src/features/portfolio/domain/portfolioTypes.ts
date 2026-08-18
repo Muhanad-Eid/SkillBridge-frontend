@@ -1,4 +1,5 @@
 import type { OpportunityType } from "../../projects/domain/projectTypes";
+import type { EvidenceCardStatus } from "../../evidence/domain/evidenceTypes";
 
 type PortfolioSkill = {
   id: number;
@@ -34,6 +35,12 @@ export type PortfolioItem = {
   isFeatured: boolean;
   updatedAt: string;
   isEvidenceCard: boolean;
+  evidenceContractVersionId: number | null;
+  submissionRevision: number;
+  evidenceStatus: EvidenceCardStatus;
+  claimBoundarySnapshot: string | null;
+  confidentialSummary: string | null;
+  supersededByPortfolioItemId: number | null;
   providerVerifiedAtApproval: boolean;
   applicationSubmittedAt: string | null;
   finalSubmittedAt: string | null;
@@ -52,12 +59,6 @@ export type EligiblePortfolioProject = {
   projectTitle: string;
   companyName: string;
   skills: PortfolioSkill[];
-};
-
-export type CreatePortfolioItemRequest = {
-  projectId: number;
-  description: string;
-  projectUrl?: string;
 };
 
 export type UpdatePortfolioItemRequest = {

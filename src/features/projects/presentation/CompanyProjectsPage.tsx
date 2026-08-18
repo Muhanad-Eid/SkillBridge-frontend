@@ -16,7 +16,6 @@ import {
   Plus,
   RotateCcw,
   Search,
-  ShieldCheck,
   Trash2,
   UsersRound,
   Wrench,
@@ -44,6 +43,8 @@ import {
   OpportunityTypes,
   ProjectStatuses,
   WorkModes,
+  CriterionEvaluationTypes,
+  type EvidenceCriterionInput,
   type ExperienceLevel,
   type FreelancePricingType,
   type OpportunityType,
@@ -68,12 +69,15 @@ type MilestoneDraft = ProjectMilestoneInput & {
   description: string;
 };
 
+type CriterionDraft = EvidenceCriterionInput & { key: string };
+
 type ProjectForm = {
   title: string;
   description: string;
   requirements: string;
   deliverables: string;
-  evaluationCriteria: string;
+  confidentialitySummary: string;
+  evidenceCriteria: CriterionDraft[];
   milestones: MilestoneDraft[];
   applicationTask: string;
   requiredTrainingHours: string;
@@ -107,7 +111,18 @@ const emptyProjectForm: ProjectForm = {
   description: "",
   requirements: "",
   deliverables: "",
-  evaluationCriteria: "",
+  confidentialitySummary: "",
+  evidenceCriteria: [
+    {
+      key: "criterion-1",
+      title: "",
+      description: "",
+      evaluationType: CriterionEvaluationTypes.Rating,
+      minimumRating: 2,
+      isRequired: true,
+      sortOrder: 0,
+    },
+  ],
   milestones: [
     {
       key: "milestone-1",
@@ -139,6 +154,9 @@ function createEmptyProjectForm(isFreelanceView: boolean): ProjectForm {
     ...emptyProjectForm,
     milestones: emptyProjectForm.milestones.map((milestone) => ({
       ...milestone,
+    })),
+    evidenceCriteria: emptyProjectForm.evidenceCriteria.map((criterion) => ({
+      ...criterion,
     })),
     type: isFreelanceView
       ? OpportunityTypes.FreelanceTask
@@ -312,7 +330,27 @@ export default function CompanyProjectsPage({
       description: project.description,
       requirements: project.requirements,
       deliverables: project.deliverables,
-      evaluationCriteria: project.evaluationCriteria,
+      confidentialitySummary: project.confidentialitySummary ?? "",
+      evidenceCriteria:
+        project.evidenceCriteria.length > 0
+          ? project.evidenceCriteria.map((criterion) => ({
+              ...criterion,
+              key: `criterion-${criterion.id}`,
+              description: criterion.description ?? "",
+            }))
+          : project.evaluationCriteria
+              .split(/\r?\n|[,;]/)
+              .map((title) => title.trim())
+              .filter(Boolean)
+              .map((title, index) => ({
+                key: `criterion-legacy-${index}`,
+                title,
+                description: "",
+                evaluationType: CriterionEvaluationTypes.Rating,
+                minimumRating: 2 as const,
+                isRequired: true,
+                sortOrder: index,
+              })),
       milestones:
         project.milestones.length > 0
           ? project.milestones.map((milestone) => ({
@@ -404,6 +442,18 @@ export default function CompanyProjectsPage({
           `${index + 1}. ${milestone.title} (day ${milestone.dueAfterDays})`,
       )
       .join("\n");
+    const evidenceCriteria = form.evidenceCriteria.map((criterion, index) => ({
+      id: criterion.id ?? null,
+      title: criterion.title.trim(),
+      description: criterion.description?.trim() || null,
+      evaluationType: CriterionEvaluationTypes.Rating,
+      minimumRating: criterion.minimumRating,
+      isRequired: criterion.isRequired,
+      sortOrder: index,
+    }));
+    const evaluationCriteria = evidenceCriteria
+      .map((criterion) => criterion.title)
+      .join("\n");
     const requiredSkillNames = mergeSkillNames(
       form.requiredSkillNames,
       [requiredSkillInput],
@@ -421,7 +471,8 @@ export default function CompanyProjectsPage({
       !form.description.trim() ||
       !form.requirements.trim() ||
       !form.deliverables.trim() ||
-      !form.evaluationCriteria.trim() ||
+      evidenceCriteria.length === 0 ||
+      evidenceCriteria.some((criterion) => !criterion.title) ||
       !form.applicationTask.trim()
     ) {
       setError(
@@ -515,7 +566,9 @@ export default function CompanyProjectsPage({
           description: form.description.trim(),
           requirements: form.requirements.trim(),
           deliverables: form.deliverables.trim(),
-          evaluationCriteria: form.evaluationCriteria.trim(),
+          evaluationCriteria,
+          confidentialitySummary: form.confidentialitySummary.trim() || null,
+          evidenceCriteria,
           milestonePlan,
           milestones,
           applicationTask: form.applicationTask.trim(),
@@ -554,7 +607,9 @@ export default function CompanyProjectsPage({
           description: form.description.trim(),
           requirements: form.requirements.trim(),
           deliverables: form.deliverables.trim(),
-          evaluationCriteria: form.evaluationCriteria.trim(),
+          evaluationCriteria,
+          confidentialitySummary: form.confidentialitySummary.trim() || null,
+          evidenceCriteria,
           milestonePlan,
           milestones,
           applicationTask: form.applicationTask.trim(),
@@ -712,7 +767,7 @@ export default function CompanyProjectsPage({
       }`}
     >
       <PageHeader
-        title={isFreelanceView ? "Freelance tasks" : "Opportunities"}
+        title={isFreelanceView ? "Industry micro-tasks" : "Opportunities"}
         actions={
           <Button
             type="button"
@@ -728,7 +783,7 @@ export default function CompanyProjectsPage({
             }
           >
             <Plus size={17} aria-hidden="true" />
-            {isFreelanceView ? "New freelance task" : "New opportunity"}
+            {isFreelanceView ? "New micro-task" : "New opportunity"}
           </Button>
         }
       />
@@ -783,10 +838,10 @@ export default function CompanyProjectsPage({
           <input
             aria-label={
               isFreelanceView
-                ? "Search company freelance tasks"
+                ? "Search company industry micro-tasks"
                 : "Search company opportunities"
             }
-            placeholder={isFreelanceView ? "Search freelance tasks" : "Search opportunities"}
+            placeholder={isFreelanceView ? "Search industry micro-tasks" : "Search opportunities"}
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
@@ -836,7 +891,7 @@ export default function CompanyProjectsPage({
         isLoading={isLoading}
         error=""
         empty={!isLoading && filteredProjects.length === 0}
-        emptyTitle={isFreelanceView ? "No freelance tasks found" : "No opportunities found"}
+        emptyTitle={isFreelanceView ? "No industry micro-tasks found" : "No opportunities found"}
         emptyDescription={
           scopedProjects.length === 0
             ? isFreelanceView
@@ -1250,21 +1305,194 @@ export default function CompanyProjectsPage({
                   Add milestone
                 </Button>
               </fieldset>
+              <fieldset className="company-milestone-builder evidence-criteria-builder">
+                <legend>Evidence criteria</legend>
+                <p>
+                  Every criterion is evaluated. Required criteria block evidence
+                  issuance when they fall below the selected standard; optional
+                  criteria remain visible as not supported.
+                </p>
+                <div className="company-milestone-list">
+                  {form.evidenceCriteria.map((criterion, index) => (
+                    <article key={criterion.key}>
+                      <header>
+                        <strong>Criterion {index + 1}</strong>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          aria-label={`Remove criterion ${index + 1}`}
+                          title="Remove criterion"
+                          disabled={form.evidenceCriteria.length === 1}
+                          onClick={() =>
+                            setForm({
+                              ...form,
+                              evidenceCriteria: form.evidenceCriteria.filter(
+                                (item) => item.key !== criterion.key,
+                              ),
+                            })
+                          }
+                        >
+                          <Trash2 size={16} aria-hidden="true" />
+                        </Button>
+                      </header>
+                      <div className="company-form-grid">
+                        <Input
+                          label="Criterion title"
+                          value={criterion.title}
+                          maxLength={250}
+                          required
+                          placeholder="API security"
+                          onChange={(event) =>
+                            setForm({
+                              ...form,
+                              evidenceCriteria: form.evidenceCriteria.map((item) =>
+                                item.key === criterion.key
+                                  ? { ...item, title: event.target.value }
+                                  : item,
+                              ),
+                            })
+                          }
+                        />
+                        <label className="field">
+                          <span>Evaluation type</span>
+                          <select
+                            value={criterion.evaluationType}
+                            onChange={(event) => {
+                              const evaluationType = Number(event.target.value) as
+                                (typeof CriterionEvaluationTypes)[keyof typeof CriterionEvaluationTypes];
+                              setForm({
+                                ...form,
+                                evidenceCriteria: form.evidenceCriteria.map((item) =>
+                                  item.key === criterion.key
+                                    ? {
+                                        ...item,
+                                        evaluationType,
+                                        minimumRating:
+                                          evaluationType === CriterionEvaluationTypes.PassFail
+                                            ? 2
+                                            : item.minimumRating,
+                                      }
+                                    : item,
+                                ),
+                              });
+                            }}
+                          >
+                            <option value={CriterionEvaluationTypes.Rating}>
+                              Rating scale
+                            </option>
+                            <option value={CriterionEvaluationTypes.PassFail}>
+                              Pass / fail
+                            </option>
+                          </select>
+                        </label>
+                        <label className="field">
+                          <span>Minimum supported result</span>
+                          <select
+                            value={criterion.minimumRating}
+                            disabled={
+                              criterion.evaluationType ===
+                              CriterionEvaluationTypes.PassFail
+                            }
+                            onChange={(event) =>
+                              setForm({
+                                ...form,
+                                evidenceCriteria: form.evidenceCriteria.map((item) =>
+                                  item.key === criterion.key
+                                    ? {
+                                        ...item,
+                                        minimumRating: Number(event.target.value) as 1 | 2 | 3,
+                                      }
+                                    : item,
+                                ),
+                              })
+                            }
+                          >
+                            {criterion.evaluationType ===
+                            CriterionEvaluationTypes.PassFail ? (
+                              <option value="2">Pass</option>
+                            ) : (
+                              <>
+                                <option value="1">Needs improvement</option>
+                                <option value="2">Meets standard</option>
+                                <option value="3">Exceeds standard</option>
+                              </>
+                            )}
+                          </select>
+                        </label>
+                      </div>
+                      <label className="field">
+                        <span>Evaluation guidance (optional)</span>
+                        <textarea
+                          value={criterion.description ?? ""}
+                          maxLength={1000}
+                          onChange={(event) =>
+                            setForm({
+                              ...form,
+                              evidenceCriteria: form.evidenceCriteria.map((item) =>
+                                item.key === criterion.key
+                                  ? { ...item, description: event.target.value }
+                                  : item,
+                              ),
+                            })
+                          }
+                        />
+                      </label>
+                      <label className="evidence-required-toggle">
+                        <input
+                          type="checkbox"
+                          checked={criterion.isRequired}
+                          onChange={(event) =>
+                            setForm({
+                              ...form,
+                              evidenceCriteria: form.evidenceCriteria.map((item) =>
+                                item.key === criterion.key
+                                  ? { ...item, isRequired: event.target.checked }
+                                  : item,
+                              ),
+                            })
+                          }
+                        />
+                        <span>Required for evidence issuance</span>
+                      </label>
+                    </article>
+                  ))}
+                </div>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={form.evidenceCriteria.length >= 20}
+                  onClick={() =>
+                    setForm({
+                      ...form,
+                      evidenceCriteria: [
+                        ...form.evidenceCriteria,
+                        {
+                          key: `criterion-${Date.now()}`,
+                          title: "",
+                          description: "",
+                          evaluationType: CriterionEvaluationTypes.Rating,
+                          minimumRating: 2,
+                          isRequired: true,
+                          sortOrder: form.evidenceCriteria.length,
+                        },
+                      ],
+                    })
+                  }
+                >
+                  <Plus size={16} aria-hidden="true" />
+                  Add criterion
+                </Button>
+              </fieldset>
               <label className="field">
-                <span>Evaluation criteria</span>
+                <span>Confidentiality conditions (optional)</span>
                 <textarea
-                  value={form.evaluationCriteria}
-                  maxLength={3000}
-                  required
-                  placeholder={"Accuracy\nCompleteness\nUsability"}
+                  value={form.confidentialitySummary}
+                  maxLength={2000}
+                  placeholder="Describe what may be summarized publicly and what must remain private."
                   onChange={(event) =>
-                    setForm({ ...form, evaluationCriteria: event.target.value })
+                    setForm({ ...form, confidentialitySummary: event.target.value })
                   }
                 />
-                <small>
-                  Add one criterion per line. Each one must be rated during the
-                  final review.
-                </small>
               </label>
               {!isFreelanceView ? (
                 <label className="field">
@@ -1293,13 +1521,6 @@ export default function CompanyProjectsPage({
                   </select>
                 </label>
               ) : null}
-              <div className="workflow-policy-note" role="note">
-                <ShieldCheck aria-hidden="true" />
-                <span>
-                  The first review hides selected personal details so applications
-                  are assessed from their submitted evidence.
-                </span>
-              </div>
               {form.type === OpportunityTypes.UniversityTraining ? (
                 <div className="company-form-grid">
                   <Input
@@ -1336,7 +1557,7 @@ export default function CompanyProjectsPage({
                 <fieldset className="freelance-terms-fields">
                   <legend>
                     <CircleDollarSign size={16} aria-hidden="true" />
-                    Freelance terms
+                    Micro-task terms
                   </legend>
                   <div className="company-form-grid">
                     <label className="field">

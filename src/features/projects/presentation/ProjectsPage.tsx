@@ -311,7 +311,7 @@ export default function ProjectsPage({
       } ${isFreelanceView ? "freelance-marketplace-page" : ""}`}
     >
       <PageHeader
-        title={isFreelanceView ? "Freelance tasks" : "Opportunities"}
+        title={isFreelanceView ? "Industry micro-tasks" : "Opportunities"}
         actions={
           isJobSeeker ? (
             <Button
@@ -385,7 +385,7 @@ export default function ProjectsPage({
         <label className="jobseeker-search-field">
           <Search size={18} aria-hidden="true" />
           <input
-            aria-label={isFreelanceView ? "Search freelance tasks" : "Search opportunities"}
+            aria-label={isFreelanceView ? "Search industry micro-tasks" : "Search opportunities"}
             placeholder={
               isFreelanceView
                 ? "Search tasks, clients, or skills"
@@ -398,7 +398,7 @@ export default function ProjectsPage({
         {isFreelanceView ? (
           <select
             className="freelance-sort-select"
-            aria-label="Sort freelance tasks"
+            aria-label="Sort industry micro-tasks"
             value={sort}
             onChange={(event) => setSort(event.target.value)}
           >
@@ -613,7 +613,7 @@ export default function ProjectsPage({
         isLoading={isLoading}
         error={error}
         empty={filteredProjects.length === 0}
-        emptyTitle={isFreelanceView ? "No freelance tasks found" : "No opportunities found"}
+        emptyTitle={isFreelanceView ? "No industry micro-tasks found" : "No opportunities found"}
         emptyDescription={
           isFreelanceView
             ? "Change a filter or check back when verified clients publish new tasks."

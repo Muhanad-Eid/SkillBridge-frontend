@@ -44,6 +44,28 @@ export const ProjectStatuses = {
 export type ProjectStatus =
   (typeof ProjectStatuses)[keyof typeof ProjectStatuses];
 
+export const CriterionEvaluationTypes = {
+  Rating: 0,
+  PassFail: 1,
+} as const;
+
+export type CriterionEvaluationType =
+  (typeof CriterionEvaluationTypes)[keyof typeof CriterionEvaluationTypes];
+
+export type EvidenceCriterion = {
+  id: number;
+  title: string;
+  description: string | null;
+  evaluationType: CriterionEvaluationType;
+  minimumRating: 1 | 2 | 3;
+  isRequired: boolean;
+  sortOrder: number;
+};
+
+export type EvidenceCriterionInput = Omit<EvidenceCriterion, "id"> & {
+  id?: number | null;
+};
+
 export type Project = {
   id: number;
   title: string;
@@ -70,6 +92,10 @@ export type Project = {
   companyProfileId: number;
   companyName: string;
   applicationsCount: number;
+  currentEvidenceContractVersionId: number | null;
+  currentEvidenceContractVersionNumber: number | null;
+  confidentialitySummary: string | null;
+  evidenceCriteria: EvidenceCriterion[];
   skills: ProjectSkill[];
   milestones: ProjectMilestone[];
 };
@@ -100,6 +126,8 @@ export type CreateProjectRequest = {
   requirements: string;
   deliverables: string;
   evaluationCriteria: string;
+  confidentialitySummary?: string | null;
+  evidenceCriteria: EvidenceCriterionInput[];
   milestonePlan: string;
   applicationTask: string;
   requiredTrainingHours?: number | null;
@@ -128,7 +156,7 @@ export type UpdateProjectRequest = CreateProjectRequest & {
 
 export function getOpportunityTypeLabel(type: OpportunityType) {
   if (type === OpportunityTypes.UniversityTraining) return "University training";
-  if (type === OpportunityTypes.FreelanceTask) return "Freelance task";
+  if (type === OpportunityTypes.FreelanceTask) return "Industry micro-task";
   if (type === OpportunityTypes.SkillDevelopmentChallenge) {
     return "Skill-development challenge";
   }

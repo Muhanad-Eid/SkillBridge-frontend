@@ -1,11 +1,9 @@
 import { httpClient } from "../../../shared/api/httpClient";
 import type {
-  CreatePortfolioItemRequest,
   EligiblePortfolioProject,
   UpdatePortfolioItemRequest,
 } from "../domain/portfolioTypes";
 import {
-  normalizePortfolioItem,
   normalizePortfolioItems,
   type PortfolioItemPayload,
 } from "../domain/portfolioNormalization";
@@ -31,17 +29,6 @@ export async function getPublicPortfolioAsync(jobSeekerId: number) {
   );
 
   return normalizePortfolioItems(items);
-}
-
-export async function createPortfolioItemAsync(
-  request: CreatePortfolioItemRequest,
-) {
-  const item = await httpClient<PortfolioItemPayload>("/api/portfolio", {
-    method: "POST",
-    body: JSON.stringify(request),
-  });
-
-  return normalizePortfolioItem(item);
 }
 
 export function updatePortfolioItemAsync(

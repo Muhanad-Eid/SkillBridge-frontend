@@ -14,6 +14,9 @@ import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import StatusBadge from "../../../shared/components/StatusBadge";
 import { WorkSubmissionStatuses } from "../../applications/domain/applicationTypes";
+import type { EvidenceReadiness } from "../../evidence/domain/evidenceTypes";
+import { getEvidenceReadinessAsync } from "../../evidence/infrastructure/evidenceApi";
+import EvidenceReadinessPanel from "../../evidence/presentation/EvidenceReadinessPanel";
 import {
   FreelancePricingTypes,
   getFreelancePricingLabel,
@@ -22,11 +25,14 @@ import {
 } from "../../projects/domain/projectTypes";
 import {
   CriterionRatings,
+  ContributionResolutionStatuses,
+  ContributionReviewDecisions,
   getMilestoneStatusLabel,
   getWorkSubmissionStatusLabel,
   MilestoneStatuses,
   TrainingReportStatuses,
   type UniversitySupervisor,
+  type ContributionReviewTask,
   type WorkRecord,
 } from "../domain/workTypes";
 import {
@@ -36,9 +42,13 @@ import {
 import {
   assignUniversitySupervisorAsync,
   createWorkMilestoneAsync,
+  declareContributionAsync,
+  getContributionReviewQueueAsync,
   getProjectWorkAsync,
   getUniversitySupervisorsAsync,
   reviewFinalWorkByCompanyAsync,
+  resolveContributionAsync,
+  reviewContributionAsync,
   reviewMilestoneAsync,
   submitFinalWorkAsync,
   submitMilestoneAsync,
@@ -79,6 +89,14 @@ export default function WorkProgressPanel({
     useState<
       Record<number, Record<string, { rating: number; note: string }>>
     >({});
+  const [readiness, setReadiness] = useState<EvidenceReadiness | null>(null);
+  const [contributionReviewQueue, setContributionReviewQueue] = useState<
+    ContributionReviewTask[]
+  >([]);
+  const [contributionResolutionNote, setContributionResolutionNote] = useState("");
+  const [contributionReviewComments, setContributionReviewComments] = useState<
+    Record<number, string>
+  >({});
   const [isLoading, setIsLoading] = useState(true);
   const [busyKey, setBusyKey] = useState("");
   const [error, setError] = useState("");
@@ -89,16 +107,22 @@ export default function WorkProgressPanel({
     setError("");
 
     try {
-      const [workData, supervisorData] = await Promise.all([
+      const [workData, supervisorData, contributionTasks] = await Promise.all([
         getProjectWorkAsync(projectId),
         isCompany
           ? getUniversitySupervisorsAsync().catch(
               () => [] as UniversitySupervisor[],
             )
           : Promise.resolve([] as UniversitySupervisor[]),
+        !isCompany
+          ? getContributionReviewQueueAsync().catch(
+              () => [] as ContributionReviewTask[],
+            )
+          : Promise.resolve([] as ContributionReviewTask[]),
       ]);
       setRecords(workData);
       setSupervisors(supervisorData);
+      setContributionReviewQueue(contributionTasks);
       setSelectedApplicationId((current) =>
         workData.some((record) => record.applicationId === current)
           ? current
@@ -119,6 +143,24 @@ export default function WorkProgressPanel({
     const timeoutId = window.setTimeout(() => void load(), 0);
     return () => window.clearTimeout(timeoutId);
   }, [load]);
+
+  useEffect(() => {
+    if (selectedApplicationId === null) {
+      return;
+    }
+
+    let cancelled = false;
+    void getEvidenceReadinessAsync(selectedApplicationId)
+      .then((result) => {
+        if (!cancelled) setReadiness(result);
+      })
+      .catch(() => {
+        if (!cancelled) setReadiness(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedApplicationId, records]);
 
   const record = useMemo(
     () =>
@@ -261,25 +303,41 @@ export default function WorkProgressPanel({
     0,
     (record.agreedRevisions ?? 1) - record.revisionRequestsUsed,
   );
-  const evaluationCriteria = parseEvaluationCriteria(
-    record.evaluationCriteria,
-  );
+  const evidenceCriteria = record.evidenceCriteria.length > 0
+    ? record.evidenceCriteria
+    : parseEvaluationCriteria(record.evaluationCriteria).map((title, index) => ({
+        id: -(index + 1),
+        title,
+        description: null,
+        evaluationType: 0 as const,
+        minimumRating: CriterionRatings.MeetsStandard,
+        isRequired: true,
+        sortOrder: index,
+      }));
   const criterionDrafts =
     criterionDraftsByApplication[record.applicationId] ??
     buildCriterionDrafts(record);
-  const criterionEvaluations = evaluationCriteria.map((criterion) => ({
-    criterion,
-    rating: criterionDrafts[criterion]?.rating ?? 0,
-    note: criterionDrafts[criterion]?.note.trim() ?? "",
+  const criterionEvaluations = evidenceCriteria.map((criterion) => ({
+    criterionId: criterion.id > 0 ? criterion.id : null,
+    criterion: criterion.title,
+    isRequired: criterion.isRequired,
+    rating: criterionDrafts[criterion.title]?.rating ?? 0,
+    note: criterionDrafts[criterion.title]?.note.trim() ?? "",
   }));
   const criteriaComplete = criterionEvaluations.every(
     (item) => item.rating > 0 && item.note.length >= 3,
   );
   const criteriaMeetApprovalStandard =
     criteriaComplete &&
-    criterionEvaluations.every(
-      (item) => item.rating !== CriterionRatings.NeedsImprovement,
+    criterionEvaluations.every((item) =>
+      !item.isRequired ||
+      item.rating >=
+        (evidenceCriteria.find((criterion) => criterion.id === item.criterionId)
+          ?.minimumRating ?? CriterionRatings.MeetsStandard),
     );
+  const projectContributionReviews = contributionReviewQueue.filter(
+    (item) => item.projectId === record.projectId,
+  );
 
   return (
     <section className="work-hub-panel work-progress-panel">
@@ -335,6 +393,28 @@ export default function WorkProgressPanel({
           </span>
         ) : null}
       </div>
+
+      {record.acceptedEvidenceContractVersionNumber ? (
+        <div className="workflow-policy-note" role="note">
+          <ClipboardCheck aria-hidden="true" />
+          <span>
+            This participation is governed by Evidence Contract version {" "}
+            {record.acceptedEvidenceContractVersionNumber}. Later opportunity
+            changes do not alter this evaluation basis.
+          </span>
+        </div>
+      ) : null}
+
+      {(record.evaluationIsStale || record.approvalIsStale) ? (
+        <div className="notice notice-warning" role="status">
+          The submission changed after review. Previous evaluation or approval is
+          historical and re-evaluation is required.
+        </div>
+      ) : null}
+
+      {readiness?.applicationId === record.applicationId ? (
+        <EvidenceReadinessPanel readiness={readiness} />
+      ) : null}
 
       {record.opportunityType === OpportunityTypes.FreelanceTask ? (
         <section className="freelance-agreement">
@@ -500,6 +580,133 @@ export default function WorkProgressPanel({
             <div className="team-completed-contribution">
               <span>Completed contribution</span>
               <p>{record.contributionSummary}</p>
+            </div>
+          ) : null}
+          {record.contributionRecord ? (
+            <div className="team-completed-contribution">
+              <span>Attribution status</span>
+              <p>
+                {record.contributionRecord.status ===
+                ContributionResolutionStatuses.Locked
+                  ? "Locked for evidence issuance"
+                  : record.contributionRecord.status ===
+                      ContributionResolutionStatuses.Disputed
+                    ? "Disputed; provider resolution required"
+                    : "Awaiting member review or provider resolution"}
+              </p>
+              {record.contributionRecord.resolutionNote ? (
+                <small>{record.contributionRecord.resolutionNote}</small>
+              ) : null}
+            </div>
+          ) : null}
+          {!isCompany && record.contributionRecord &&
+          record.contributionRecord.status !== ContributionResolutionStatuses.Locked ? (
+            <div className="work-inline-form">
+              <textarea
+                value={contribution}
+                minLength={20}
+                maxLength={3000}
+                placeholder="Clarify your participant-specific contribution"
+                onChange={(event) => setContribution(event.target.value)}
+              />
+              <Button
+                type="button"
+                disabled={contribution.trim().length < 20}
+                isLoading={busyKey === "declare-contribution"}
+                onClick={() =>
+                  void runAction("declare-contribution", () =>
+                    declareContributionAsync(record.applicationId, {
+                      declaration: contribution.trim(),
+                      attributedWork: record.finalDeliverableUrl ?? undefined,
+                    }),
+                  )
+                }
+              >
+                Update declaration
+              </Button>
+            </div>
+          ) : null}
+          {isCompany && record.contributionRecord &&
+          record.contributionRecord.status !== ContributionResolutionStatuses.Locked ? (
+            <div className="work-inline-form">
+              <textarea
+                value={contributionResolutionNote}
+                minLength={10}
+                maxLength={2000}
+                placeholder="Record how disputes or non-response were resolved"
+                onChange={(event) => setContributionResolutionNote(event.target.value)}
+              />
+              <Button
+                type="button"
+                disabled={contributionResolutionNote.trim().length < 10}
+                isLoading={busyKey === "resolve-contribution"}
+                onClick={() =>
+                  void runAction("resolve-contribution", () =>
+                    resolveContributionAsync(record.applicationId, {
+                      resolutionNote: contributionResolutionNote.trim(),
+                    }),
+                  )
+                }
+              >
+                Resolve and lock attribution
+              </Button>
+            </div>
+          ) : null}
+          {!isCompany && projectContributionReviews.length > 0 ? (
+            <div className="contribution-review-queue">
+              <strong>Team attribution to review</strong>
+              {projectContributionReviews.map((task) => (
+                <article key={task.targetApplicationId}>
+                  <span>{task.participantName}</span>
+                  <p>{task.declaration}</p>
+                  {task.attributedWork ? <small>{task.attributedWork}</small> : null}
+                  <textarea
+                    value={contributionReviewComments[task.targetApplicationId] ?? ""}
+                    placeholder="Required when disputing this attribution"
+                    onChange={(event) =>
+                      setContributionReviewComments((current) => ({
+                        ...current,
+                        [task.targetApplicationId]: event.target.value,
+                      }))
+                    }
+                  />
+                  <div className="work-final-actions">
+                    <Button
+                      type="button"
+                      isLoading={busyKey === `confirm-${task.targetApplicationId}`}
+                      onClick={() =>
+                        void runAction(`confirm-${task.targetApplicationId}`, () =>
+                          reviewContributionAsync(task.targetApplicationId, {
+                            decision: ContributionReviewDecisions.Confirmed,
+                          }),
+                        )
+                      }
+                    >
+                      Confirm attribution
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      disabled={
+                        (contributionReviewComments[task.targetApplicationId] ?? "")
+                          .trim().length < 3
+                      }
+                      onClick={() =>
+                        void runAction(`dispute-${task.targetApplicationId}`, () =>
+                          reviewContributionAsync(task.targetApplicationId, {
+                            decision: ContributionReviewDecisions.Disputed,
+                            comment: contributionReviewComments[
+                              task.targetApplicationId
+                            ]?.trim(),
+                          }),
+                        )
+                      }
+                    >
+                      Dispute attribution
+                    </Button>
+                  </div>
+                </article>
+              ))}
             </div>
           ) : null}
         </section>
@@ -814,46 +1021,62 @@ export default function WorkProgressPanel({
               blocked while any criterion still needs improvement.
             </p>
             <div className="work-criterion-list">
-              {evaluationCriteria.map((criterion, index) => (
-                <section key={criterion}>
+              {evidenceCriteria.map((criterion, index) => (
+                <section key={criterion.id || criterion.title}>
                   <header>
                     <span>{String(index + 1).padStart(2, "0")}</span>
-                    <strong>{criterion}</strong>
+                    <strong>{criterion.title}</strong>
+                    <StatusBadge tone={criterion.isRequired ? "blue" : "neutral"}>
+                      {criterion.isRequired ? "Required" : "Optional"}
+                    </StatusBadge>
                   </header>
                   <label className="field">
                     <span>Result</span>
                     <select
-                      value={criterionDrafts[criterion]?.rating ?? 0}
+                      value={criterionDrafts[criterion.title]?.rating ?? 0}
                       required
                       onChange={(event) =>
                         setCriterionDraftsByApplication((current) => ({
                           ...current,
                           [record.applicationId]: {
                             ...criterionDrafts,
-                            [criterion]: {
+                            [criterion.title]: {
                             rating: Number(event.target.value),
-                              note: criterionDrafts[criterion]?.note ?? "",
+                              note: criterionDrafts[criterion.title]?.note ?? "",
                             },
                           },
                         }))
                       }
                     >
                       <option value={0}>Choose a result</option>
-                      <option value={CriterionRatings.NeedsImprovement}>
-                        Needs improvement
-                      </option>
-                      <option value={CriterionRatings.MeetsStandard}>
-                        Meets the standard
-                      </option>
-                      <option value={CriterionRatings.ExceedsStandard}>
-                        Exceeds the standard
-                      </option>
+                      {criterion.evaluationType === 1 ? (
+                        <>
+                          <option value={CriterionRatings.NeedsImprovement}>
+                            Fail
+                          </option>
+                          <option value={CriterionRatings.MeetsStandard}>
+                            Pass
+                          </option>
+                        </>
+                      ) : (
+                        <>
+                          <option value={CriterionRatings.NeedsImprovement}>
+                            Needs improvement
+                          </option>
+                          <option value={CriterionRatings.MeetsStandard}>
+                            Meets the standard
+                          </option>
+                          <option value={CriterionRatings.ExceedsStandard}>
+                            Exceeds the standard
+                          </option>
+                        </>
+                      )}
                     </select>
                   </label>
                   <label className="field">
                     <span>Evidence note</span>
                     <textarea
-                      value={criterionDrafts[criterion]?.note ?? ""}
+                      value={criterionDrafts[criterion.title]?.note ?? ""}
                       minLength={3}
                       maxLength={1000}
                       required
@@ -863,8 +1086,8 @@ export default function WorkProgressPanel({
                           ...current,
                           [record.applicationId]: {
                             ...criterionDrafts,
-                            [criterion]: {
-                              rating: criterionDrafts[criterion]?.rating ?? 0,
+                            [criterion.title]: {
+                              rating: criterionDrafts[criterion.title]?.rating ?? 0,
                               note: event.target.value,
                             },
                           },
@@ -998,8 +1221,9 @@ export default function WorkProgressPanel({
         <div className="notice notice-success">
           <strong>Final work approved</strong>
           <span>
-            The Evidence Card has been created privately in the participant's
-            portfolio.
+            {record.hasEvidenceCard
+              ? "The Evidence Card has been created privately in the participant's portfolio."
+              : "Approval is complete, but evidence issuance remains blocked until every readiness condition is satisfied."}
           </span>
           {record.demonstratedSkills.length > 0 ? (
             <span>

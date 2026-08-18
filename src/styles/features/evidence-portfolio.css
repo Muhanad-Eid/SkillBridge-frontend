@@ -5,6 +5,66 @@
   gap: 20px;
 }
 
+.portfolio-share-manager {
+  display: grid;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.portfolio-share-manager > header,
+.portfolio-share-manager article {
+  display: grid;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.portfolio-share-manager > header {
+  grid-template-columns: minmax(0, 1fr) auto;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-soft);
+}
+
+.portfolio-share-manager h2,
+.portfolio-share-manager span,
+.portfolio-share-manager small {
+  margin: 0;
+}
+
+.portfolio-share-manager h2 {
+  font-size: 1rem;
+}
+
+.portfolio-share-manager > header span,
+.portfolio-share-manager small,
+.portfolio-share-manager article span {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.portfolio-share-manager article {
+  grid-template-columns: minmax(0, 1fr) auto 40px;
+  min-height: 64px;
+  border-bottom: 1px solid var(--border);
+}
+
+.portfolio-share-manager article:last-child {
+  border-bottom: 0;
+}
+
+.portfolio-share-manager article > div:first-child {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.portfolio-share-manager article .button {
+  width: 40px;
+  min-width: 40px;
+}
+
 .portfolio-header-actions,
 .portfolio-manager-meta,
 .public-portfolio-profile-meta,
@@ -817,6 +877,19 @@
 }
 
 @media (max-width: 600px) {
+  .portfolio-share-manager > header {
+    grid-template-columns: 1fr;
+  }
+
+  .portfolio-share-manager article {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .portfolio-share-manager article .button {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
   .portfolio-header-actions {
     width: 100%;
   }

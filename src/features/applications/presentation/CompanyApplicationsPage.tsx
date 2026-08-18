@@ -365,7 +365,12 @@ export default function CompanyApplicationsPage() {
                 </button>
                 <div>
                   <strong>{application.projectTitle}</strong>
-                  <span>Project #{application.projectId}</span>
+                  <span>
+                    Project #{application.projectId}
+                    {application.acceptedEvidenceContractVersionNumber
+                      ? ` · Contract v${application.acceptedEvidenceContractVersionNumber}`
+                      : ""}
+                  </span>
                 </div>
                 <p>{application.coverLetter ?? "No cover letter provided."}</p>
                 <StatusBadge tone={getApplicationTone(application.status)}>

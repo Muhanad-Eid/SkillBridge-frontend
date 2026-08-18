@@ -240,7 +240,7 @@ export default function AdminProjectsPage() {
           includedRevisions < 0)
       ) {
         setError(
-          "Freelance Tasks require a budget, delivery time, and included revisions.",
+          "Industry Micro-Tasks require a budget, delivery time, and included revisions.",
         );
         return;
       }
@@ -471,7 +471,7 @@ export default function AdminProjectsPage() {
                   University training
                 </option>
                 <option value={OpportunityTypes.FreelanceTask}>
-                  Freelance task
+                  Industry micro-task
                 </option>
                 <option value={OpportunityTypes.SkillDevelopmentChallenge}>
                   Skill-development challenge

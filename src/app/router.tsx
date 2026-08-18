@@ -5,6 +5,7 @@ import RouteErrorPage from "../shared/components/RouteErrorPage";
 import {
   AdminApplicationsPage,
   AdminDashboard,
+  AdminEvidencePage,
   AdminLoginPage,
   AdminPortalLayout,
   AdminProjectsPage,
@@ -34,6 +35,7 @@ import {
   ProjectDetailsPage,
   ProjectsPage,
   PublicLayout,
+  PublicEvidenceSharePage,
   PublicPortfolioPage,
   RegisterPage,
   ResetPasswordPage,
@@ -93,6 +95,10 @@ export const router = createBrowserRouter([
       {
         path: "portfolio/:jobSeekerId",
         element: <PublicPortfolioPage />,
+      },
+      {
+        path: "evidence/share/:token",
+        element: <PublicEvidenceSharePage />,
       },
       { path: "*", element: <NotFoundPage /> },
     ],
@@ -228,6 +234,7 @@ export const router = createBrowserRouter([
       { path: "companies", element: <CompaniesPage /> },
       { path: "job-seekers", element: <JobSeekersPage /> },
       { path: "projects", element: <AdminProjectsPage /> },
+      { path: "evidence", element: <AdminEvidencePage /> },
       { path: "applications", element: <AdminApplicationsPage /> },
       { path: "reviews", element: <AdminReviewsPage /> },
       { path: "skills", element: <AdminSkillsPage /> },

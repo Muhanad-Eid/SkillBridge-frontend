@@ -1,4 +1,5 @@
 import type {
+  EvidenceCriterion,
   FreelancePricingType,
   OpportunityType,
   ProjectStatus,
@@ -45,9 +46,59 @@ export type CriterionRating =
   (typeof CriterionRatings)[keyof typeof CriterionRatings];
 
 export type CriterionEvaluation = {
+  criterionId?: number | null;
   criterion: string;
   rating: CriterionRating;
   note: string;
+  isRequired?: boolean;
+  isSupported?: boolean;
+};
+
+export const ContributionResolutionStatuses = {
+  Draft: 0,
+  PendingMemberReview: 1,
+  Disputed: 2,
+  PendingProviderResolution: 3,
+  Locked: 4,
+} as const;
+
+export const ContributionReviewDecisions = {
+  Confirmed: 0,
+  Disputed: 1,
+} as const;
+
+export type ContributionReview = {
+  id: number;
+  reviewerApplicationId: number;
+  reviewerName: string;
+  decision: number;
+  comment: string | null;
+  reviewedAt: string;
+};
+
+export type ContributionRecord = {
+  id: number;
+  declaration: string;
+  attributedWork: string | null;
+  status: number;
+  declaredAt: string;
+  resolvedAt: string | null;
+  resolutionNote: string | null;
+  lockedAt: string | null;
+  requiredReviewerCount: number;
+  reviews: ContributionReview[];
+};
+
+export type ContributionReviewTask = {
+  targetApplicationId: number;
+  projectId: number;
+  projectTitle: string;
+  participantName: string;
+  declaration: string;
+  attributedWork: string | null;
+  status: number;
+  myDecision: number | null;
+  myComment: string | null;
 };
 
 export const TrainingReportStatuses = {
@@ -118,6 +169,14 @@ export type WorkRecord = {
   companyApprovedAt: string | null;
   universityApprovedAt: string | null;
   hasEvidenceCard: boolean;
+  evidenceCardId: number | null;
+  acceptedEvidenceContractVersionId: number | null;
+  acceptedEvidenceContractVersionNumber: number | null;
+  finalSubmissionRevision: number;
+  evaluationIsStale: boolean;
+  approvalIsStale: boolean;
+  contributionRecord: ContributionRecord | null;
+  evidenceCriteria: EvidenceCriterion[];
   availableSkills: WorkSkill[];
   demonstratedSkills: WorkSkill[];
   criterionEvaluations?: CriterionEvaluation[];
@@ -165,6 +224,20 @@ export type ApproveFinalWorkRequest = {
 
 export type UpdateContributionResponsibilitiesRequest = {
   responsibilities: string;
+};
+
+export type DeclareContributionRequest = {
+  declaration: string;
+  attributedWork?: string;
+};
+
+export type ReviewContributionRequest = {
+  decision: number;
+  comment?: string;
+};
+
+export type ResolveContributionRequest = {
+  resolutionNote: string;
 };
 
 export type SubmitTrainingReportRequest = {

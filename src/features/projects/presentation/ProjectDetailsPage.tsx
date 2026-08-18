@@ -27,6 +27,9 @@ import { useAuth } from "../../../shared/auth/AuthContext";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import StatusBadge from "../../../shared/components/StatusBadge";
+import type { CriterionEvidenceCoverage } from "../../evidence/domain/evidenceTypes";
+import { getCriterionEvidenceCoverageAsync } from "../../evidence/infrastructure/evidenceApi";
+import CriterionCoveragePanel from "../../evidence/presentation/CriterionCoveragePanel";
 import {
   getApplicationStatusLabelForOpportunity,
   type Application,
@@ -63,6 +66,8 @@ export default function ProjectDetailsPage() {
   const [companyProfile, setCompanyProfile] = useState<CompanyProfile | null>(null);
   const [mySkills, setMySkills] = useState<Skill[]>([]);
   const [existingApplication, setExistingApplication] = useState<Application | null>(null);
+  const [criterionCoverage, setCriterionCoverage] =
+    useState<CriterionEvidenceCoverage | null>(null);
   const [coverLetter, setCoverLetter] = useState("");
   const [workSampleUrl, setWorkSampleUrl] = useState("");
   const [shortTaskResponse, setShortTaskResponse] = useState("");
@@ -90,11 +95,14 @@ export default function ProjectDetailsPage() {
     async function loadProject() {
       try {
         const projectData = await getProjectAsync(Number(projectId));
-        const [companyData, applicationData, skillData, projectDataList] = await Promise.all([
+        const [companyData, applicationData, skillData, projectDataList, coverageData] = await Promise.all([
           getPublicCompanyProfileAsync(projectData.companyProfileId),
           isJobSeeker ? getMyApplicationsAsync() : Promise.resolve([]),
           isJobSeeker ? getMySkillsAsync() : Promise.resolve([]),
           getProjectsAsync().catch(() => [] as Project[]),
+          isJobSeeker
+            ? getCriterionEvidenceCoverageAsync(projectData.id).catch(() => null)
+            : Promise.resolve(null),
         ]);
 
         if (isMounted) {
@@ -104,6 +112,7 @@ export default function ProjectDetailsPage() {
           setExistingApplication(
             applicationData.find((application) => application.projectId === projectData.id) ?? null,
           );
+          setCriterionCoverage(coverageData);
           const otherOpenProjects = projectDataList.filter(
             (candidate) =>
               candidate.id !== projectData.id &&
@@ -442,6 +451,10 @@ export default function ProjectDetailsPage() {
                   </p>
                 ) : null}
                 </section>
+              ) : null}
+
+              {criterionCoverage ? (
+                <CriterionCoveragePanel coverage={criterionCoverage} />
               ) : null}
 
               <section>

@@ -22,6 +22,9 @@ export const AdminDashboard = lazy(
 export const AdminProjectsPage = lazy(
   () => import("../features/admin/presentation/AdminProjectsPage"),
 );
+export const AdminEvidencePage = lazy(
+  () => import("../features/admin/presentation/AdminEvidencePage"),
+);
 export const AdminReviewsPage = lazy(
   () => import("../features/admin/presentation/AdminReviewsPage"),
 );
@@ -91,6 +94,9 @@ export const PortfolioPage = lazy(
 );
 export const PublicPortfolioPage = lazy(
   () => import("../features/portfolio/presentation/PublicPortfolioPage"),
+);
+export const PublicEvidenceSharePage = lazy(
+  () => import("../features/evidence/presentation/PublicEvidenceSharePage"),
 );
 export const CompanyProfilePage = lazy(
   () => import("../features/profiles/presentation/CompanyProfilePage"),

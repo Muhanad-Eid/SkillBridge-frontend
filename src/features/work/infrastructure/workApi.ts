@@ -1,8 +1,12 @@
-import { httpClient } from "../../../shared/api/httpClient";
+import { httpClient, httpDownload } from "../../../shared/api/httpClient";
 import type {
   ApproveFinalWorkRequest,
+  DeclareContributionRequest,
+  ContributionReviewTask,
   CreateWorkMilestoneRequest,
   ReviewMilestoneRequest,
+  ReviewContributionRequest,
+  ResolveContributionRequest,
   ReviewTrainingReportRequest,
   SubmitFinalWorkRequest,
   SubmitMilestoneRequest,
@@ -25,6 +29,18 @@ export function getProjectWorkAsync(projectId: number) {
 
 export function getUniversityWorkAsync() {
   return httpClient<WorkRecord[]>("/api/work/university");
+}
+
+export async function downloadApprovedTrainingExportAsync() {
+  const download = await httpDownload(
+    "/api/university/exports/approved-training.csv",
+  );
+  const url = URL.createObjectURL(download.blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = download.fileName;
+  anchor.click();
+  URL.revokeObjectURL(url);
 }
 
 export function getUniversitySupervisorsAsync() {
@@ -196,5 +212,41 @@ export function updateContributionResponsibilitiesAsync(
       method: "PUT",
       body: JSON.stringify(request),
     },
+  );
+}
+
+export function declareContributionAsync(
+  applicationId: number,
+  request: DeclareContributionRequest,
+) {
+  return httpClient<void>(
+    `/api/work/applications/${applicationId}/contribution/declaration`,
+    { method: "PUT", body: JSON.stringify(request) },
+  );
+}
+
+export function getContributionReviewQueueAsync() {
+  return httpClient<ContributionReviewTask[]>(
+    "/api/work/contributions/review-queue",
+  );
+}
+
+export function reviewContributionAsync(
+  applicationId: number,
+  request: ReviewContributionRequest,
+) {
+  return httpClient<void>(
+    `/api/work/applications/${applicationId}/contribution/review`,
+    { method: "PUT", body: JSON.stringify(request) },
+  );
+}
+
+export function resolveContributionAsync(
+  applicationId: number,
+  request: ResolveContributionRequest,
+) {
+  return httpClient<void>(
+    `/api/work/applications/${applicationId}/contribution/resolve`,
+    { method: "PUT", body: JSON.stringify(request) },
   );
 }

@@ -36,6 +36,8 @@ export type Application = {
   decidedAt: string | null;
   workStatus: WorkSubmissionStatus;
   status: ApplicationStatus;
+  acceptedEvidenceContractVersionId: number | null;
+  acceptedEvidenceContractVersionNumber: number | null;
 };
 
 export type CreateApplicationRequest = {

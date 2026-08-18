@@ -13,6 +13,7 @@ import {
   Share2,
   ShieldCheck,
   Star,
+  Unlink,
   X,
 } from "lucide-react";
 import Button from "../../../shared/components/Button";
@@ -23,8 +24,12 @@ import {
   getOpportunityTypeLabel,
   OpportunityTypes,
 } from "../../projects/domain/projectTypes";
-import type { JobSeekerProfile } from "../../profiles/domain/profileTypes";
-import { getMyJobSeekerProfileAsync } from "../../profiles/infrastructure/profileApi";
+import type { PublicShareSummary } from "../../evidence/domain/evidenceTypes";
+import {
+  createPublicEvidenceShareAsync,
+  disablePublicEvidenceShareAsync,
+  getPublicEvidenceSharesAsync,
+} from "../../evidence/infrastructure/evidenceApi";
 import type { PortfolioItem } from "../domain/portfolioTypes";
 import {
   getMyPortfolioAsync,
@@ -61,7 +66,8 @@ function evidenceReference(id: number) {
 
 export default function PortfolioPage() {
   const [items, setItems] = useState<PortfolioItem[]>([]);
-  const [profile, setProfile] = useState<JobSeekerProfile | null>(null);
+  const [shares, setShares] = useState<PublicShareSummary[]>([]);
+  const [publicPath, setPublicPath] = useState("");
   const [search, setSearch] = useState("");
   const [visibility, setVisibility] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -80,12 +86,12 @@ export default function PortfolioPage() {
     setIsLoading(true);
     setError("");
     try {
-      const [portfolio, profileData] = await Promise.all([
+      const [portfolio, publicShares] = await Promise.all([
         getMyPortfolioAsync(),
-        getMyJobSeekerProfileAsync(),
+        getPublicEvidenceSharesAsync(),
       ]);
       setItems(portfolio);
-      setProfile(profileData);
+      setShares(publicShares);
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -148,8 +154,6 @@ export default function PortfolioPage() {
       return matchesVisibility && matchesType && matchesSearch;
     });
   }, [items, search, typeFilter, visibility]);
-
-  const publicPath = profile ? `/portfolio/${profile.id}` : "";
 
   function openEditor(item: PortfolioItem) {
     setEditingItem(item);
@@ -263,15 +267,56 @@ export default function PortfolioPage() {
   }
 
   async function copyPortfolioLink() {
-    if (!publicPath) return;
-
     try {
+      const visibleCardIds = items
+        .filter((item) => item.isVisible && item.isEvidenceCard && item.evidenceStatus === 0)
+        .map((item) => item.id);
+      if (visibleCardIds.length === 0) return;
+      const share = await createPublicEvidenceShareAsync(visibleCardIds);
+      setPublicPath(share.publicPath);
+      setShares((current) => [
+        {
+          id: share.id,
+          tokenPrefix: share.token.slice(0, 8),
+          isEnabled: true,
+          createdAt: share.createdAt,
+          expiresAt: share.expiresAt,
+          disabledAt: null,
+          cardCount: visibleCardIds.length,
+        },
+        ...current,
+      ]);
       await navigator.clipboard.writeText(
-        `${window.location.origin}${publicPath}`,
+        `${window.location.origin}${share.publicPath}`,
       );
-      setMessage("Portfolio link copied.");
+      setMessage("A new private evidence link was created and copied.");
     } catch {
       setError("Unable to copy the portfolio link.");
+    }
+  }
+
+  async function disableShare(shareId: number) {
+    setBusyItemId(-shareId);
+    setError("");
+    setMessage("");
+    try {
+      await disablePublicEvidenceShareAsync(shareId);
+      setShares((current) =>
+        current.map((share) =>
+          share.id === shareId
+            ? { ...share, isEnabled: false, disabledAt: new Date().toISOString() }
+            : share,
+        ),
+      );
+      setMessage("The public evidence link was disabled.");
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Unable to disable the evidence link.",
+      );
+    } finally {
+      setBusyItemId(null);
     }
   }
 
@@ -289,7 +334,7 @@ export default function PortfolioPage() {
             ) : null}
             <Button
               type="button"
-              disabled={!publicPath || stats.shared === 0}
+              disabled={stats.shared === 0}
               onClick={() => void copyPortfolioLink()}
             >
               <Copy size={16} aria-hidden="true" />
@@ -313,6 +358,46 @@ export default function PortfolioPage() {
           <strong>{stats.featured}</strong>
         </article>
       </div>
+
+      {shares.length > 0 ? (
+        <section className="portfolio-share-manager" aria-labelledby="share-manager-title">
+          <header>
+            <div>
+              <span>External access</span>
+              <h2 id="share-manager-title">Evidence links</h2>
+            </div>
+            <small>Full access tokens are shown only when a link is created.</small>
+          </header>
+          <div>
+            {shares.slice(0, 5).map((share) => (
+              <article key={share.id}>
+                <div>
+                  <strong>Link {share.tokenPrefix}...</strong>
+                  <span>
+                    {share.cardCount} {share.cardCount === 1 ? "card" : "cards"} · Created{" "}
+                    {new Date(share.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+                <StatusBadge tone={share.isEnabled ? "green" : "neutral"}>
+                  {share.isEnabled ? "Active" : "Disabled"}
+                </StatusBadge>
+                {share.isEnabled ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    aria-label={`Disable evidence link ${share.tokenPrefix}`}
+                    title="Disable link"
+                    isLoading={busyItemId === -share.id}
+                    onClick={() => void disableShare(share.id)}
+                  >
+                    <Unlink size={17} aria-hidden="true" />
+                  </Button>
+                ) : null}
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <div className="portfolio-toolbar">
         <label>
@@ -348,7 +433,7 @@ export default function PortfolioPage() {
             University training
           </option>
           <option value={OpportunityTypes.FreelanceTask}>
-            Freelance tasks
+            Industry micro-tasks
           </option>
           <option value={OpportunityTypes.SkillDevelopmentChallenge}>
             Skill-development challenges

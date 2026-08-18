@@ -209,7 +209,7 @@ export default function MyApplicationsPage({
             variant="primary"
           >
             <Search size={17} aria-hidden="true" />
-            {isFreelanceView ? "Find freelance tasks" : "Find opportunities"}
+            {isFreelanceView ? "Find industry micro-tasks" : "Find opportunities"}
           </Button>
         }
       />
@@ -287,7 +287,7 @@ export default function MyApplicationsPage({
         }
         emptyDescription={
           isFreelanceView
-            ? "Change the filter or browse open freelance tasks to send a proposal."
+            ? "Change the filter or browse open industry micro-tasks to send a proposal."
             : "Change the filter or browse open opportunities to start a new application."
         }
       />
@@ -295,7 +295,7 @@ export default function MyApplicationsPage({
       {filteredApplications.length > 0 ? (
         <div className="jobseeker-application-table">
           <div className="jobseeker-application-table-head" aria-hidden="true">
-            <span>{isFreelanceView ? "Freelance task" : "Opportunity"}</span>
+            <span>{isFreelanceView ? "Industry micro-task" : "Opportunity"}</span>
             <span>{isFreelanceView ? "Proposal" : "Application"}</span>
             <span>Status</span>
             <span>Next action</span>
@@ -315,7 +315,9 @@ export default function MyApplicationsPage({
                 <div className="jobseeker-application-reference">
                   <strong>#{application.id}</strong>
                   <small>
-                    {project
+                    {application.acceptedEvidenceContractVersionNumber
+                      ? `Evidence Contract v${application.acceptedEvidenceContractVersionNumber}`
+                      : project
                       ? application.opportunityType ===
                         OpportunityTypes.FreelanceTask
                         ? `${project.freelanceDeliveryDays ?? project.durationWeeks * 7} day target`

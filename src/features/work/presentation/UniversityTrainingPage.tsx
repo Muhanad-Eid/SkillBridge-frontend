@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   Clock3,
   ExternalLink,
+  FileDown,
   GraduationCap,
   MessageSquare,
   Printer,
@@ -23,6 +24,9 @@ import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
 import StatusBadge from "../../../shared/components/StatusBadge";
 import { WorkSubmissionStatuses } from "../../applications/domain/applicationTypes";
+import type { EvidenceReadiness } from "../../evidence/domain/evidenceTypes";
+import { getEvidenceReadinessAsync } from "../../evidence/infrastructure/evidenceApi";
+import EvidenceReadinessPanel from "../../evidence/presentation/EvidenceReadinessPanel";
 import { ProjectStatuses } from "../../projects/domain/projectTypes";
 import {
   getMilestoneStatusLabel,
@@ -33,6 +37,7 @@ import {
 } from "../domain/workTypes";
 import {
   getUniversityWorkAsync,
+  downloadApprovedTrainingExportAsync,
   reviewFinalWorkByUniversityAsync,
   updateTrainingProgressAsync,
 } from "../infrastructure/workApi";
@@ -53,6 +58,8 @@ export default function UniversityTrainingPage() {
   const [busyAction, setBusyAction] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [readiness, setReadiness] = useState<EvidenceReadiness | null>(null);
+  const [readinessError, setReadinessError] = useState("");
 
   const load = useCallback(async () => {
     setIsLoading(true);
@@ -119,6 +126,35 @@ export default function UniversityTrainingPage() {
     record?.projectStatus === ProjectStatuses.InProgress &&
     record.workStatus !== WorkSubmissionStatuses.Approved;
 
+  useEffect(() => {
+    if (!record) return;
+
+    let active = true;
+    const timeoutId = window.setTimeout(async () => {
+      try {
+        const result = await getEvidenceReadinessAsync(record.applicationId);
+        if (active) {
+          setReadiness(result);
+          setReadinessError("");
+        }
+      } catch (caughtError) {
+        if (active) {
+          setReadiness(null);
+          setReadinessError(
+            caughtError instanceof Error
+              ? caughtError.message
+              : "Unable to load evidence readiness.",
+          );
+        }
+      }
+    }, 0);
+
+    return () => {
+      active = false;
+      window.clearTimeout(timeoutId);
+    };
+  }, [record]);
+
   function selectRecord(item: WorkRecord) {
     selectedIdRef.current = item.applicationId;
     setSelectedId(item.applicationId);
@@ -181,14 +217,25 @@ export default function UniversityTrainingPage() {
         title="Supervised training"
         actions={
           record ? (
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => window.print()}
-            >
-              <Printer size={17} aria-hidden="true" />
-              Print training record
-            </Button>
+            <div className="page-header-actions">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => void runAction("export", downloadApprovedTrainingExportAsync)}
+                isLoading={busyAction === "export"}
+              >
+                <FileDown size={17} aria-hidden="true" />
+                Export approved CSV
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => window.print()}
+              >
+                <Printer size={17} aria-hidden="true" />
+                Print training record
+              </Button>
+            </div>
           ) : null
         }
       />
@@ -299,6 +346,31 @@ export default function UniversityTrainingPage() {
                 <strong>{record.completedTrainingHours}</strong>
               </article>
             </div>
+
+            <div className="notice">
+              <strong>
+                Accepted Evidence Contract version{" "}
+                {record.acceptedEvidenceContractVersionNumber ?? "not pinned"}
+              </strong>
+              <span>
+                Final submission revision {record.finalSubmissionRevision || "not submitted"}
+              </span>
+            </div>
+
+            {record.evaluationIsStale || record.approvalIsStale ? (
+              <div className="notice notice-error" role="status">
+                <strong>Re-evaluation required</strong>
+                <span>
+                  This work was resubmitted. Previous evaluation or approval no
+                  longer authorizes evidence issuance.
+                </span>
+              </div>
+            ) : null}
+
+            {readiness ? <EvidenceReadinessPanel readiness={readiness} /> : null}
+            {readinessError ? (
+              <div className="notice notice-error">{readinessError}</div>
+            ) : null}
 
             {record.academicRequirements ? (
               <section className="university-training-requirements">

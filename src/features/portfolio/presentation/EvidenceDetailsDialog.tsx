@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   BadgeCheck,
   BriefcaseBusiness,
@@ -15,6 +15,14 @@ import {
 } from "lucide-react";
 import Button from "../../../shared/components/Button";
 import StatusBadge from "../../../shared/components/StatusBadge";
+import {
+  EvidenceCardStatuses,
+  getEvidenceCardStatusLabel,
+  type EvidenceDetails,
+} from "../../evidence/domain/evidenceTypes";
+import { getEvidenceDetailsAsync } from "../../evidence/infrastructure/evidenceApi";
+import ClaimBoundaryPanel from "../../evidence/presentation/ClaimBoundaryPanel";
+import EvidenceTrace from "../../evidence/presentation/EvidenceTrace";
 import {
   getOpportunityTypeLabel,
   OpportunityTypes,
@@ -66,6 +74,28 @@ export default function EvidenceDetailsDialog({
   item,
   onClose,
 }: EvidenceDetailsDialogProps) {
+  const [details, setDetails] = useState<EvidenceDetails | null>(null);
+  const [detailsError, setDetailsError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!item.isEvidenceCard) return;
+    void getEvidenceDetailsAsync(item.id)
+      .then((result) => {
+        if (!cancelled) setDetails(result);
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setDetailsError(
+            error instanceof Error ? error.message : "Unable to load evidence trace.",
+          );
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [item.id, item.isEvidenceCard]);
+
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -143,6 +173,15 @@ export default function EvidenceDetailsDialog({
                 {getOpportunityTypeLabel(item.opportunityType)}
               </StatusBadge>
               <span>{evidenceReference(item.id)}</span>
+              <StatusBadge
+                tone={
+                  item.evidenceStatus === EvidenceCardStatuses.Active
+                    ? "green"
+                    : "red"
+                }
+              >
+                {getEvidenceCardStatusLabel(item.evidenceStatus)}
+              </StatusBadge>
             </div>
             <h2 id="evidence-dialog-title">{item.projectTitle}</h2>
             <p>
@@ -222,6 +261,29 @@ export default function EvidenceDetailsDialog({
             </div>
           </dl>
         </section>
+
+        {detailsError ? (
+          <div className="notice notice-error">{detailsError}</div>
+        ) : null}
+        {details ? (
+          <div className="evidence-protocol-details">
+            <ClaimBoundaryPanel boundary={details.claimBoundary} />
+            <EvidenceTrace trace={details.trace} />
+            {details.statusHistory.length > 1 ? (
+              <section className="evidence-record-section">
+                <header><span>History</span><h3>Correction history</h3></header>
+                <ul>
+                  {details.statusHistory.map((event) => (
+                    <li key={`${event.occurredAt}-${event.newStatus}`}>
+                      {getEvidenceCardStatusLabel(event.previousStatus)} to {" "}
+                      {getEvidenceCardStatusLabel(event.newStatus)}: {event.reason}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
+          </div>
+        ) : null}
 
         {item.ownerSummary ? (
           <section className="evidence-dialog-owner-summary">
@@ -351,7 +413,7 @@ export default function EvidenceDetailsDialog({
         ) : null}
 
         <footer>
-          {item.projectUrl ? (
+          {item.projectUrl && !item.confidentialSummary ? (
             <a
               className="button button-primary"
               href={item.projectUrl}
