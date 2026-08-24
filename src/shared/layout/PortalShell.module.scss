@@ -1,28 +1,28 @@
 .shell {
-  --portal-sidebar-width: 252px;
+  --portal-sidebar-width: 248px;
   --portal-accent: var(--sb-color-action);
   --portal-accent-soft: var(--sb-color-action-soft);
   min-height: 100vh;
   display: grid;
   grid-template-columns: var(--portal-sidebar-width) minmax(0, 1fr);
-  background: var(--sb-color-canvas);
+  background: linear-gradient(135deg, #f7faff 0%, var(--sb-color-canvas) 36%, #ffffff 100%);
   color: var(--sb-color-text);
   transition: grid-template-columns var(--sb-motion-standard) var(--sb-ease-standard);
 }
 
 .shell[data-portal-role="company"] {
-  --portal-accent: var(--sb-color-approved);
-  --portal-accent-soft: var(--sb-color-approved-soft);
+  --portal-accent: var(--sb-color-action);
+  --portal-accent-soft: var(--sb-color-action-soft);
 }
 
 .shell[data-portal-role="admin"] {
-  --portal-accent: var(--sb-color-rejected);
-  --portal-accent-soft: var(--sb-color-rejected-soft);
+  --portal-accent: var(--sb-color-action);
+  --portal-accent-soft: var(--sb-color-action-soft);
 }
 
 .shell[data-portal-role="university"] {
-  --portal-accent: var(--sb-color-info);
-  --portal-accent-soft: var(--sb-color-info-soft);
+  --portal-accent: var(--sb-color-action);
+  --portal-accent-soft: var(--sb-color-action-soft);
 }
 
 .collapsed {
@@ -43,7 +43,7 @@
 }
 
 .brandRow {
-  min-height: 88px;
+  min-height: 82px;
   display: flex;
   align-items: center;
   gap: var(--sb-space-2);
@@ -122,7 +122,7 @@
   gap: var(--sb-space-3);
   padding: 0 var(--sb-space-3);
   border: 1px solid transparent;
-  border-radius: var(--sb-radius-md);
+  border-radius: 8px;
   color: var(--sb-color-text-secondary);
   font-size: 0.9375rem;
   font-weight: 560;
@@ -136,7 +136,7 @@
 }
 
 .navItemActive {
-  border-color: color-mix(in srgb, var(--portal-accent) 28%, var(--sb-color-border));
+  border-color: transparent;
   background: var(--portal-accent-soft);
   color: var(--portal-accent);
 }
@@ -241,6 +241,7 @@
 .workspace {
   min-width: 0;
   min-height: 100vh;
+  background: linear-gradient(135deg, rgb(238 245 255 / 72%), transparent 31%), var(--sb-color-canvas);
 }
 
 .topbar {
@@ -248,13 +249,13 @@
   top: 0;
   z-index: 35;
   min-height: 64px;
-  display: none;
+  display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--sb-space-4);
   padding: 0 clamp(var(--sb-space-4), 3vw, var(--sb-space-8));
   border-bottom: 1px solid var(--sb-color-border);
-  background: color-mix(in srgb, var(--sb-color-surface) 94%, transparent);
+  background: color-mix(in srgb, var(--sb-color-surface) 92%, transparent);
   backdrop-filter: blur(12px);
 }
 
@@ -283,7 +284,7 @@
 .content {
   min-width: 0;
   width: 100%;
-  max-width: 1540px;
+  max-width: 1440px;
   margin-inline: auto;
   padding: clamp(1.5rem, 3vw, 2.5rem);
 }

@@ -9,3 +9,4 @@
 @use "./migration/legacy-bridge";
 @use "./migration/modern-overrides";
 @use "./portals/workspace";
+@use "./migration/reference-redesign";

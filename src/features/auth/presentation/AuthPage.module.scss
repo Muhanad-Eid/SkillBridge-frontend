@@ -1,0 +1,77 @@
+.page {
+  --ink: #0f172a;
+  --secondary: #475569;
+  --dim: #94a3b8;
+  --border: #e2e8f0;
+  min-height: 100vh;
+  width: 100%;
+  flex: 1 0 100%;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  overflow: hidden;
+  background-color: #fff;
+  background-image: radial-gradient(#dce5f1 1px, transparent 1px), linear-gradient(135deg, #bcd4fb 0%, #ffffff 43%, #effffb 74%, #f5ecfb 100%);
+  background-position: center;
+  background-size: 32px 32px, 100% 100%;
+}
+
+.card {
+  width: min(100%, 484px);
+  padding: 3.25rem;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: rgb(255 255 255 / 0.84);
+  box-shadow: 0 24px 80px rgb(15 23 42 / 0.08), 0 0 0 1px rgb(255 255 255 / 0.6) inset;
+  backdrop-filter: blur(24px);
+}
+
+.header { margin-bottom: 2rem; text-align: center; }
+.mark { width: 56px; height: 56px; display: grid; place-items: center; margin: 0 auto 1.5rem; border-radius: 17px; background: var(--ink); color: #fff; box-shadow: 0 10px 28px rgb(15 23 42 / 0.15); }
+.header h1 { margin: 0 0 0.625rem; color: var(--ink); font-size: 2rem; font-weight: 700; letter-spacing: 0; }
+.header p { margin: 0; color: var(--secondary); font-size: 1rem; line-height: 1.5; }
+
+.socials { display: flex; justify-content: center; gap: 0.75rem; margin: 0 0 1.75rem; }
+.social { width: 52px; height: 52px; display: grid; place-items: center; border: 1px solid var(--border); border-radius: 16px; background: #fff; color: var(--secondary); font-size: 1.25rem; font-weight: 750; }
+.google { background: conic-gradient(from -40deg, #4285f4 0 25%, #34a853 25% 47%, #fbbc05 47% 68%, #ea4335 68% 100%); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.github { color: #334155; font-size: 0.75rem; letter-spacing: -0.08em; }
+.linkedin { color: #0a66c2; font-family: Arial, sans-serif; font-weight: 800; }
+
+.divider { display: flex; align-items: center; gap: 1rem; margin: 0 0 1.5rem; color: var(--dim); font-size: 0.75rem; font-weight: 650; letter-spacing: 0.04em; text-transform: uppercase; }
+.divider::before, .divider::after { flex: 1; height: 1px; background: var(--border); content: ""; }
+
+.field { position: relative; display: block; margin-bottom: 1rem; }
+.field input, .field select { width: 100%; min-height: 52px; padding: 0.8125rem 2.875rem; border: 1.5px solid var(--border); border-radius: 16px; outline: 0; background: #fff; color: var(--ink); font: inherit; font-size: 0.875rem; transition: border-color 160ms ease, box-shadow 160ms ease; }
+.field select { padding-left: 0.875rem; }
+.field input:focus, .field select:focus { border-color: var(--ink); box-shadow: 0 0 0 4px rgb(15 23 42 / 0.045); }
+.field input::placeholder { color: var(--dim); }
+.fieldIcon { position: absolute; top: 50%; left: 1rem; color: var(--dim); pointer-events: none; transform: translateY(-50%); }
+.eye { position: absolute; top: 50%; right: 0.75rem; width: 32px; height: 32px; display: grid; place-items: center; padding: 0; border: 0; background: transparent; color: var(--dim); cursor: pointer; transform: translateY(-50%); }
+.eye:hover { color: var(--secondary); }
+
+.forgot { display: flex; justify-content: flex-end; margin: -0.375rem 0 1.125rem; }
+.forgot a, .footer a, .back { color: var(--secondary); font-size: 0.75rem; font-weight: 600; text-decoration: none; }
+.forgot a:hover, .footer a:hover, .back:hover { color: var(--ink); }
+
+.submit { width: 100%; min-height: 50px; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem 1rem; border: 0; border-radius: 16px; background: var(--ink); color: #fff; font: inherit; font-size: 0.875rem; font-weight: 650; cursor: pointer; transition: opacity 160ms ease, transform 160ms ease, box-shadow 160ms ease; }
+.submit:hover:not(:disabled) { opacity: 0.93; box-shadow: 0 8px 24px rgb(15 23 42 / 0.18); transform: translateY(-1px); }
+.submit:disabled { cursor: progress; opacity: 0.62; }
+
+.footer { margin: 1.5rem 0 0; color: var(--secondary); font-size: 0.8125rem; text-align: center; }
+.footer a { margin-left: 0.25rem; color: var(--ink); font-size: inherit; }
+.message { margin: 0 0 1rem; padding: 0.75rem 0.875rem; border: 1px solid currentColor; border-radius: 12px; font-size: 0.8125rem; font-weight: 600; }
+.error { color: #b42318; background: #fff6f5; }.success { color: #027a48; background: #ecfdf3; }
+
+.dots { display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1.75rem; }
+.dot { width: 8px; height: 8px; border-radius: 999px; background: var(--border); transition: width 160ms ease, background 160ms ease; }.dotActive { width: 28px; background: var(--ink); }
+.stepLabel { margin: 0 0 0.75rem; color: var(--dim); font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+.chips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.625rem; margin-bottom: 1.25rem; }
+.chip { position: relative; min-height: 120px; padding: 1rem 0.625rem; border: 1.5px solid var(--border); border-radius: 16px; background: #fff; color: var(--ink); font: inherit; text-align: center; cursor: pointer; transition: border-color 160ms ease, background 160ms ease; }
+.chip:hover { border-color: #cbd5e1; }.chipActive { border-color: var(--ink); background: #f8fafc; }.chip svg { margin-bottom: 0.5rem; color: var(--dim); }.chipActive > svg { color: var(--ink); }
+.chipTitle { display: block; font-size: 0.8125rem; font-weight: 650; }.chipSub { display: block; margin-top: 0.125rem; color: var(--dim); font-size: 0.6875rem; }.chipCheck { position: absolute; top: -0.5rem; right: -0.5rem; width: 20px; height: 20px; display: grid; place-items: center; border: 2px solid #fff; border-radius: 50%; background: var(--ink); color: #fff; }.chipCheck svg { margin: 0; color: #fff; }
+.back { width: fit-content; display: inline-flex; align-items: center; gap: 0.375rem; margin: 0 0 1rem; border: 0; background: transparent; cursor: pointer; }
+.row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+.row .field input { padding-inline: 0.875rem; }
+.organization { margin-bottom: 1rem; }.organization label { display: block; margin-bottom: 0.375rem; color: var(--secondary); font-size: 0.75rem; font-weight: 650; }
+
+@media (max-width: 520px) { .page { padding: 1rem; }.card { padding: 2rem 1.5rem; border-radius: 20px; }.header h1 { font-size: 1.375rem; }.row { grid-template-columns: 1fr; gap: 0; } }
