@@ -1,12 +1,15 @@
 .root {
-  --company-ink: #0f172a;
-  --company-slate: #475569;
-  --company-muted: #64748b;
-  --company-border: #e2e8f0;
-  --company-soft: #f8fafc;
+  --company-ink: var(--sb-color-text);
+  --company-slate: var(--sb-color-text-secondary);
+  --company-muted: var(--sb-color-text-muted);
+  --company-border: var(--sb-color-border);
+  --company-soft: var(--sb-color-surface-subtle);
   --company-blue: #3b82f6;
   --company-mint: #14b8a6;
   --company-violet: #a855f7;
+  --company-blue-soft: #eff6ff;
+  --company-mint-soft: #ecfdf5;
+  --company-violet-soft: #faf5ff;
   display: grid;
   gap: 28px;
   width: 100%;
@@ -14,6 +17,15 @@
   margin: 0 auto;
   color: var(--company-ink);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+:global(:root[data-theme="dark"]) .root {
+  --company-blue: #8db9ff;
+  --company-mint: #5eead4;
+  --company-violet: #c4b5fd;
+  --company-blue-soft: #183255;
+  --company-mint-soft: #123b35;
+  --company-violet-soft: #2a2246;
 }
 
 .companyDashboardRoot { isolation: isolate; }
@@ -40,7 +52,7 @@
 
 .root :global(.button-secondary) {
   border-color: var(--company-border);
-  background: #fff;
+  background: var(--sb-color-surface);
   color: var(--company-ink);
 }
 
@@ -59,23 +71,23 @@
 /* This scope is active only while Company Overview is mounted. */
 :global([data-portal-role="company"]:has(.companyDashboardRoot)) > aside {
   width: 252px;
-  border-right: 1px solid #e2e8f0;
-  background: rgb(255 255 255 / 0.94);
+  border-right: 1px solid var(--company-border);
+  background: var(--sb-color-surface);
 }
 
 :global([data-portal-role="company"]:has(.companyDashboardRoot)) > div {
   background:
-    radial-gradient(circle at 98% -8%, rgb(219 234 254 / 0.72), transparent 22%),
-    linear-gradient(135deg, #f8fafc 0%, #ffffff 42%, #f8fafc 100%);
+    radial-gradient(circle at 98% -8%, color-mix(in srgb, var(--sb-color-action) 15%, transparent), transparent 22%),
+    linear-gradient(135deg, var(--sb-color-surface-subtle) 0%, var(--sb-color-canvas) 42%, var(--sb-color-surface-subtle) 100%);
 }
 
 :global([data-portal-role="company"]:has(.companyDashboardRoot)) > aside a:hover {
-  background: #f8fafc;
+  background: var(--sb-color-surface-subtle);
 }
 
 :global([data-portal-role="company"]:has(.companyDashboardRoot)) > aside a[class*="navItemActive"] {
-  background: #eff6ff;
-  color: #2563eb;
+  background: var(--sb-color-action-soft);
+  color: var(--sb-color-action);
 }
 
 .top {
@@ -131,7 +143,7 @@
   align-content: space-between;
   gap: 16px;
   padding: 19px 20px;
-  background: #fff;
+  background: var(--sb-color-surface);
 }
 
 .stat + .stat { border-left: 1px solid var(--company-border); }
@@ -150,8 +162,8 @@
   overflow: hidden;
   border: 1px solid var(--company-border);
   border-radius: 14px;
-  background: rgb(255 255 255 / 0.94);
-  box-shadow: 0 12px 34px rgb(15 23 42 / 0.035);
+  background: var(--sb-color-surface);
+  box-shadow: var(--sb-shadow-sm);
 }
 
 .panelHeader {
@@ -181,15 +193,15 @@
 }
 
 .application:last-child { border-bottom: 0; }
-.application:hover { background: #f8fafc; }
-.avatar { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; background: linear-gradient(135deg, #dbeafe, #ede9fe); color: #2563eb; font-size: 13px; font-weight: 700; }
+.application:hover { background: var(--sb-color-surface-subtle); }
+.avatar { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; background: linear-gradient(135deg, var(--company-blue-soft), var(--company-violet-soft)); color: var(--company-blue); font-size: 13px; font-weight: 700; }
 .applicationCopy { min-width: 0; display: grid; gap: 3px; }
 .applicationCopy strong { overflow: hidden; color: var(--company-ink); font-size: 13px; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
 .applicationCopy span { overflow: hidden; color: var(--company-muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
 .rowAction { width: 34px; min-height: 34px !important; padding: 0 !important; display: inline-grid !important; place-items: center; border-radius: 9px !important; }
 
 .empty { min-height: 244px; display: grid; place-content: center; justify-items: center; gap: 9px; padding: 30px; text-align: center; }
-.emptyIcon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 13px; background: #ecfdf5; color: #10b981; }
+.emptyIcon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 13px; background: var(--company-mint-soft); color: var(--company-mint); }
 .empty strong { color: var(--company-ink); font-size: 14px; }
 .empty span { max-width: 250px; color: var(--company-muted); font-size: 12px; line-height: 1.55; }
 
@@ -210,10 +222,10 @@
   border-radius: 11px !important;
   background: transparent !important;
 }
-.action:hover:not(:disabled) { border-color: #dbeafe !important; background: #f8fbff !important; transform: none !important; }
-.actionIcon { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 11px; background: #eff6ff; color: #2563eb; }
-.action:nth-of-type(2) .actionIcon { background: #ecfdf5; color: #0f9f8f; }
-.action:nth-of-type(3) .actionIcon { background: #faf5ff; color: #9333ea; }
+.action:hover:not(:disabled) { border-color: var(--sb-color-border-strong) !important; background: var(--sb-color-surface-subtle) !important; transform: none !important; }
+.actionIcon { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 11px; background: var(--company-blue-soft); color: var(--company-blue); }
+.action:nth-of-type(2) .actionIcon { background: var(--company-mint-soft); color: var(--company-mint); }
+.action:nth-of-type(3) .actionIcon { background: var(--company-violet-soft); color: var(--company-violet); }
 .actionCopy { min-width: 0; display: grid; gap: 3px; }
 .actionCopy strong { color: var(--company-ink); font-size: 12.5px; font-weight: 650; }
 .actionCopy small { color: var(--company-muted); font-size: 11px; line-height: 1.35; }
@@ -222,17 +234,17 @@
 .opportunities { padding: 0; }
 .opportunityTable { overflow-x: auto; }
 .tableHead, .opportunityRow { min-width: 735px; display: grid; grid-template-columns: minmax(260px, 1.65fr) 135px 104px 110px 42px; align-items: center; column-gap: 14px; padding: 0 20px; }
-.tableHead { min-height: 45px; border-bottom: 1px solid var(--company-border); background: #f8fafc; color: #64748b; font-size: 10px; font-weight: 750; letter-spacing: 0.07em; text-transform: uppercase; }
+.tableHead { min-height: 45px; border-bottom: 1px solid var(--company-border); background: var(--sb-color-surface-subtle); color: var(--company-muted); font-size: 10px; font-weight: 750; letter-spacing: 0.07em; text-transform: uppercase; }
 .opportunityRow { min-height: 68px; border-bottom: 1px solid #eef2f7; transition: background-color 150ms ease; }
 .opportunityRow:last-child { border-bottom: 0; }
-.opportunityRow:hover { background: #f8fafc; }
+.opportunityRow:hover { background: var(--sb-color-surface-subtle); }
 .opportunityTitle { min-width: 0; display: grid; gap: 3px; }
 .opportunityTitle strong { overflow: hidden; color: var(--company-ink); font-size: 13px; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
 .opportunityTitle span, .opportunityRow > span { color: var(--company-muted); font-size: 12px; }
 .opportunityCount { color: var(--company-ink); font-size: 13px; font-weight: 650; }
 
-.loading { min-height: 360px; display: grid; place-items: center; border: 1px solid var(--company-border); border-radius: 14px; background: rgb(255 255 255 / 0.88); color: var(--company-slate); font-size: 13px; }
-.error { padding: 14px 16px; border: 1px solid #fecaca; border-radius: 12px; background: #fff7f7; color: #b91c1c; font-size: 13px; }
+.loading { min-height: 360px; display: grid; place-items: center; border: 1px solid var(--company-border); border-radius: 14px; background: var(--sb-color-surface); color: var(--company-slate); font-size: 13px; }
+.error { padding: 14px 16px; border: 1px solid color-mix(in srgb, var(--sb-color-rejected) 42%, var(--company-border)); border-radius: 12px; background: var(--sb-color-rejected-soft); color: var(--sb-color-rejected); font-size: 13px; }
 
 @media (max-width: 1120px) {
   .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }

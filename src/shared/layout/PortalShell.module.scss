@@ -1,28 +1,28 @@
 .shell {
   --portal-sidebar-width: 248px;
-  --portal-accent: #2563eb;
-  --portal-accent-soft: #eff6ff;
+  --portal-accent: var(--sb-color-action);
+  --portal-accent-soft: var(--sb-color-action-soft);
   min-height: 100vh;
   display: grid;
   grid-template-columns: var(--portal-sidebar-width) minmax(0, 1fr);
-  background: linear-gradient(135deg, #f7faff 0%, var(--sb-color-canvas) 36%, #ffffff 100%);
+  background: var(--sb-color-canvas);
   color: var(--sb-color-text);
   transition: grid-template-columns var(--sb-motion-standard) var(--sb-ease-standard);
 }
 
 .shell[data-portal-role="company"] {
-  --portal-accent: #2563eb;
-  --portal-accent-soft: #eff6ff;
+  --portal-accent: var(--sb-color-action);
+  --portal-accent-soft: var(--sb-color-action-soft);
 }
 
 .shell[data-portal-role="admin"] {
-  --portal-accent: #2563eb;
-  --portal-accent-soft: #eff6ff;
+  --portal-accent: var(--sb-color-action);
+  --portal-accent-soft: var(--sb-color-action-soft);
 }
 
 .shell[data-portal-role="university"] {
-  --portal-accent: #2563eb;
-  --portal-accent-soft: #eff6ff;
+  --portal-accent: var(--sb-color-action);
+  --portal-accent-soft: var(--sb-color-action-soft);
 }
 
 .collapsed {
@@ -241,7 +241,8 @@
 .workspace {
   min-width: 0;
   min-height: 100vh;
-  background: linear-gradient(135deg, rgb(238 245 255 / 72%), transparent 31%), var(--sb-color-canvas);
+  /* A single canvas prevents a visible rectangular seam around legacy pages. */
+  background: var(--sb-color-canvas);
 }
 
 .topbar {

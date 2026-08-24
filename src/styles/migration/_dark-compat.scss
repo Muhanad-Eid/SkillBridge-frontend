@@ -1,0 +1,202 @@
+/*
+ * The application still imports feature styles written before semantic theme
+ * tokens existed. This final cascade layer keeps those legacy surfaces usable
+ * in dark mode until each feature is migrated to token-only styling.
+ */
+:root[data-theme="dark"] {
+  --sb-border: var(--sb-color-border);
+  --sb-border-strong: var(--sb-color-border-strong);
+  --sb-surface: var(--sb-color-surface);
+  --sb-surface-subtle: var(--sb-color-surface-subtle);
+  --sb-text-primary: var(--sb-color-text);
+  --sb-text-secondary: var(--sb-color-text-secondary);
+  --sb-text-muted: var(--sb-color-text-muted);
+  --sb-action-primary: var(--sb-color-action);
+  --sb-status-verified: var(--sb-color-approved);
+  --sb-status-pending: var(--sb-color-pending);
+  --sb-status-error: var(--sb-color-rejected);
+}
+
+:root[data-theme="dark"] :is(
+  .page,
+  .portal-page,
+  .company-dashboard,
+  .company-page,
+  .jobseeker-page,
+  .university-training-page,
+  .work-hub-page,
+  .portfolio-page,
+  .admin-dashboard-page,
+  .admin-list-page,
+  .account-security-page
+) {
+  color: var(--sb-color-text);
+}
+
+/*
+ * Keep text in the dark portal crisp. Older feature styles occasionally
+ * compose page content on translucent layers, which can make Chromium render
+ * colored sub-pixel fringes around bright text on Windows displays.
+ */
+:root[data-theme="dark"] :is(
+  .page,
+  .portal-page,
+  .company-dashboard,
+  .company-page,
+  .jobseeker-page,
+  .university-training-page,
+  .work-hub-page,
+  .portfolio-page,
+  .admin-dashboard-page,
+  .admin-list-page,
+  .account-security-page
+) :is(h1, h2, h3, h4, p, span, strong, small, label, button, a) {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-shadow: none !important;
+  -webkit-text-stroke: 0 transparent;
+}
+
+:root[data-theme="dark"] :is(
+  .card,
+  .panel,
+  .table-card,
+  .company-panel,
+  .company-quick-actions,
+  .company-list-toolbar,
+  .company-opportunity-list,
+  .company-application-list,
+  .jobseeker-panel-card,
+  .jobseeker-profile-form-panel,
+  .jobseeker-selected-skills,
+  .work-hub-panel,
+  .work-hub-next-action,
+  .work-hub-reference,
+  .training-report-panel,
+  .training-supervisor-card,
+  .university-training-record,
+  .university-training-list,
+  .messages-layout,
+  .conversation-list,
+  .admin-table-card,
+  .admin-edit-card,
+  .evidence-contract-panel,
+  .evidence-card-list,
+  .evidence-record-section,
+  .evidence-provenance
+) {
+  border-color: var(--sb-color-border) !important;
+  background: var(--sb-color-surface) !important;
+  color: var(--sb-color-text);
+  box-shadow: var(--sb-shadow-sm);
+}
+
+:root[data-theme="dark"] :is(
+  input,
+  select,
+  textarea,
+  .toolbar,
+  .company-list-toolbar,
+  .university-training-toolbar,
+  .work-overview-filters,
+  .work-record-tabs,
+  .work-hub-section-tabs,
+  .jobseeker-status-tabs,
+  .work-overview-tabs,
+  .freelance-section-tabs
+) {
+  border-color: var(--sb-color-border) !important;
+  background: var(--sb-color-surface-subtle) !important;
+  color: var(--sb-color-text) !important;
+}
+
+:root[data-theme="dark"] :is(input, select, textarea)::placeholder {
+  color: var(--sb-color-text-muted) !important;
+  opacity: 1;
+}
+
+:root[data-theme="dark"] :is(
+  .table-head,
+  .tableHead,
+  .company-opportunity-row:hover,
+  .company-application-row:hover,
+  .jobseeker-application-table > article:hover,
+  .work-overview-row:hover,
+  .company-talent-row:hover,
+  .training-report-list > article:hover,
+  .conversation-button.active
+) {
+  background: var(--sb-color-surface-subtle) !important;
+}
+
+:root[data-theme="dark"] :is(
+  .table-row,
+  .company-opportunity-row,
+  .company-application-row,
+  .jobseeker-application-table > article,
+  .work-overview-row,
+  .company-talent-row,
+  .training-report-list > article,
+  .conversation-button,
+  .notification-item,
+  .evidence-contract-summary article,
+  .evidence-contract-detail dl > div,
+  .evidence-contract-criteria li,
+  .work-criterion-list > section,
+  .work-record-heading > div,
+  .work-record-heading > span,
+  .training-supervision-summary > div,
+  .training-supervision-summary > label
+) {
+  border-color: var(--sb-color-border) !important;
+  background: var(--sb-color-surface) !important;
+  color: var(--sb-color-text) !important;
+}
+
+:root[data-theme="dark"] :is(
+  .status-blue,
+  .conversation-button.active,
+  .work-hub-section-tabs button.active,
+  .jobseeker-status-tabs button.active,
+  .work-overview-tabs button.active,
+  .freelance-section-tabs a.active,
+  .work-record-tabs button.active
+) {
+  background: var(--sb-color-action-soft) !important;
+  color: var(--sb-color-action) !important;
+}
+
+:root[data-theme="dark"] .status-green { background: var(--sb-color-approved-soft) !important; color: var(--sb-color-approved) !important; }
+:root[data-theme="dark"] .status-amber { background: var(--sb-color-pending-soft) !important; color: var(--sb-color-pending) !important; }
+:root[data-theme="dark"] .status-red { background: var(--sb-color-rejected-soft) !important; color: var(--sb-color-rejected) !important; }
+:root[data-theme="dark"] .status-neutral { background: var(--sb-color-neutral-soft) !important; color: var(--sb-color-neutral) !important; }
+
+:root[data-theme="dark"] :is(
+  .workflow-policy-note,
+  .evidence-contract-panel,
+  .work-criterion-review,
+  .training-academic-confirmation,
+  .notice
+) {
+  border-color: var(--sb-color-border) !important;
+  background: var(--sb-color-surface-subtle) !important;
+  color: var(--sb-color-text-secondary) !important;
+}
+
+:root[data-theme="dark"] .notice-success { border-color: var(--sb-color-approved) !important; background: var(--sb-color-approved-soft) !important; color: var(--sb-color-approved) !important; }
+:root[data-theme="dark"] .notice-error { border-color: var(--sb-color-rejected) !important; background: var(--sb-color-rejected-soft) !important; color: var(--sb-color-rejected) !important; }
+
+:root[data-theme="dark"] :is(
+  .evidence-contract-summary,
+  .work-record-heading,
+  .training-supervision-summary,
+  .work-hub-facts,
+  .university-training-kpis,
+  .training-report-overview,
+  .jobseeker-kpi-grid,
+  .admin-list-stats,
+  .work-overview-summary
+) {
+  background: var(--sb-color-border) !important;
+  border-color: var(--sb-color-border) !important;
+}
