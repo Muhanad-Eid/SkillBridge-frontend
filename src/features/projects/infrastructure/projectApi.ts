@@ -1,6 +1,7 @@
 import { httpClient } from "../../../shared/api/httpClient";
 import type {
   CreateProjectRequest,
+  EvidenceContractVersion,
   Project,
   ProjectStatus,
   UpdateProjectRequest,
@@ -18,6 +19,12 @@ export function getProjectAsync(projectId: number) {
   return httpClient<Project>(`/api/projects/${projectId}`, {
     skipAuth: true,
   });
+}
+
+export function getEvidenceContractVersionsAsync(projectId: number) {
+  return httpClient<EvidenceContractVersion[]>(
+    `/api/projects/${projectId}/evidence-contracts`,
+  );
 }
 
 export function createProjectAsync(request: CreateProjectRequest) {

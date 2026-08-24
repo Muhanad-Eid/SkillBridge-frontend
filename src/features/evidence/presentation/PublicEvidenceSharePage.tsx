@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import DataState from "../../../shared/components/DataState";
 import SbBadge from "../../../shared/components/primitives/SbBadge/SbBadge";
 import {
+  EvidenceCardStatuses,
   getEvidenceCardStatusLabel,
   type PublicEvidenceShare,
 } from "../domain/evidenceTypes";
@@ -11,6 +12,12 @@ import { getPublicEvidenceShareAsync } from "../infrastructure/evidenceApi";
 import ClaimBoundaryPanel from "./ClaimBoundaryPanel";
 import EvidenceTrace from "./EvidenceTrace";
 import styles from "./PublicEvidenceSharePage.module.scss";
+
+function getStatusTone(status: number) {
+  if (status === EvidenceCardStatuses.Revoked) return "revoked" as const;
+  if (status === EvidenceCardStatuses.Superseded) return "pending" as const;
+  return "approved" as const;
+}
 
 export default function PublicEvidenceSharePage() {
   const { token = "" } = useParams();
@@ -63,8 +70,8 @@ export default function PublicEvidenceSharePage() {
           isLoading={false}
           error=""
           empty
-          emptyTitle="No active evidence in this share"
-          emptyDescription="The selected cards may have been hidden or corrected."
+          emptyTitle="No evidence in this share"
+          emptyDescription="The selected cards may have been hidden or the link may have been updated."
         />
       ) : (
         <div className={styles.cards}>
@@ -76,13 +83,39 @@ export default function PublicEvidenceSharePage() {
                   <h2>{card.opportunityTitle}</h2>
                   <p>{card.providerName} · {card.participantName}</p>
                 </div>
-                <SbBadge tone="approved">
+                <SbBadge tone={getStatusTone(card.status)}>
                   {getEvidenceCardStatusLabel(card.status)}
                 </SbBadge>
               </header>
               <div className={styles.details}>
                 <ClaimBoundaryPanel boundary={card.claimBoundary} />
                 <EvidenceTrace trace={card.trace} />
+                {card.statusHistory.length > 0 ? (
+                  <section className={styles.lifecycle}>
+                    <header>
+                      <h3>Card lifecycle</h3>
+                      <p>Recorded corrections remain visible; source files remain protected.</p>
+                    </header>
+                    <ol>
+                      {card.statusHistory.map((event) => (
+                        <li key={`${event.occurredAt}-${event.newStatus}`}>
+                          <SbBadge tone={getStatusTone(event.newStatus)}>
+                            {getEvidenceCardStatusLabel(event.newStatus)}
+                          </SbBadge>
+                          <div>
+                            <strong>{event.reason}</strong>
+                            <span>
+                              Recorded by {event.actorName} on {new Date(event.occurredAt).toLocaleDateString()}
+                            </span>
+                            {event.replacementCardId ? (
+                              <span>Replacement record: SB-EV-{String(event.replacementCardId).padStart(6, "0")}</span>
+                            ) : null}
+                          </div>
+                        </li>
+                      ))}
+                    </ol>
+                  </section>
+                ) : null}
               </div>
             </article>
           ))}

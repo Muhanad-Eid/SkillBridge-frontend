@@ -4,14 +4,13 @@ import {
   BriefcaseBusiness,
   CheckCircle2,
   ClipboardClock,
+  LoaderCircle,
   MessageSquare,
   Plus,
   UsersRound,
 } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 import Button from "../../../shared/components/Button";
-import DataState from "../../../shared/components/DataState";
-import PageHeader from "../../../shared/components/PageHeader";
 import StatusBadge from "../../../shared/components/StatusBadge";
 import {
   ApplicationStatuses,
@@ -26,6 +25,7 @@ import {
   type Project,
 } from "../../projects/domain/projectTypes";
 import { getMyCompanyProjectsAsync } from "../../projects/infrastructure/projectApi";
+import styles from "./CompanyDashboardPage.module.scss";
 
 type CompanyPortalContext = {
   isCompanyVerified: boolean;
@@ -121,11 +121,15 @@ export default function CompanyDashboardPage() {
   }, [applications, projects]);
 
   return (
-    <section className="page company-overview-page">
-      <PageHeader
-        title="Overview"
-        actions={
-          isCompanyVerified ? (
+    <section className={`${styles.root} ${styles.companyDashboardRoot}`}>
+      <header className={styles.top}>
+        <div className={styles.topCopy}>
+          <p className={styles.eyebrow}>Company workspace</p>
+          <h1>Overview</h1>
+          <p>Manage practical opportunities, review applicants, and keep every work outcome moving forward.</p>
+        </div>
+        <div>
+          {isCompanyVerified ? (
             <Button
               to="/company/projects?create=1"
               variant="primary"
@@ -145,68 +149,67 @@ export default function CompanyDashboardPage() {
               <Plus size={17} aria-hidden="true" />
               New opportunity
             </Button>
-          )
-        }
-      />
+          )}
+        </div>
+      </header>
 
-      <DataState
-        isLoading={isLoading}
-        error={error}
-        empty={false}
-        emptyTitle=""
-        emptyDescription=""
-      />
-
-      {!isLoading && !error ? (
+      {isLoading ? (
+        <section className={styles.loading} role="status">
+          <LoaderCircle size={20} aria-hidden="true" /> Loading your company workspace
+        </section>
+      ) : error ? (
+        <div className={styles.error} role="alert">{error}</div>
+      ) : (
         <>
-          <div className="company-kpi-grid">
-            <article>
-              <span className="company-kpi-icon kpi-blue">
+          <div className={styles.stats} aria-label="Company summary">
+            <article className={`${styles.stat} ${styles.blue}`}>
+              <span className={styles.statLabel}>
                 <BriefcaseBusiness size={19} aria-hidden="true" />
+                Active opportunities
               </span>
               <div>
-                <span>Active opportunities</span>
                 <strong>{workspace.activeProjects.length}</strong>
                 <small>{projects.length} total</small>
               </div>
             </article>
-            <article>
-              <span className="company-kpi-icon kpi-amber">
+            <article className={`${styles.stat} ${styles.amber}`}>
+              <span className={styles.statLabel}>
                 <ClipboardClock size={19} aria-hidden="true" />
+                Awaiting review
               </span>
               <div>
-                <span>Awaiting review</span>
                 <strong>{workspace.pending.length}</strong>
                 <small>{applications.length} applications</small>
               </div>
             </article>
-            <article>
-              <span className="company-kpi-icon kpi-green">
+            <article className={`${styles.stat} ${styles.mint}`}>
+              <span className={styles.statLabel}>
                 <UsersRound size={19} aria-hidden="true" />
+                Accepted workers
               </span>
               <div>
-                <span>Accepted workers</span>
                 <strong>{workspace.accepted.length}</strong>
                 <small>{workspace.conversion}% acceptance rate</small>
               </div>
             </article>
-            <article>
-              <span className="company-kpi-icon kpi-neutral">
+            <article className={`${styles.stat} ${styles.slate}`}>
+              <span className={styles.statLabel}>
                 <CheckCircle2 size={19} aria-hidden="true" />
+                Completed
               </span>
               <div>
-                <span>Completed</span>
                 <strong>{workspace.completedProjects}</strong>
                 <small>opportunities</small>
               </div>
             </article>
           </div>
 
-          <div className="company-dashboard-grid">
-            <section className="company-panel company-attention-panel">
-              <header className="company-panel-header">
-                <div>
+          <div className={styles.workspaceGrid}>
+            <section className={styles.panel}>
+              <header className={styles.panelHeader}>
+                <div className={styles.panelHeading}>
                   <h2>Pending applications</h2>
+                  <p>Review the people waiting for a decision.</p>
                 </div>
                 <Button to="/company/applications?status=0" variant="secondary">
                   View applications
@@ -214,19 +217,19 @@ export default function CompanyDashboardPage() {
               </header>
 
               {workspace.pending.length === 0 ? (
-                <div className="company-empty-panel">
-                  <CheckCircle2 size={24} aria-hidden="true" />
+                <div className={styles.empty}>
+                  <span className={styles.emptyIcon}><CheckCircle2 size={21} aria-hidden="true" /></span>
                   <strong>No applications waiting</strong>
                   <span>New applicants will appear here.</span>
                 </div>
               ) : (
-                <div className="company-application-list">
+                <div className={styles.applicationList}>
                   {workspace.pending.slice(0, 5).map((application) => (
-                    <article key={application.id}>
-                      <span className="company-avatar" aria-hidden="true">
+                    <article className={styles.application} key={application.id}>
+                      <span className={styles.avatar} aria-hidden="true">
                         {application.jobSeekerName.charAt(0).toUpperCase()}
                       </span>
-                      <div>
+                      <div className={styles.applicationCopy}>
                         <strong>{application.jobSeekerName}</strong>
                         <span>{application.projectTitle}</span>
                       </div>
@@ -238,7 +241,7 @@ export default function CompanyDashboardPage() {
                         variant="ghost"
                         aria-label={`Review ${application.jobSeekerName}`}
                         title="Review applicant"
-                        className="company-row-icon-button"
+                        className={styles.rowAction}
                       >
                         <ArrowRight size={18} aria-hidden="true" />
                       </Button>
@@ -248,20 +251,22 @@ export default function CompanyDashboardPage() {
               )}
             </section>
 
-            <aside className="company-quick-actions">
-              <header className="company-panel-header">
-                <div>
+            <aside className={styles.actionPanel}>
+              <header className={styles.panelHeader}>
+                <div className={styles.panelHeading}>
                   <h2>Quick actions</h2>
+                  <p>Keep the work moving.</p>
                 </div>
               </header>
+              <div className={styles.actionList}>
               {isCompanyVerified ? (
                 <Button
                   to="/company/projects?create=1"
                   variant="secondary"
-                  className="company-action-link"
+                  className={styles.action}
                 >
-                  <Plus size={19} aria-hidden="true" />
-                  <span>
+                  <span className={styles.actionIcon}><Plus size={18} aria-hidden="true" /></span>
+                  <span className={styles.actionCopy}>
                     <strong>Create opportunity</strong>
                     <small>Publish a new listing</small>
                   </span>
@@ -271,12 +276,12 @@ export default function CompanyDashboardPage() {
                 <Button
                   type="button"
                   variant="secondary"
-                  className="company-action-link"
+                  className={styles.action}
                   disabled
                   title="Company verification is required"
                 >
-                  <Plus size={19} aria-hidden="true" />
-                  <span>
+                  <span className={styles.actionIcon}><Plus size={18} aria-hidden="true" /></span>
+                  <span className={styles.actionCopy}>
                     <strong>Create opportunity</strong>
                     <small>Verification required</small>
                   </span>
@@ -286,10 +291,10 @@ export default function CompanyDashboardPage() {
               <Button
                 to="/company/applications"
                 variant="secondary"
-                className="company-action-link"
+                className={styles.action}
               >
-                <UsersRound size={19} aria-hidden="true" />
-                <span>
+                <span className={styles.actionIcon}><UsersRound size={18} aria-hidden="true" /></span>
+                <span className={styles.actionCopy}>
                   <strong>Review applicants</strong>
                   <small>{workspace.pending.length} waiting</small>
                 </span>
@@ -298,22 +303,24 @@ export default function CompanyDashboardPage() {
               <Button
                 to="/company/messages"
                 variant="secondary"
-                className="company-action-link"
+                className={styles.action}
               >
-                <MessageSquare size={19} aria-hidden="true" />
-                <span>
+                <span className={styles.actionIcon}><MessageSquare size={18} aria-hidden="true" /></span>
+                <span className={styles.actionCopy}>
                   <strong>Open messages</strong>
                   <small>Continue candidate conversations</small>
                 </span>
                 <ArrowRight size={17} aria-hidden="true" />
               </Button>
+              </div>
             </aside>
           </div>
 
-          <section className="company-panel">
-            <header className="company-panel-header">
-              <div>
+          <section className={styles.opportunities}>
+            <header className={styles.panelHeader}>
+              <div className={styles.panelHeading}>
                 <h2>Opportunities</h2>
+                <p>Current provider-managed opportunity records.</p>
               </div>
               <Button to="/company/projects" variant="secondary">
                 View all
@@ -321,14 +328,14 @@ export default function CompanyDashboardPage() {
             </header>
 
             {projects.length === 0 ? (
-              <div className="company-empty-panel">
-                <BriefcaseBusiness size={24} aria-hidden="true" />
+              <div className={styles.empty}>
+                <span className={styles.emptyIcon}><BriefcaseBusiness size={21} aria-hidden="true" /></span>
                 <strong>No opportunities yet</strong>
                 <span>Create your first listing after company verification.</span>
               </div>
             ) : (
-              <div className="company-project-table">
-                <div className="company-project-table-head" aria-hidden="true">
+              <div className={styles.opportunityTable}>
+                <div className={styles.tableHead} aria-hidden="true">
                   <span>Opportunity</span>
                   <span>Status</span>
                   <span>Applications</span>
@@ -336,15 +343,15 @@ export default function CompanyDashboardPage() {
                   <span />
                 </div>
                 {projects.slice(0, 5).map((project) => (
-                  <article key={project.id}>
-                    <div>
+                  <article className={styles.opportunityRow} key={project.id}>
+                    <div className={styles.opportunityTitle}>
                       <strong>{project.title}</strong>
                       <span>Project #{project.id}</span>
                     </div>
                     <StatusBadge tone={getStatusTone(project)}>
                       {getProjectDisplayStatusLabel(project)}
                     </StatusBadge>
-                    <strong>{project.applicationsCount}</strong>
+                    <strong className={styles.opportunityCount}>{project.applicationsCount}</strong>
                     <span>{project.durationWeeks} weeks</span>
                     <Button
                       to={
@@ -359,7 +366,7 @@ export default function CompanyDashboardPage() {
                           ? "Open applicants"
                           : "Open work hub"
                       }
-                      className="company-row-icon-button"
+                      className={styles.rowAction}
                     >
                       <ArrowRight size={18} aria-hidden="true" />
                     </Button>
@@ -369,7 +376,7 @@ export default function CompanyDashboardPage() {
             )}
           </section>
         </>
-      ) : null}
+      )}
     </section>
   );
 }

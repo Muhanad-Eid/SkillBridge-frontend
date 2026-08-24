@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { History, RefreshCw, ShieldAlert } from "lucide-react";
+import { ClipboardList, History, RefreshCw, ShieldAlert } from "lucide-react";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
@@ -8,10 +8,12 @@ import {
   EvidenceCardStatuses,
   getEvidenceCardStatusLabel,
   type EvidenceCardSummary,
+  type EvidenceAuditEvent,
   type EvidenceDetails,
 } from "../../evidence/domain/evidenceTypes";
 import {
   getEvidenceCardsAsync,
+  getEvidenceAuditEventsAsync,
   getEvidenceDetailsAsync,
   revokeEvidenceAsync,
   supersedeEvidenceAsync,
@@ -24,6 +26,7 @@ export default function AdminEvidencePage() {
   const [cards, setCards] = useState<EvidenceCardSummary[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [details, setDetails] = useState<EvidenceDetails | null>(null);
+  const [auditEvents, setAuditEvents] = useState<EvidenceAuditEvent[]>([]);
   const [reason, setReason] = useState("");
   const [replacementId, setReplacementId] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -56,8 +59,16 @@ export default function AdminEvidencePage() {
   useEffect(() => {
     if (selectedId === null) return;
     let cancelled = false;
-    void getEvidenceDetailsAsync(selectedId)
-      .then((result) => { if (!cancelled) setDetails(result); })
+    void Promise.all([
+      getEvidenceDetailsAsync(selectedId),
+      getEvidenceAuditEventsAsync(selectedId),
+    ])
+      .then(([detailsResult, auditResult]) => {
+        if (!cancelled) {
+          setDetails(detailsResult);
+          setAuditEvents(auditResult);
+        }
+      })
       .catch((caughtError: unknown) => {
         if (!cancelled) setError(caughtError instanceof Error ? caughtError.message : "Unable to inspect evidence.");
       });
@@ -73,7 +84,6 @@ export default function AdminEvidencePage() {
     card.status === EvidenceCardStatuses.Active &&
     card.participantName === selected?.participantName,
   );
-
   async function run(action: () => Promise<void>) {
     setBusy(true); setError(""); setMessage("");
     try {
@@ -130,10 +140,28 @@ export default function AdminEvidencePage() {
                   <ul>
                     {details.statusHistory.map((event) => (
                       <li key={`${event.occurredAt}-${event.newStatus}`}>
-                        {new Date(event.occurredAt).toLocaleString()}: {event.reason}
+                        <span>{new Date(event.occurredAt).toLocaleString()}</span>
+                        <strong>{getEvidenceCardStatusLabel(event.newStatus)}</strong>
+                        <span>Recorded by {event.actorName}</span>
+                        <p>{event.reason}</p>
                       </li>
                     ))}
                   </ul>
+                </section>
+                <section className={styles.audit}>
+                  <h3><ClipboardList size={18} /> Evidence audit</h3>
+                  {auditEvents.length > 0 ? (
+                    <ul>
+                      {auditEvents.map((event) => (
+                        <li key={`${event.occurredAt}-${event.action}`}>
+                          <span>{new Date(event.occurredAt).toLocaleString()}</span>
+                          <strong>{event.action}</strong>
+                          <span>{event.actorName}</span>
+                          {event.detail ? <p>{event.detail}</p> : null}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : <p>No evidence-affecting audit events have been recorded.</p>}
                 </section>
                 {selected.status === EvidenceCardStatuses.Active ? (
                   <section className={styles.actions}>
@@ -142,7 +170,7 @@ export default function AdminEvidencePage() {
                       <span>Reason</span>
                       <textarea value={reason} minLength={10} maxLength={1000} onChange={(event) => setReason(event.target.value)} />
                     </label>
-                    <label className="field">
+                    <label className="field" hidden>
                       <span>Replacement evidence (for supersession)</span>
                       <select value={replacementId} onChange={(event) => setReplacementId(event.target.value)}>
                         <option value="">Select an active replacement</option>
@@ -151,11 +179,14 @@ export default function AdminEvidencePage() {
                         ))}
                       </select>
                     </label>
+                    <p className={styles.replacementNote}>
+                      Supersession creates a controlled replacement from this same participation only after the server rechecks the issuance protocol. The original record remains in the lifecycle history.
+                    </p>
                     <div className={styles.actionButtons}>
                       <Button variant="danger" disabled={reason.trim().length < 10} isLoading={busy} onClick={() => void run(() => revokeEvidenceAsync(selected.cardId, reason.trim()))}>
                         Revoke evidence
                       </Button>
-                      <Button variant="secondary" disabled={reason.trim().length < 10 || !replacementId} isLoading={busy} onClick={() => void run(() => supersedeEvidenceAsync(selected.cardId, reason.trim(), Number(replacementId)))}>
+                      <Button variant="secondary" disabled={reason.trim().length < 10} isLoading={busy} onClick={() => void run(() => supersedeEvidenceAsync(selected.cardId, reason.trim()))}>
                         Supersede with replacement
                       </Button>
                     </div>

@@ -67,9 +67,25 @@ export type EvidenceStatusEvent = {
   previousStatus: EvidenceCardStatus;
   newStatus: EvidenceCardStatus;
   reason: string;
+  actorUserId: string;
+  actorName: string;
   occurredAt: string;
   replacementCardId: number | null;
 };
+
+export type EvidenceAuditEvent = {
+  action: string;
+  subjectType: string;
+  subjectId: string;
+  detail: string | null;
+  actorName: string;
+  occurredAt: string;
+};
+
+export type PublicEvidenceStatusEvent = Omit<
+  EvidenceStatusEvent,
+  "actorUserId"
+>;
 
 export type EvidenceDetails = {
   cardId: number;
@@ -78,7 +94,7 @@ export type EvidenceDetails = {
   submissionRevision: number;
   claimBoundary: ClaimBoundary;
   trace: EvidenceTraceEntry[];
-  statusHistory: EvidenceStatusEvent[];
+  statusHistory: PublicEvidenceStatusEvent[];
 };
 
 export type EvidenceCardSummary = {
@@ -122,6 +138,7 @@ export type PublicEvidenceCard = {
   issuedAt: string | null;
   claimBoundary: ClaimBoundary;
   trace: EvidenceTraceEntry[];
+  statusHistory: EvidenceStatusEvent[];
 };
 
 export type PublicEvidenceShare = {

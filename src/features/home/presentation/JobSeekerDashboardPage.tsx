@@ -6,7 +6,6 @@ import {
   FileCheck2,
   FolderKanban,
   Search,
-  Star,
   Wrench,
 } from "lucide-react";
 import Button from "../../../shared/components/Button";
@@ -22,14 +21,8 @@ import type { PortfolioItem } from "../../portfolio/domain/portfolioTypes";
 import { getMyPortfolioAsync } from "../../portfolio/infrastructure/portfolioApi";
 import type { JobSeekerProfile } from "../../profiles/domain/profileTypes";
 import { getMyJobSeekerProfileAsync } from "../../profiles/infrastructure/profileApi";
-import {
-  calculateProjectMatch,
-  ProjectStatuses,
-  type Project,
-} from "../../projects/domain/projectTypes";
+import { ProjectStatuses, type Project } from "../../projects/domain/projectTypes";
 import { getProjectsAsync } from "../../projects/infrastructure/projectApi";
-import type { Review } from "../../reviews/domain/reviewTypes";
-import { getJobSeekerReviewsAsync } from "../../reviews/infrastructure/reviewApi";
 import type { Skill } from "../../skills/domain/skillTypes";
 import { getMySkillsAsync } from "../../skills/infrastructure/skillApi";
 
@@ -39,7 +32,6 @@ export default function JobSeekerDashboardPage() {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
-  const [reviews, setReviews] = useState<Review[]>([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
@@ -56,15 +48,12 @@ export default function JobSeekerDashboardPage() {
             getMyPortfolioAsync(),
             getProjectsAsync(),
           ]);
-        const reviewData = await getJobSeekerReviewsAsync(profileData.id);
-
         if (isMounted) {
           setProfile(profileData);
           setApplications(applicationData);
           setSkills(skillData);
           setPortfolioItems(portfolioData);
           setProjects(projectData);
-          setReviews(reviewData);
         }
       } catch (caughtError) {
         if (isMounted) {
@@ -95,9 +84,8 @@ export default function JobSeekerDashboardPage() {
       accepted: applications.filter(
         (application) => application.status === ApplicationStatuses.Accepted,
       ).length,
-      reviews: reviews.length,
     }),
-    [applications, reviews.length],
+    [applications],
   );
 
   const readinessSteps = useMemo(
@@ -146,15 +134,10 @@ export default function JobSeekerDashboardPage() {
     [applications],
   );
 
-  const recommendedProjects = projects
+  const openProjects = projects
     .filter(
       (project) =>
         project.status === ProjectStatuses.Open && !appliedProjectIds.has(project.id),
-    )
-    .sort(
-      (left, right) =>
-        calculateProjectMatch(right, skills.map((skill) => skill.id)).score -
-        calculateProjectMatch(left, skills.map((skill) => skill.id)).score,
     )
     .slice(0, 3);
 
@@ -186,33 +169,33 @@ export default function JobSeekerDashboardPage() {
           </div>
         </article>
         <article>
+          <span className="jobseeker-kpi-icon kpi-amber">
+            <CheckCircle2 size={19} aria-hidden="true" />
+          </span>
+          <div>
+            <span>Awaiting a decision</span>
+            <strong>{isLoading ? "-" : stats.pending}</strong>
+            <small>Applications still under provider review</small>
+          </div>
+        </article>
+        <article>
           <span className="jobseeker-kpi-icon kpi-green">
             <CheckCircle2 size={19} aria-hidden="true" />
           </span>
           <div>
-            <span>Accepted work</span>
+            <span>Active work</span>
             <strong>{isLoading ? "-" : stats.accepted}</strong>
-            <small>Applications accepted by providers</small>
+            <small>Accepted work records to complete</small>
           </div>
         </article>
         <article>
-          <span className="jobseeker-kpi-icon kpi-amber">
+          <span className="jobseeker-kpi-icon kpi-violet">
             <FolderKanban size={19} aria-hidden="true" />
           </span>
           <div>
             <span>Evidence Cards</span>
             <strong>{isLoading ? "-" : portfolioItems.length}</strong>
             <small>{portfolioItems.filter((item) => item.isVisible).length} shared</small>
-          </div>
-        </article>
-        <article>
-          <span className="jobseeker-kpi-icon kpi-violet">
-            <Star size={19} aria-hidden="true" />
-          </span>
-          <div>
-            <span>Average rating</span>
-            <strong>{isLoading ? "-" : profile?.averageRating?.toFixed(1) ?? "New"}</strong>
-            <small>{stats.reviews} provider review{stats.reviews === 1 ? "" : "s"}</small>
           </div>
         </article>
       </div>
@@ -300,29 +283,23 @@ export default function JobSeekerDashboardPage() {
           <section className="jobseeker-panel-card">
             <header>
               <div>
-                <h2>Opportunities to explore</h2>
+                <h2>Open opportunities</h2>
               </div>
               <Button to="/job-seeker/opportunities" variant="ghost">Browse all</Button>
             </header>
             <div className="jobseeker-recommendation-list">
-              {recommendedProjects.length === 0 ? (
+              {openProjects.length === 0 ? (
                 <div className="jobseeker-empty-panel compact">
                   <strong>You have reviewed the current open opportunities</strong>
                   <p>Check back as verified providers publish more work.</p>
                 </div>
               ) : (
-                recommendedProjects.map((project) => (
+                openProjects.map((project) => (
                   <article key={project.id}>
                     <div>
                       <strong>{project.title}</strong>
                       <span>{project.companyName}</span>
                     </div>
-                    <span>
-                      {calculateProjectMatch(
-                        project,
-                        skills.map((skill) => skill.id),
-                      ).score}% match
-                    </span>
                     <span>{project.durationWeeks} weeks</span>
                     <strong>{project.budget ? `$${project.budget}` : "Training"}</strong>
                     <Button
@@ -365,10 +342,6 @@ export default function JobSeekerDashboardPage() {
             })}
           </div>
 
-          <Button to="/job-seeker/reviews" variant="secondary" className="jobseeker-reviews-link">
-            <Star size={17} aria-hidden="true" />
-            See provider feedback
-          </Button>
         </aside>
       </div>
     </section>
@@ -376,5 +349,5 @@ export default function JobSeekerDashboardPage() {
 }
 
 function SparkIcon() {
-  return <Star size={19} fill="currentColor" aria-hidden="true" />;
+  return <CheckCircle2 size={19} aria-hidden="true" />;
 }

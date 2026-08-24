@@ -1,7 +1,7 @@
 .shell {
   --portal-sidebar-width: 248px;
-  --portal-accent: var(--sb-color-action);
-  --portal-accent-soft: var(--sb-color-action-soft);
+  --portal-accent: #2563eb;
+  --portal-accent-soft: #eff6ff;
   min-height: 100vh;
   display: grid;
   grid-template-columns: var(--portal-sidebar-width) minmax(0, 1fr);
@@ -11,18 +11,18 @@
 }
 
 .shell[data-portal-role="company"] {
-  --portal-accent: var(--sb-color-action);
-  --portal-accent-soft: var(--sb-color-action-soft);
+  --portal-accent: #2563eb;
+  --portal-accent-soft: #eff6ff;
 }
 
 .shell[data-portal-role="admin"] {
-  --portal-accent: var(--sb-color-action);
-  --portal-accent-soft: var(--sb-color-action-soft);
+  --portal-accent: #2563eb;
+  --portal-accent-soft: #eff6ff;
 }
 
 .shell[data-portal-role="university"] {
-  --portal-accent: var(--sb-color-action);
-  --portal-accent-soft: var(--sb-color-action-soft);
+  --portal-accent: #2563eb;
+  --portal-accent-soft: #eff6ff;
 }
 
 .collapsed {

@@ -26,6 +26,9 @@ export default function EvidenceReadinessPanel({
       </header>
       <div className={styles.conditions}>
         {readiness.conditions.map((condition) => {
+          const stateLabel = condition.state === "Complete"
+            ? "Satisfied"
+            : condition.state;
           const Icon = condition.state === "Complete"
             ? CheckCircle2
             : condition.state === "Missing"
@@ -40,7 +43,10 @@ export default function EvidenceReadinessPanel({
             >
               <Icon size={18} aria-hidden="true" />
               <div>
-                <strong>{condition.code.replace(/([A-Z])/g, " $1").trim()}</strong>
+                <div className={styles.conditionTitle}>
+                  <strong>{condition.code.replace(/([A-Z])/g, " $1").trim()}</strong>
+                  <span>{stateLabel}</span>
+                </div>
                 <p>{condition.message}</p>
               </div>
             </div>

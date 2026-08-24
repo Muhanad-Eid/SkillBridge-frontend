@@ -161,6 +161,8 @@ export type WorkRecord = {
   contributionSummary: string | null;
   finalSubmissionNote: string | null;
   finalDeliverableUrl: string | null;
+  hasProtectedFinalDeliverable: boolean;
+  protectedFinalDeliverableFileName: string | null;
   workStatus: WorkSubmissionStatus;
   evaluationResult: string | null;
   companyFeedback: string | null;

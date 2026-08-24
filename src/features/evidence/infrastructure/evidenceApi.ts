@@ -1,6 +1,7 @@
 import { httpClient } from "../../../shared/api/httpClient";
 import type {
   EvidenceCardSummary,
+  EvidenceAuditEvent,
   CriterionEvidenceCoverage,
   EvidenceDetails,
   EvidenceReadiness,
@@ -15,19 +16,16 @@ export function getEvidenceReadinessAsync(applicationId: number) {
   );
 }
 
-export function issueEvidenceAsync(applicationId: number) {
-  return httpClient<{ cardId: number }>(
-    `/api/evidence/applications/${applicationId}/issue`,
-    { method: "POST" },
-  );
-}
-
 export function getEvidenceDetailsAsync(cardId: number) {
   return httpClient<EvidenceDetails>(`/api/evidence/cards/${cardId}`);
 }
 
 export function getEvidenceCardsAsync() {
   return httpClient<EvidenceCardSummary[]>("/api/evidence/cards");
+}
+
+export function getEvidenceAuditEventsAsync(cardId: number) {
+  return httpClient<EvidenceAuditEvent[]>(`/api/evidence/cards/${cardId}/audit`);
 }
 
 export function getCriterionEvidenceCoverageAsync(projectId: number) {
@@ -46,11 +44,10 @@ export function revokeEvidenceAsync(cardId: number, reason: string) {
 export function supersedeEvidenceAsync(
   cardId: number,
   reason: string,
-  replacementCardId: number,
 ) {
   return httpClient<void>(`/api/evidence/cards/${cardId}/supersede`, {
     method: "POST",
-    body: JSON.stringify({ reason, replacementCardId }),
+    body: JSON.stringify({ reason }),
   });
 }
 

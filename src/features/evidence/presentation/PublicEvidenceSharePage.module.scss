@@ -1,7 +1,20 @@
 .page {
-  width: min(1180px, calc(100% - 32px));
+  width: min(1140px, calc(100% - 40px));
   margin: 0 auto;
-  padding: 48px 0 80px;
+  padding: clamp(2.5rem, 7vw, 5.5rem) 0 clamp(4rem, 8vw, 7rem);
+}
+
+.page::before {
+  position: fixed;
+  z-index: -1;
+  top: -20rem;
+  right: -18rem;
+  width: 44rem;
+  height: 44rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(219 234 254 / 0.78), transparent 68%);
+  content: "";
+  pointer-events: none;
 }
 
 .heading {
@@ -14,17 +27,18 @@
 
 .heading h1,
 .heading p { margin: 0; }
-.heading p { color: var(--sb-text-muted); margin-top: var(--sb-space-2); }
+.heading h1 { color: var(--sb-text-primary); font-size: clamp(1.85rem, 3.2vw, 2.8rem); letter-spacing: 0; line-height: 1.12; }
+.heading p { max-width: 42rem; color: var(--sb-text-muted); margin-top: 0.7rem; font-size: 1rem; line-height: 1.6; }
 
 .cards { display: grid; gap: var(--sb-space-5); }
 
 .card {
   border: 1px solid var(--sb-border);
-  border-left: 4px solid var(--sb-status-verified);
-  border-radius: var(--sb-radius-lg);
+  border-top: 4px solid var(--sb-status-verified);
+  border-radius: 14px;
   background: var(--sb-surface);
   box-shadow: var(--sb-shadow-sm);
-  padding: var(--sb-space-5);
+  padding: clamp(1.25rem, 3vw, 2rem);
 }
 
 .cardHeader {
@@ -36,8 +50,19 @@
 
 .cardHeader h2,
 .cardHeader p { margin: 0; }
-.cardHeader p { color: var(--sb-text-muted); }
+.cardHeader h2 { margin-top: 0.35rem; color: var(--sb-text-primary); font-size: clamp(1.25rem, 2vw, 1.55rem); }
+.cardHeader p { color: var(--sb-text-muted); font-size: 0.875rem; }
 .details { display: grid; gap: var(--sb-space-4); }
+.lifecycle { padding: 1rem; border: 1px solid var(--sb-border); border-radius: 10px; background: var(--sb-surface-subtle); }
+.lifecycle header { display: grid; gap: 0.2rem; }
+.lifecycle h3, .lifecycle p { margin: 0; }
+.lifecycle h3 { color: var(--sb-text-primary); font-size: 0.95rem; }
+.lifecycle p { color: var(--sb-text-muted); font-size: 0.8rem; line-height: 1.45; }
+.lifecycle ol { display: grid; gap: 0.75rem; margin: 1rem 0 0; padding: 0; list-style: none; }
+.lifecycle li { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: flex-start; gap: 0.7rem; }
+.lifecycle li > div { display: grid; gap: 0.18rem; }
+.lifecycle li strong { color: var(--sb-text-primary); font-size: 0.84rem; line-height: 1.4; }
+.lifecycle li span { color: var(--sb-text-muted); font-size: 0.76rem; line-height: 1.4; }
 
 @media (max-width: 767px) {
   .page { width: min(100% - 24px, 1180px); padding-top: 28px; }

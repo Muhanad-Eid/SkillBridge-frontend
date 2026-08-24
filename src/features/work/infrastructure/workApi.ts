@@ -95,6 +95,34 @@ export function submitFinalWorkAsync(
   );
 }
 
+export function uploadFinalDeliverableAsync(
+  applicationId: number,
+  deliverable: File,
+) {
+  const formData = new FormData();
+  formData.append("deliverable", deliverable);
+
+  return httpClient<void>(
+    `/api/work/applications/${applicationId}/final-deliverable`,
+    {
+      method: "PUT",
+      body: formData,
+    },
+  );
+}
+
+export async function downloadFinalDeliverableAsync(applicationId: number) {
+  const download = await httpDownload(
+    `/api/work/applications/${applicationId}/final-deliverable`,
+  );
+  const url = URL.createObjectURL(download.blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = download.fileName;
+  anchor.click();
+  window.setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
 export function reviewFinalWorkByCompanyAsync(
   applicationId: number,
   request: ApproveFinalWorkRequest,

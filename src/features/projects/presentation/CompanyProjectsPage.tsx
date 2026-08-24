@@ -61,6 +61,7 @@ import {
   updateProjectStatusAsync,
 } from "../infrastructure/projectApi";
 import FreelanceWorkspaceNav from "./FreelanceWorkspaceNav";
+import EvidenceContractPanel from "./EvidenceContractPanel";
 
 type FormMode = "create" | "edit";
 
@@ -1129,6 +1130,16 @@ export default function CompanyProjectsPage({
                 <X size={19} aria-hidden="true" />
               </Button>
             </header>
+
+            {mode === "edit" && editingProject ? (
+              <EvidenceContractPanel
+                projectId={editingProject.id}
+                currentVersionNumber={editingProject.currentEvidenceContractVersionNumber}
+                governingVersionNumber={null}
+                canInspectHistory
+                className="company-contract-history"
+              />
+            ) : null}
 
             <form onSubmit={handleSave}>
               <Input

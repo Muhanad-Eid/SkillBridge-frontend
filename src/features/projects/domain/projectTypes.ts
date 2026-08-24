@@ -66,6 +66,25 @@ export type EvidenceCriterionInput = Omit<EvidenceCriterion, "id"> & {
   id?: number | null;
 };
 
+export type EvidenceContractVersion = {
+  id: number;
+  projectId: number;
+  versionNumber: number;
+  status: number;
+  createdAt: string;
+  publishedAt: string | null;
+  requirements: string;
+  deliverables: string;
+  milestonePlan: string;
+  evaluationCriteria: string;
+  confidentialitySummary: string | null;
+  requiresProviderApproval: boolean;
+  requiresUniversityApproval: boolean;
+  requiredTrainingHours: number | null;
+  applicationDeadline: string | null;
+  criteria: EvidenceCriterion[];
+};
+
 export type Project = {
   id: number;
   title: string;

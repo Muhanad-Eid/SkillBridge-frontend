@@ -4,6 +4,7 @@ import {
   CircleDollarSign,
   ClipboardCheck,
   Clock3,
+  Download,
   ExternalLink,
   Plus,
   RotateCcw,
@@ -33,10 +34,12 @@ import {
   TrainingReportStatuses,
   type UniversitySupervisor,
   type ContributionReviewTask,
+  type CriterionEvaluation,
   type WorkRecord,
 } from "../domain/workTypes";
 import {
   buildCriterionDrafts,
+  getCriterionDraftKey,
   parseEvaluationCriteria,
 } from "../domain/workEvaluation";
 import {
@@ -50,8 +53,10 @@ import {
   resolveContributionAsync,
   reviewContributionAsync,
   reviewMilestoneAsync,
+  downloadFinalDeliverableAsync,
   submitFinalWorkAsync,
   submitMilestoneAsync,
+  uploadFinalDeliverableAsync,
   updateContributionResponsibilitiesAsync,
 } from "../infrastructure/workApi";
 import TrainingReportsPanel from "./TrainingReportsPanel";
@@ -60,6 +65,22 @@ type WorkProgressPanelProps = {
   isCompany: boolean;
   projectId: number;
 };
+
+function toCriterionEvaluationPayload(item: {
+  criterionId: number | null;
+  criterion: string;
+  isRequired: boolean;
+  rating: number;
+  note: string;
+}): CriterionEvaluation {
+  return {
+    criterionId: item.criterionId,
+    criterion: item.criterion,
+    isRequired: item.isRequired,
+    rating: item.rating as CriterionEvaluation["rating"],
+    note: item.note,
+  };
+}
 
 export default function WorkProgressPanel({
   isCompany,
@@ -78,6 +99,9 @@ export default function WorkProgressPanel({
   >({});
   const [finalNote, setFinalNote] = useState("");
   const [finalUrl, setFinalUrl] = useState("");
+  const [finalDeliverableFile, setFinalDeliverableFile] = useState<File | null>(
+    null,
+  );
   const [contribution, setContribution] = useState("");
   const [responsibilityDrafts, setResponsibilityDrafts] = useState<
     Record<number, string>
@@ -197,12 +221,14 @@ export default function WorkProgressPanel({
       await action();
       setMessage("Work record updated.");
       await load();
+      return true;
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
           ? caughtError.message
           : "Unable to update the work record.",
       );
+      return false;
     } finally {
       setBusyKey("");
     }
@@ -228,16 +254,26 @@ export default function WorkProgressPanel({
     event.preventDefault();
     if (!record) return;
 
-    await runAction("final-submit", () =>
-      submitFinalWorkAsync(record.applicationId, {
+    const updated = await runAction("final-submit", async () => {
+      if (finalDeliverableFile) {
+        await uploadFinalDeliverableAsync(
+          record.applicationId,
+          finalDeliverableFile,
+        );
+      }
+
+      return submitFinalWorkAsync(record.applicationId, {
         submissionNote: finalNote.trim(),
         deliverableUrl: finalUrl.trim() || undefined,
         contributionSummary: contribution.trim() || undefined,
-      }),
-    );
-    setFinalNote("");
-    setFinalUrl("");
-    setContribution("");
+      });
+    });
+    if (updated) {
+      setFinalNote("");
+      setFinalUrl("");
+      setFinalDeliverableFile(null);
+      setContribution("");
+    }
   }
 
   if (isLoading) {
@@ -316,13 +352,16 @@ export default function WorkProgressPanel({
       }));
   const criterionDrafts =
     criterionDraftsByApplication[record.applicationId] ??
-    buildCriterionDrafts(record);
-  const criterionEvaluations = evidenceCriteria.map((criterion) => ({
+    buildCriterionDrafts(record, evidenceCriteria);
+  const criterionEvaluations = evidenceCriteria.map((criterion, index) => ({
     criterionId: criterion.id > 0 ? criterion.id : null,
     criterion: criterion.title,
     isRequired: criterion.isRequired,
-    rating: criterionDrafts[criterion.title]?.rating ?? 0,
-    note: criterionDrafts[criterion.title]?.note.trim() ?? "",
+    minimumRating: criterion.minimumRating,
+    rating:
+      criterionDrafts[getCriterionDraftKey(criterion, index)]?.rating ?? 0,
+    note:
+      criterionDrafts[getCriterionDraftKey(criterion, index)]?.note.trim() ?? "",
   }));
   const criteriaComplete = criterionEvaluations.every(
     (item) => item.rating > 0 && item.note.length >= 3,
@@ -331,9 +370,7 @@ export default function WorkProgressPanel({
     criteriaComplete &&
     criterionEvaluations.every((item) =>
       !item.isRequired ||
-      item.rating >=
-        (evidenceCriteria.find((criterion) => criterion.id === item.criterionId)
-          ?.minimumRating ?? CriterionRatings.MeetsStandard),
+      item.rating >= item.minimumRating,
     );
   const projectContributionReviews = contributionReviewQueue.filter(
     (item) => item.projectId === record.projectId,
@@ -414,6 +451,28 @@ export default function WorkProgressPanel({
 
       {readiness?.applicationId === record.applicationId ? (
         <EvidenceReadinessPanel readiness={readiness} />
+      ) : null}
+
+      {record.hasProtectedFinalDeliverable ? (
+        <section className="workflow-policy-note work-protected-deliverable" aria-label="Protected deliverable">
+          <ClipboardCheck aria-hidden="true" />
+          <span>
+            Protected deliverable: {record.protectedFinalDeliverableFileName}
+          </span>
+          <Button
+            type="button"
+            variant="secondary"
+            isLoading={busyKey === "download-deliverable"}
+            onClick={() =>
+              void runAction("download-deliverable", () =>
+                downloadFinalDeliverableAsync(record.applicationId),
+              )
+            }
+          >
+            <Download size={14} aria-hidden="true" />
+            Download
+          </Button>
+        </section>
       ) : null}
 
       {record.opportunityType === OpportunityTypes.FreelanceTask ? (
@@ -963,6 +1022,20 @@ export default function WorkProgressPanel({
               onChange={(event) => setFinalUrl(event.target.value)}
             />
           </label>
+          <label className="field">
+            <span>Protected deliverable file (optional)</span>
+            <input
+              type="file"
+              accept=".pdf,.docx,.xlsx,.pptx,.zip"
+              onChange={(event) =>
+                setFinalDeliverableFile(event.target.files?.[0] ?? null)
+              }
+            />
+            <small>
+              PDF, DOCX, XLSX, PPTX, or ZIP up to 20 MB. This file remains
+              protected and is never shown on a public evidence page.
+            </small>
+          </label>
           <Button type="submit" isLoading={busyKey === "final-submit"}>
             <Send size={16} aria-hidden="true" />
             Submit final work
@@ -1022,7 +1095,7 @@ export default function WorkProgressPanel({
             </p>
             <div className="work-criterion-list">
               {evidenceCriteria.map((criterion, index) => (
-                <section key={criterion.id || criterion.title}>
+                <section key={getCriterionDraftKey(criterion, index)}>
                   <header>
                     <span>{String(index + 1).padStart(2, "0")}</span>
                     <strong>{criterion.title}</strong>
@@ -1033,16 +1106,22 @@ export default function WorkProgressPanel({
                   <label className="field">
                     <span>Result</span>
                     <select
-                      value={criterionDrafts[criterion.title]?.rating ?? 0}
+                      value={
+                        criterionDrafts[getCriterionDraftKey(criterion, index)]
+                          ?.rating ?? 0
+                      }
                       required
                       onChange={(event) =>
                         setCriterionDraftsByApplication((current) => ({
                           ...current,
                           [record.applicationId]: {
                             ...criterionDrafts,
-                            [criterion.title]: {
-                            rating: Number(event.target.value),
-                              note: criterionDrafts[criterion.title]?.note ?? "",
+                            [getCriterionDraftKey(criterion, index)]: {
+                              rating: Number(event.target.value),
+                              note:
+                                criterionDrafts[
+                                  getCriterionDraftKey(criterion, index)
+                                ]?.note ?? "",
                             },
                           },
                         }))
@@ -1076,7 +1155,10 @@ export default function WorkProgressPanel({
                   <label className="field">
                     <span>Evidence note</span>
                     <textarea
-                      value={criterionDrafts[criterion.title]?.note ?? ""}
+                      value={
+                        criterionDrafts[getCriterionDraftKey(criterion, index)]
+                          ?.note ?? ""
+                      }
                       minLength={3}
                       maxLength={1000}
                       required
@@ -1086,8 +1168,11 @@ export default function WorkProgressPanel({
                           ...current,
                           [record.applicationId]: {
                             ...criterionDrafts,
-                            [criterion.title]: {
-                              rating: criterionDrafts[criterion.title]?.rating ?? 0,
+                            [getCriterionDraftKey(criterion, index)]: {
+                              rating:
+                                criterionDrafts[
+                                  getCriterionDraftKey(criterion, index)
+                                ]?.rating ?? 0,
                               note: event.target.value,
                             },
                           },
@@ -1154,13 +1239,9 @@ export default function WorkProgressPanel({
                     evaluationResult: evaluation.trim(),
                     feedback: finalFeedback.trim() || undefined,
                     demonstratedSkillIds,
-                    criterionEvaluations: criterionEvaluations.map((item) => ({
-                      ...item,
-                      rating: item.rating as
-                        | typeof CriterionRatings.NeedsImprovement
-                        | typeof CriterionRatings.MeetsStandard
-                        | typeof CriterionRatings.ExceedsStandard,
-                    })),
+                    criterionEvaluations: criterionEvaluations.map(
+                      toCriterionEvaluationPayload,
+                    ),
                   }),
                 )
               }
@@ -1183,13 +1264,9 @@ export default function WorkProgressPanel({
                     isApproved: false,
                     evaluationResult: evaluation.trim(),
                     feedback: finalFeedback.trim(),
-                    criterionEvaluations: criterionEvaluations.map((item) => ({
-                      ...item,
-                      rating: item.rating as
-                        | typeof CriterionRatings.NeedsImprovement
-                        | typeof CriterionRatings.MeetsStandard
-                        | typeof CriterionRatings.ExceedsStandard,
-                    })),
+                    criterionEvaluations: criterionEvaluations.map(
+                      toCriterionEvaluationPayload,
+                    ),
                   }),
                 )
               }

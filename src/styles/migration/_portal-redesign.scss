@@ -1,0 +1,658 @@
+/* Authenticated product layer. This intentionally builds on the existing
+   --sb-* foundation and feature classes rather than replacing application logic. */
+
+:root {
+  /* Compatibility aliases used by the evidence feature modules. */
+  --sb-surface: var(--sb-color-surface);
+  --sb-surface-subtle: var(--sb-color-surface-subtle);
+  --sb-surface-raised: var(--sb-color-surface-raised);
+  --sb-border: var(--sb-color-border);
+  --sb-border-strong: var(--sb-color-border-strong);
+  --sb-text-primary: var(--sb-color-text);
+  --sb-text-secondary: var(--sb-color-text-secondary);
+  --sb-text-muted: var(--sb-color-text-muted);
+  --sb-action-primary: var(--sb-color-action);
+  --sb-status-verified: var(--sb-color-approved);
+  --sb-status-pending: var(--sb-color-pending);
+  --sb-status-error: var(--sb-color-rejected);
+  --sb-font-caption: var(--sb-font-size-xs);
+  --sb-font-size-caption: var(--sb-font-size-xs);
+}
+
+.workspace .page,
+.portal-shell .page {
+  width: 100%;
+  max-width: 1240px;
+  margin-inline: auto;
+}
+
+.page {
+  display: grid;
+  gap: clamp(1.25rem, 2.2vw, 1.85rem);
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0.35rem 0 0.25rem;
+}
+
+.page-header > div:first-child { min-width: 0; }
+
+.page-header h1 {
+  margin: 0;
+  color: var(--sb-color-text);
+  font-size: clamp(1.75rem, 2.7vw, 2.35rem);
+  font-weight: 750;
+  letter-spacing: 0;
+  line-height: 1.12;
+}
+
+.page-header > div > p:not(.page-header-eyebrow) {
+  max-width: 46rem;
+  margin: 0.55rem 0 0;
+  color: var(--sb-color-text-secondary);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+.page-header-eyebrow,
+.card-eyebrow {
+  margin: 0 0 0.45rem;
+  color: var(--sb-color-text-muted);
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.page-actions,
+.page-header-actions,
+.toolbar,
+.admin-toolbar,
+.company-list-toolbar,
+.jobseeker-discovery-toolbar,
+.jobseeker-application-controls,
+.work-overview-controls,
+.university-training-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.page-actions { flex-wrap: wrap; justify-content: flex-end; }
+
+.card,
+.table-card,
+.jobseeker-panel-card,
+.jobseeker-readiness-panel,
+.jobseeker-skill-editor,
+.jobseeker-skill-summary,
+.jobseeker-profile-summary,
+.jobseeker-profile-form-panel,
+.jobseeker-apply-panel,
+.company-form-card,
+.company-list-card,
+.company-application-card,
+.admin-edit-card,
+.admin-table-card,
+.work-hub-panel,
+.work-hub-next-action,
+.work-hub-reference,
+.training-report-panel,
+.training-supervisor-card,
+.university-training-record,
+.company-talent-profile-body > aside,
+.company-talent-profile-section,
+.account-security-summary,
+.account-security-form {
+  border: 1px solid var(--sb-color-border) !important;
+  border-radius: 12px !important;
+  background: color-mix(in srgb, var(--sb-color-surface) 96%, transparent) !important;
+  box-shadow: 0 10px 32px rgb(15 23 42 / 0.035) !important;
+}
+
+.card-header,
+.jobseeker-panel-card > header,
+.jobseeker-profile-form-panel > header,
+.jobseeker-selected-skills > header,
+.work-hub-panel-header,
+.training-report-panel > header,
+.training-supervisor-card > header,
+.company-talent-section-heading,
+.account-security-form > header {
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.125rem 1.25rem;
+  border-bottom: 1px solid var(--sb-color-border);
+}
+
+.card-header h2,
+.card-header h3,
+.jobseeker-panel-card h2,
+.jobseeker-profile-form-panel h2,
+.work-hub-panel-header h2,
+.training-report-panel h3,
+.account-security-summary h2,
+.account-security-form h2,
+.company-talent-profile-body h2 {
+  margin: 0;
+  color: var(--sb-color-text);
+  font-size: 1.05rem;
+  font-weight: 720;
+  letter-spacing: 0;
+}
+
+.card-header p,
+.jobseeker-panel-card header p,
+.jobseeker-profile-form-panel header p,
+.work-hub-panel-header p,
+.training-report-panel header p,
+.account-security-form header p {
+  margin: 0.3rem 0 0;
+  color: var(--sb-color-text-muted);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.card-body { padding: 1.25rem; }
+
+.button {
+  min-height: 40px;
+  border-radius: 8px !important;
+  font-size: 0.8125rem !important;
+  font-weight: 680 !important;
+  letter-spacing: 0 !important;
+  box-shadow: none !important;
+}
+
+.button-primary {
+  border-color: #0f172a !important;
+  background: #0f172a !important;
+  color: #ffffff !important;
+}
+
+.button-primary:hover:not(:disabled) {
+  border-color: #1e293b !important;
+  background: #1e293b !important;
+  box-shadow: 0 8px 22px rgb(15 23 42 / 0.14) !important;
+}
+
+.button-secondary {
+  border-color: var(--sb-color-border) !important;
+  background: var(--sb-color-surface) !important;
+  color: var(--sb-color-text) !important;
+}
+
+.button-secondary:hover:not(:disabled),
+.button-ghost:hover:not(:disabled) {
+  border-color: #cbd5e1 !important;
+  background: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+.button-ghost { color: var(--sb-color-text-secondary) !important; }
+
+.field,
+.toolbar label,
+.jobseeker-filter-grid label,
+.work-overview-filters label,
+.company-form-grid label {
+  display: grid;
+  gap: 0.45rem;
+  color: var(--sb-color-text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 650;
+}
+
+.field input,
+.field select,
+.field textarea,
+.toolbar input,
+.toolbar select,
+.jobseeker-filter-grid select,
+.work-overview-filters input,
+.work-overview-filters select,
+.university-training-toolbar input,
+.company-talent-search input,
+.company-talent-evidence-filter input,
+.compose-form textarea {
+  min-height: 42px;
+  border: 1px solid var(--sb-color-border) !important;
+  border-radius: 8px !important;
+  background: var(--sb-color-surface) !important;
+  color: var(--sb-color-text) !important;
+  font: inherit !important;
+  box-shadow: none !important;
+}
+
+.field textarea,
+.compose-form textarea { min-height: 112px; }
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus,
+.toolbar input:focus,
+.toolbar select:focus,
+.jobseeker-filter-grid select:focus,
+.work-overview-filters input:focus,
+.work-overview-filters select:focus,
+.university-training-toolbar input:focus,
+.company-talent-search input:focus,
+.company-talent-evidence-filter input:focus,
+.compose-form textarea:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 0.12) !important;
+  outline: none;
+}
+
+.notice {
+  margin: 0;
+  padding: 0.875rem 1rem;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #1e3a8a;
+  font-size: 0.875rem;
+}
+
+.notice-error { border-color: #fecaca; background: #fff7f7; color: #b91c1c; }
+.notice-success { border-color: #a7f3d0; background: #ecfdf5; color: #047857; }
+
+.empty-state,
+.work-hub-empty,
+.jobseeker-empty-panel,
+.company-empty-state,
+.chat-empty {
+  min-height: 220px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.55rem;
+  padding: 2rem;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--sb-color-surface) 86%, #f8fafc);
+  text-align: center;
+}
+
+.empty-state h1,
+.empty-state h2,
+.empty-state strong,
+.work-hub-empty strong,
+.jobseeker-empty-panel strong,
+.chat-empty strong { margin: 0; color: var(--sb-color-text); font-size: 1rem; }
+.empty-state p,
+.work-hub-empty p,
+.jobseeker-empty-panel p,
+.chat-empty p { max-width: 32rem; margin: 0; color: var(--sb-color-text-muted); line-height: 1.6; }
+
+.status-badge {
+  min-height: 25px;
+  padding: 0.25rem 0.6rem !important;
+  border-radius: 999px !important;
+  font-size: 0.6875rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em !important;
+}
+
+.status-blue { background: #eff6ff !important; color: #1d4ed8 !important; }
+.status-green { background: #ecfdf5 !important; color: #047857 !important; }
+.status-amber { background: #fffbeb !important; color: #a16207 !important; }
+.status-red { background: #fef2f2 !important; color: #b91c1c !important; }
+.status-neutral { background: #f1f5f9 !important; color: #475569 !important; }
+
+.table-card,
+.jobseeker-application-table,
+.company-opportunity-list,
+.company-application-list,
+.admin-table-card,
+.work-overview-list,
+.company-talent-list,
+.training-report-list,
+.evidence-card-list { overflow: hidden; }
+
+.table-row,
+.jobseeker-application-table > article,
+.company-opportunity-row,
+.company-application-row,
+.admin-table-card .table-row,
+.work-overview-row,
+.company-talent-row,
+.training-report-list > article {
+  border-color: #eef2f7 !important;
+  transition: background 160ms ease !important;
+}
+
+.table-row:hover,
+.jobseeker-application-table > article:hover,
+.company-opportunity-row:hover,
+.company-application-row:hover,
+.admin-table-card .table-row:hover,
+.work-overview-row:hover,
+.company-talent-row:hover,
+.training-report-list > article:hover { background: #f8fafc !important; }
+
+.messages-layout {
+  min-height: calc(100vh - 190px);
+  overflow: hidden;
+  border: 1px solid var(--sb-color-border);
+  border-radius: 12px;
+  background: var(--sb-color-surface);
+  box-shadow: 0 10px 32px rgb(15 23 42 / 0.035);
+}
+
+.conversation-list { background: #fbfcff; }
+.conversation-button { border-radius: 8px; }
+.conversation-button.active { background: #eff6ff !important; color: #1d4ed8 !important; }
+.chat-bubble { border-radius: 12px 12px 12px 3px !important; }
+.chat-bubble.outgoing { border-radius: 12px 12px 3px 12px !important; background: #0f172a !important; }
+
+.work-hub-page,
+.university-training-page,
+.portfolio-page,
+.company-talent-page,
+.company-talent-profile-page,
+.admin-dashboard-page,
+.admin-list-page,
+.account-security-page { gap: 1.5rem; }
+
+/* The Work Hub contains an active task surface and an action rail. Keep that
+   pairing only while each column has enough room to stay readable. */
+.work-hub-page {
+  width: 100%;
+  max-width: none;
+}
+
+.work-hub-layout {
+  grid-template-columns: minmax(0, 1.75fr) minmax(19rem, 22rem);
+  gap: clamp(1rem, 2vw, 1.5rem);
+}
+
+.work-hub-main,
+.work-hub-side {
+  gap: clamp(1rem, 1.8vw, 1.5rem);
+}
+
+.work-hub-next-action {
+  position: sticky;
+  top: calc(64px + 1.25rem);
+}
+
+@media (max-width: 1080px) {
+  .work-hub-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .work-hub-side {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .work-hub-next-action {
+    position: static;
+  }
+}
+
+@media (max-width: 680px) {
+  .work-hub-page {
+    gap: 1rem;
+  }
+
+  .work-hub-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .work-hub-facts article:nth-child(2) {
+    border-right: 0;
+  }
+
+  .work-hub-facts article:nth-child(n + 3) {
+    border-top: 1px solid var(--sb-color-border);
+  }
+
+  .work-hub-side {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.work-hub-facts,
+.university-training-kpis,
+.training-report-overview,
+.jobseeker-kpi-grid,
+.admin-list-stats,
+.work-overview-summary {
+  border: 1px solid var(--sb-color-border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--sb-color-surface);
+  box-shadow: 0 8px 24px rgb(15 23 42 / 0.025);
+}
+
+.work-hub-facts article,
+.university-training-kpis article,
+.training-report-overview article,
+.jobseeker-kpi-grid article,
+.admin-list-stats article,
+.work-overview-summary article { background: var(--sb-color-surface) !important; }
+
+.work-hub-section-tabs,
+.jobseeker-status-tabs,
+.work-overview-tabs,
+.freelance-section-tabs {
+  overflow-x: auto;
+  padding: 0.3rem;
+  border: 1px solid var(--sb-color-border);
+  border-radius: 10px;
+  background: var(--sb-color-surface-subtle);
+}
+
+.work-hub-section-tabs button,
+.jobseeker-status-tabs button,
+.work-overview-tabs button,
+.freelance-section-tabs a {
+  min-height: 38px;
+  border-radius: 7px !important;
+  font-size: 0.8125rem !important;
+}
+
+.work-hub-section-tabs button.active,
+.jobseeker-status-tabs button.active,
+.work-overview-tabs button.active,
+.freelance-section-tabs a.active { background: var(--sb-color-surface) !important; color: #1d4ed8 !important; box-shadow: 0 1px 3px rgb(15 23 42 / 0.08) !important; }
+
+/* Evidence-first work surfaces: requirements, activity, decisions, and issuance
+   remain visibly distinct without duplicating server-side business rules. */
+.workflow-policy-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem 1.125rem;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #1e3a8a;
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+
+.workflow-policy-note svg { flex: 0 0 auto; margin-top: 0.1rem; color: #2563eb; }
+
+.work-record-tabs {
+  display: flex;
+  gap: 0.35rem;
+  overflow-x: auto;
+  padding: 0.35rem;
+  border: 1px solid var(--sb-color-border);
+  border-radius: 10px;
+  background: var(--sb-color-surface-subtle);
+}
+
+.work-record-tabs button {
+  min-height: 36px;
+  flex: 0 0 auto;
+  padding: 0 0.85rem;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--sb-color-text-secondary);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.work-record-tabs button.active { background: var(--sb-color-surface); color: #1d4ed8; box-shadow: 0 1px 3px rgb(15 23 42 / 0.08); }
+
+.work-record-heading,
+.training-supervision-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--sb-color-border);
+  border-radius: 10px;
+  background: var(--sb-color-border);
+}
+
+.work-record-heading { grid-template-columns: minmax(0, 1fr) auto; padding: 0; }
+.work-record-heading > div,
+.work-record-heading > span,
+.training-supervision-summary > div,
+.training-supervision-summary > label {
+  display: grid;
+  gap: 0.28rem;
+  min-width: 0;
+  padding: 1rem;
+  background: var(--sb-color-surface);
+}
+
+.work-record-heading strong,
+.training-supervision-summary strong { color: var(--sb-color-text); font-size: 0.875rem; }
+.work-record-heading span,
+.training-supervision-summary span,
+.training-supervision-summary small { color: var(--sb-color-text-muted); font-size: 0.75rem; line-height: 1.45; }
+
+.work-final-review,
+.work-final-form,
+.work-add-milestone,
+.team-responsibility-record,
+.training-report-panel,
+.freelance-agreement {
+  padding: 1.25rem;
+  border: 1px solid var(--sb-color-border);
+  border-radius: 12px;
+  background: var(--sb-color-surface);
+}
+
+.work-criterion-review {
+  margin: 1.25rem 0 0;
+  padding: 1.125rem;
+  border: 1px solid #c7d2fe;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #f8fbff, #ffffff);
+}
+
+.work-criterion-review legend {
+  padding: 0 0.35rem;
+  color: #1e3a8a;
+  font-size: 0.9rem;
+  font-weight: 750;
+}
+
+.work-criterion-review > p { margin: 0.3rem 0 1rem; color: var(--sb-color-text-muted); font-size: 0.8125rem; line-height: 1.5; }
+
+.work-criterion-list { display: grid; gap: 0.85rem; }
+.work-criterion-list > section { display: grid; gap: 0.8rem; padding: 1rem; border: 1px solid var(--sb-color-border); border-radius: 9px; background: var(--sb-color-surface); }
+.work-criterion-list > section > header { display: flex; align-items: center; gap: 0.65rem; }
+.work-criterion-list > section > header > span { display: grid; width: 27px; height: 27px; place-items: center; border-radius: 8px; background: #eff6ff; color: #2563eb; font-size: 0.6875rem; font-weight: 750; }
+.work-criterion-list > section > header strong { flex: 1; color: var(--sb-color-text); font-size: 0.875rem; }
+
+.team-responsibility-record > header,
+.freelance-agreement > header,
+.work-final-form > div:first-child {
+  display: grid;
+  gap: 0.3rem;
+  margin-bottom: 1rem;
+}
+
+.team-responsibility-record > header > span,
+.freelance-agreement > header > span { color: #7c3aed; font-size: 0.7rem; font-weight: 750; letter-spacing: 0.06em; text-transform: uppercase; }
+
+[data-portal-role="university"] .university-training-page .university-training-kpis,
+[data-portal-role="university"] .university-training-page .training-report-overview {
+  border-top: 3px solid #8b5cf6;
+}
+
+[data-portal-role="university"] .university-training-page .university-training-kpis article:first-child svg,
+[data-portal-role="university"] .university-training-page .training-report-overview article:first-child svg { color: #7c3aed; }
+
+[data-portal-role="university"] .university-training-page .training-academic-confirmation {
+  padding: 1rem;
+  border: 1px solid #ddd6fe;
+  border-radius: 10px;
+  background: #faf5ff;
+}
+
+.evidence-contract-panel {
+  padding: 1.25rem;
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f8fbff, #ffffff);
+}
+
+.evidence-contract-panel > header { display: flex; align-items: flex-start; gap: 0.8rem; }
+.evidence-contract-icon { width: 38px; height: 38px; display: grid; flex: 0 0 38px; place-items: center; border-radius: 10px; background: #dbeafe; color: #2563eb; }
+.evidence-contract-panel h2 { margin: 0; color: var(--sb-color-text); font-size: 1rem; }
+.evidence-contract-panel > header p { margin: 0.25rem 0 0; color: var(--sb-color-text-muted); font-size: 0.8125rem; line-height: 1.5; }
+.evidence-contract-summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; overflow: hidden; margin-top: 1rem; border: 1px solid #dbeafe; border-radius: 9px; background: #dbeafe; }
+.evidence-contract-summary article { display: grid; gap: 0.35rem; padding: 0.9rem; background: #ffffff; }
+.evidence-contract-summary span { color: var(--sb-color-text-muted); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.evidence-contract-summary strong { color: #0f172a; font-size: 0.9375rem; }
+.evidence-contract-pin { display: flex; align-items: flex-start; gap: 0.45rem; margin: 1rem 0 0; color: #1e3a8a; font-size: 0.8125rem; line-height: 1.5; }
+.evidence-contract-pin svg { flex: 0 0 auto; margin-top: 0.05rem; }
+.evidence-contract-history { display: flex; flex-wrap: wrap; gap: 0.55rem; margin: 1rem 0 0; }
+.evidence-contract-history button { display: inline-flex; align-items: center; gap: 0.38rem; padding: 0.42rem 0.55rem; border: 1px solid var(--sb-color-border); border-radius: 7px; background: var(--sb-color-surface); color: var(--sb-color-text-secondary); font: inherit; font-size: 0.75rem; cursor: pointer; }
+.evidence-contract-history button:hover, .evidence-contract-history button.is-selected { border-color: #2563eb; background: #eff6ff; color: #1d4ed8; }
+.evidence-contract-history svg { color: #2563eb; }
+.evidence-contract-history small { color: var(--sb-color-text-muted); }
+.evidence-contract-detail { display: grid; gap: 0.9rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #dbeafe; }
+.evidence-contract-detail > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.evidence-contract-detail > header span, .evidence-contract-approvals > span, .evidence-contract-criteria > span { display: block; color: var(--sb-color-text-muted); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.evidence-contract-detail h3 { margin: 0.18rem 0 0; color: #0f172a; font-size: 0.9375rem; }
+.evidence-contract-detail > header small { color: var(--sb-color-text-muted); font-size: 0.75rem; }
+.evidence-contract-detail dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; margin: 0; }
+.evidence-contract-detail dl > div { padding: 0.75rem; border-radius: 8px; background: #f8fafc; }
+.evidence-contract-detail dt { color: #475569; font-size: 0.72rem; font-weight: 750; }
+.evidence-contract-detail dd { margin: 0.32rem 0 0; color: #1e293b; font-size: 0.8125rem; line-height: 1.5; white-space: pre-line; }
+.evidence-contract-approvals { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.75rem; border: 1px solid #dbeafe; border-radius: 8px; }
+.evidence-contract-approvals strong { color: #1e3a8a; font-size: 0.8125rem; }
+.evidence-contract-criteria ul { display: grid; gap: 0.5rem; margin: 0.55rem 0 0; padding: 0; list-style: none; }
+.evidence-contract-criteria li { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.65rem 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; }
+.evidence-contract-criteria li strong { color: #1e293b; font-size: 0.8125rem; }
+.evidence-contract-criteria li small { color: #64748b; font-size: 0.72rem; }
+.company-opportunity-drawer .company-contract-history { margin: 0 1.25rem 1.25rem; }
+
+@media (max-width: 760px) {
+  .page-header { align-items: stretch; flex-direction: column; gap: 1rem; }
+  .page-actions, .page-header-actions { justify-content: stretch; width: 100%; }
+  .page-actions .button, .page-header-actions .button { flex: 1 1 12rem; }
+  .toolbar, .admin-toolbar, .company-list-toolbar, .jobseeker-discovery-toolbar, .jobseeker-application-controls, .work-overview-controls, .university-training-toolbar { align-items: stretch; flex-wrap: wrap; }
+  .toolbar > *, .admin-toolbar > *, .company-list-toolbar > *, .jobseeker-discovery-toolbar > *, .jobseeker-application-controls > *, .work-overview-controls > *, .university-training-toolbar > * { flex: 1 1 100%; min-width: 0; }
+  .card-header, .jobseeker-panel-card > header, .jobseeker-profile-form-panel > header, .jobseeker-selected-skills > header, .work-hub-panel-header, .training-report-panel > header, .training-supervisor-card > header, .company-talent-section-heading, .account-security-form > header { align-items: flex-start; flex-direction: column; }
+  .messages-layout { min-height: 66vh; border-radius: 10px; }
+  .evidence-contract-summary { grid-template-columns: 1fr; }
+  .evidence-contract-detail dl { grid-template-columns: 1fr; }
+  .evidence-contract-approvals, .evidence-contract-criteria li { align-items: flex-start; flex-direction: column; }
+}
+
+@media (max-width: 420px) {
+  .page-header h1 { font-size: 1.7rem; }
+  .page-actions .button, .page-header-actions .button { flex-basis: 100%; }
+  .card-body { padding: 1rem; }
+}

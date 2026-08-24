@@ -2,6 +2,7 @@ import type {
   CriterionEvaluation,
   WorkRecord,
 } from "./workTypes";
+import type { EvidenceCriterion } from "../../projects/domain/projectTypes";
 
 export type CriterionDraft = {
   rating: number;
@@ -19,27 +20,50 @@ export function parseEvaluationCriteria(value?: string | null) {
     : ["Completion of the defined opportunity requirements"];
 }
 
+export function getCriterionDraftKey(
+  criterion: Pick<EvidenceCriterion, "id">,
+  index: number,
+) {
+  return criterion.id > 0 ? `criterion:${criterion.id}` : `legacy:${index}`;
+}
+
 export function buildCriterionDrafts(
   record: Pick<WorkRecord, "evaluationCriteria" | "criterionEvaluations">,
+  criteria?: EvidenceCriterion[],
 ): Record<string, CriterionDraft> {
-  const savedEvaluations = new Map(
+  const savedById = new Map(
+    (record.criterionEvaluations ?? [])
+      .filter((item): item is CriterionEvaluation => item?.criterionId != null)
+      .map((item) => [item.criterionId!, item]),
+  );
+  const savedByLegacyTitle = new Map(
     (record.criterionEvaluations ?? [])
       .filter(
         (item): item is CriterionEvaluation =>
-          Boolean(item?.criterion?.trim()),
+          item?.criterionId == null && Boolean(item?.criterion?.trim()),
       )
       .map((item) => [item.criterion.trim().toLowerCase(), item]),
   );
+  const effectiveCriteria = criteria?.length
+    ? criteria
+    : parseEvaluationCriteria(record.evaluationCriteria).map((title, index) => ({
+        id: -(index + 1),
+        title,
+        description: null,
+        evaluationType: 0 as const,
+        minimumRating: 2 as const,
+        isRequired: true,
+        sortOrder: index,
+      }));
 
   return Object.fromEntries(
-    parseEvaluationCriteria(record.evaluationCriteria).map((criterion) => {
-      const saved = savedEvaluations.get(criterion.toLowerCase());
+    effectiveCriteria.map((criterion, index) => {
+      const saved = criterion.id > 0
+        ? savedById.get(criterion.id)
+        : savedByLegacyTitle.get(criterion.title.trim().toLowerCase());
       return [
-        criterion,
-        {
-          rating: saved?.rating ?? 0,
-          note: saved?.note ?? "",
-        },
+        getCriterionDraftKey(criterion, index),
+        { rating: saved?.rating ?? 0, note: saved?.note ?? "" },
       ];
     }),
   );

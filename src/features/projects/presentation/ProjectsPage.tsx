@@ -25,10 +25,7 @@ import {
   type ApplicationStatus,
 } from "../../applications/domain/applicationTypes";
 import { getMyApplicationsAsync } from "../../applications/infrastructure/applicationApi";
-import type { Skill } from "../../skills/domain/skillTypes";
-import { getMySkillsAsync } from "../../skills/infrastructure/skillApi";
 import {
-  calculateProjectMatch,
   ExperienceLevels,
   FreelancePricingTypes,
   getExperienceLevelLabel,
@@ -62,7 +59,6 @@ export default function ProjectsPage({
   const { user } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
-  const [mySkills, setMySkills] = useState<Skill[]>([]);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [durationFilter, setDurationFilter] = useState("all");
@@ -70,7 +66,6 @@ export default function ProjectsPage({
   const [workModeFilter, setWorkModeFilter] = useState("all");
   const [experienceFilter, setExperienceFilter] = useState("all");
   const [skillFilter, setSkillFilter] = useState("all");
-  const [matchFilter, setMatchFilter] = useState("all");
   const [pricingFilter, setPricingFilter] = useState("all");
   const [budgetFilter, setBudgetFilter] = useState("all");
   const [sort, setSort] = useState("recommended");
@@ -108,16 +103,14 @@ export default function ProjectsPage({
 
     async function loadProjects() {
       try {
-        const [projectData, applicationData, skillData] = await Promise.all([
+        const [projectData, applicationData] = await Promise.all([
           getProjectsAsync(),
           isJobSeeker ? getMyApplicationsAsync() : Promise.resolve([]),
-          isJobSeeker ? getMySkillsAsync() : Promise.resolve([]),
         ]);
 
         if (isMounted) {
           setProjects(projectData);
           setApplications(applicationData);
-          setMySkills(skillData);
         }
       } catch (caughtError) {
         if (isMounted) {
@@ -153,16 +146,6 @@ export default function ProjectsPage({
       ),
     [isFreelanceView, projects],
   );
-
-  const matchByProject = useMemo(() => {
-    const skillIds = mySkills.map((skill) => skill.id);
-    return new Map(
-      scopedProjects.map((project) => [
-        project.id,
-        calculateProjectMatch(project, skillIds),
-      ]),
-    );
-  }, [mySkills, scopedProjects]);
 
   const availableProjectSkills = useMemo(() => {
     const skills = new Map<number, string>();
@@ -203,7 +186,6 @@ export default function ProjectsPage({
               project.durationWeeks <= 8) ||
             (durationFilter === "long" && project.durationWeeks > 8));
       const hasApplied = applicationByProject.has(project.id);
-      const match = matchByProject.get(project.id);
       const matchesApplication =
         applicationFilter === "all" ||
         (applicationFilter === "new" && !hasApplied) ||
@@ -216,10 +198,6 @@ export default function ProjectsPage({
       const matchesSkill =
         skillFilter === "all" ||
         project.skills.some((skill) => skill.id === Number(skillFilter));
-      const matchesFit =
-        matchFilter === "all" ||
-        (matchFilter === "strong" && (match?.score ?? 0) >= 70) ||
-        (matchFilter === "complete" && match?.missingRequiredSkills.length === 0);
       const matchesPricing =
         !isFreelanceView ||
         pricingFilter === "all" ||
@@ -234,7 +212,7 @@ export default function ProjectsPage({
         (budgetFilter === "over500" && (project.budget ?? 0) > 500);
 
       return matchesSearch && matchesType && matchesDuration && matchesApplication &&
-        matchesWorkMode && matchesExperience && matchesSkill && matchesFit &&
+        matchesWorkMode && matchesExperience && matchesSkill &&
         matchesPricing && matchesBudget;
     }).sort((left, right) => {
       if (isFreelanceView && sort === "budget") {
@@ -246,10 +224,7 @@ export default function ProjectsPage({
           (right.freelanceDeliveryDays ?? right.durationWeeks * 7)
         );
       }
-      return isJobSeeker
-        ? (matchByProject.get(right.id)?.score ?? 0) -
-            (matchByProject.get(left.id)?.score ?? 0)
-        : 0;
+      return 0;
     });
   }, [
     applicationByProject,
@@ -258,9 +233,6 @@ export default function ProjectsPage({
     durationFilter,
     experienceFilter,
     isFreelanceView,
-    isJobSeeker,
-    matchByProject,
-    matchFilter,
     pricingFilter,
     scopedProjects,
     search,
@@ -287,7 +259,6 @@ export default function ProjectsPage({
     workModeFilter,
     experienceFilter,
     skillFilter,
-    matchFilter,
     ...(isFreelanceView ? [pricingFilter] : []),
     ...(isFreelanceView ? [budgetFilter] : []),
   ].filter((value) => value !== "all").length;
@@ -299,7 +270,6 @@ export default function ProjectsPage({
     setWorkModeFilter("all");
     setExperienceFilter("all");
     setSkillFilter("all");
-    setMatchFilter("all");
     setPricingFilter("all");
     setBudgetFilter("all");
   }
@@ -402,7 +372,7 @@ export default function ProjectsPage({
             value={sort}
             onChange={(event) => setSort(event.target.value)}
           >
-            <option value="recommended">Best match</option>
+            <option value="recommended">Available tasks</option>
             <option value="budget">Highest budget</option>
             <option value="delivery">Fastest delivery</option>
           </select>
@@ -553,19 +523,7 @@ export default function ProjectsPage({
                   </select>
                 </label>
                 {isJobSeeker ? (
-                  <>
-                    <label>
-                      <span>Skill match</span>
-                      <select
-                        value={matchFilter}
-                        onChange={(event) => setMatchFilter(event.target.value)}
-                      >
-                        <option value="all">Any match score</option>
-                        <option value="strong">70% match or better</option>
-                        <option value="complete">All required skills</option>
-                      </select>
-                    </label>
-                    <label>
+                  <label>
                       <span>Application status</span>
                       <select
                         value={applicationFilter}
@@ -575,8 +533,7 @@ export default function ProjectsPage({
                         <option value="new">Not applied</option>
                         <option value="applied">Already applied</option>
                       </select>
-                    </label>
-                  </>
+                  </label>
                 ) : null}
               </div>
 
@@ -624,7 +581,6 @@ export default function ProjectsPage({
       <div className="jobseeker-opportunity-list">
         {filteredProjects.map((project) => {
           const application = applicationByProject.get(project.id);
-          const match = matchByProject.get(project.id);
 
           return (
             <article
@@ -648,11 +604,6 @@ export default function ProjectsPage({
                   {application ? (
                     <StatusBadge tone={getApplicationTone(application.status)}>
                       {getApplicationStatusLabel(application.status)}
-                    </StatusBadge>
-                  ) : null}
-                  {isJobSeeker && match ? (
-                    <StatusBadge tone={match.score >= 70 ? "green" : "neutral"}>
-                      {match.score}% skill match
                     </StatusBadge>
                   ) : null}
                 </div>

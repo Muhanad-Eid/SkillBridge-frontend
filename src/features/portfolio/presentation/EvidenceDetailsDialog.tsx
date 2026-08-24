@@ -276,7 +276,7 @@ export default function EvidenceDetailsDialog({
                   {details.statusHistory.map((event) => (
                     <li key={`${event.occurredAt}-${event.newStatus}`}>
                       {getEvidenceCardStatusLabel(event.previousStatus)} to {" "}
-                      {getEvidenceCardStatusLabel(event.newStatus)}: {event.reason}
+                      {getEvidenceCardStatusLabel(event.newStatus)} by {event.actorName}: {event.reason}
                     </li>
                   ))}
                 </ul>

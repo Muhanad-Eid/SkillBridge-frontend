@@ -40,10 +40,7 @@ import {
 } from "../../applications/infrastructure/applicationApi";
 import type { CompanyProfile } from "../../profiles/domain/profileTypes";
 import { getPublicCompanyProfileAsync } from "../../profiles/infrastructure/profileApi";
-import type { Skill } from "../../skills/domain/skillTypes";
-import { getMySkillsAsync } from "../../skills/infrastructure/skillApi";
 import {
-  calculateProjectMatch,
   FreelancePricingTypes,
   getExperienceLevelLabel,
   getFreelancePricingLabel,
@@ -54,6 +51,7 @@ import {
   type Project,
 } from "../domain/projectTypes";
 import { getProjectAsync, getProjectsAsync } from "../infrastructure/projectApi";
+import EvidenceContractPanel from "./EvidenceContractPanel";
 
 const MAX_CV_SIZE = 5 * 1024 * 1024;
 
@@ -64,7 +62,6 @@ export default function ProjectDetailsPage() {
   const [project, setProject] = useState<Project | null>(null);
   const [relatedProjects, setRelatedProjects] = useState<Project[]>([]);
   const [companyProfile, setCompanyProfile] = useState<CompanyProfile | null>(null);
-  const [mySkills, setMySkills] = useState<Skill[]>([]);
   const [existingApplication, setExistingApplication] = useState<Application | null>(null);
   const [criterionCoverage, setCriterionCoverage] =
     useState<CriterionEvidenceCoverage | null>(null);
@@ -95,10 +92,9 @@ export default function ProjectDetailsPage() {
     async function loadProject() {
       try {
         const projectData = await getProjectAsync(Number(projectId));
-        const [companyData, applicationData, skillData, projectDataList, coverageData] = await Promise.all([
+        const [companyData, applicationData, projectDataList, coverageData] = await Promise.all([
           getPublicCompanyProfileAsync(projectData.companyProfileId),
           isJobSeeker ? getMyApplicationsAsync() : Promise.resolve([]),
-          isJobSeeker ? getMySkillsAsync() : Promise.resolve([]),
           getProjectsAsync().catch(() => [] as Project[]),
           isJobSeeker
             ? getCriterionEvidenceCoverageAsync(projectData.id).catch(() => null)
@@ -108,7 +104,6 @@ export default function ProjectDetailsPage() {
         if (isMounted) {
           setProject(projectData);
           setCompanyProfile(companyData);
-          setMySkills(skillData);
           setExistingApplication(
             applicationData.find((application) => application.projectId === projectData.id) ?? null,
           );
@@ -163,9 +158,6 @@ export default function ProjectDetailsPage() {
           projectTitle: project.title,
         })}`
       : "";
-  const projectMatch = project && isJobSeeker && project.skills.length > 0
-    ? calculateProjectMatch(project, mySkills.map((skill) => skill.id))
-    : null;
   const isAcceptingApplications = project
     ? isProjectAcceptingApplications(project)
     : false;
@@ -435,6 +427,13 @@ export default function ProjectDetailsPage() {
                 </section>
               ) : null}
 
+              <EvidenceContractPanel
+                projectId={project.id}
+                currentVersionNumber={project.currentEvidenceContractVersionNumber}
+                governingVersionNumber={existingApplication?.acceptedEvidenceContractVersionNumber}
+                canInspectHistory
+              />
+
               {project.evaluationCriteria?.trim() ||
               project.requiredTrainingHours ? (
                 <section>
@@ -535,22 +534,6 @@ export default function ProjectDetailsPage() {
             </main>
 
             <aside className="jobseeker-apply-panel">
-              {projectMatch ? (
-                <div className="jobseeker-match-summary">
-                  <span>Skill match</span>
-                  <strong>{projectMatch.score}%</strong>
-                  <p>
-                    {projectMatch.matchedRequired}/{projectMatch.totalRequired} required skills matched
-                  </p>
-                  {projectMatch.missingRequiredSkills.length > 0 ? (
-                    <small>
-                      Skills to develop: {projectMatch.missingRequiredSkills.map((skill) => skill.name).join(", ")}
-                    </small>
-                  ) : (
-                    <small>You match every required skill.</small>
-                  )}
-                </div>
-              ) : null}
               {existingApplication ? (
                 <div className="jobseeker-applied-state">
                   <CheckCircle2 size={30} aria-hidden="true" />
