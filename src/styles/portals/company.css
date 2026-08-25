@@ -1794,6 +1794,34 @@
   gap: 6px;
 }
 
+/* Notification actions are icon-only controls, so they must not inherit text-button padding. */
+.notification-row-actions .company-icon-action {
+  width: 42px;
+  min-width: 42px;
+  height: 42px;
+  min-height: 42px;
+  flex: 0 0 42px;
+  padding: 0 !important;
+}
+
+.notification-row-actions .company-icon-action svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
+}
+
+.notification-row-actions .company-danger-icon {
+  border-color: #f3b8b5;
+  background: #fff5f4;
+  color: #b42318 !important;
+}
+
+.notification-row-actions .company-danger-icon:hover:not(:disabled) {
+  border-color: #d92d20;
+  background: #fee4e2;
+  color: #912018 !important;
+}
+
 @media (max-width: 720px) {
   .notification-list-v2 > article {
     grid-template-columns: minmax(0, 1fr);

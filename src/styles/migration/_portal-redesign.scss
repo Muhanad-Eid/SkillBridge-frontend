@@ -540,6 +540,7 @@
 
 .work-final-review,
 .work-final-form,
+.work-final-unavailable,
 .work-add-milestone,
 .team-responsibility-record,
 .training-report-panel,
@@ -548,6 +549,15 @@
   border: 1px solid var(--sb-color-border);
   border-radius: 12px;
   background: var(--sb-color-surface);
+}
+
+.work-final-prerequisite,
+.work-final-unavailable {
+  border-color: #fde68a;
+  border-left-color: #f59e0b;
+  border-radius: 10px;
+  background: #fffbeb;
+  color: #92400e;
 }
 
 .work-criterion-review {

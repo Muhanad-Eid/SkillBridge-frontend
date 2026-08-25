@@ -59,6 +59,9 @@
 
 .footer { margin: 1.5rem 0 0; color: var(--secondary); font-size: 0.8125rem; text-align: center; }
 .footer a { margin-left: 0.25rem; color: var(--ink); font-size: inherit; }
+.adminLink { margin: 0.75rem 0 0; color: var(--dim); font-size: 0.75rem; text-align: center; }
+.adminLink a { color: var(--secondary); font-weight: 650; text-decoration: none; }
+.adminLink a:hover { color: var(--ink); text-decoration: underline; }
 .message { margin: 0 0 1rem; padding: 0.75rem 0.875rem; border: 1px solid currentColor; border-radius: 12px; font-size: 0.8125rem; font-weight: 600; }
 .error { color: #b42318; background: #fff6f5; }.success { color: #027a48; background: #ecfdf3; }
 

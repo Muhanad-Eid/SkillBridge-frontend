@@ -2,6 +2,7 @@ import { httpClient } from "../../../shared/api/httpClient";
 import { ApplicationStatuses } from "../../applications/domain/applicationTypes";
 import type { PagedResult } from "../../projects/domain/projectTypes";
 import type {
+  AdminAuditEvent,
   AdminCompany,
   AdminApplication,
   AdminJobSeeker,
@@ -109,6 +110,16 @@ export function getAdminSkillsAsync(
 ) {
   return httpClient<PagedResult<AdminSkill>>(
     `/api/admin/skills?${buildPagedQuery(page, pageSize, search)}`,
+  );
+}
+
+export function getAdminAuditEventsAsync(
+  page = 1,
+  pageSize = DEFAULT_PAGE_SIZE,
+  search?: string,
+) {
+  return httpClient<PagedResult<AdminAuditEvent>>(
+    `/api/admin/audit?${buildPagedQuery(page, pageSize, search)}`,
   );
 }
 

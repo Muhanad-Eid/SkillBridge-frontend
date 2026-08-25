@@ -30,6 +30,7 @@
 .work-inline-form,
 .work-add-milestone,
 .work-final-form,
+.work-final-unavailable,
 .work-final-review,
 .university-progress-form,
 .university-final-review,
@@ -197,6 +198,27 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.work-final-prerequisite,
+.work-final-unavailable {
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--amber);
+  border-radius: 6px;
+  background: var(--surface-soft);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.work-final-unavailable {
+  display: grid;
+  gap: 4px;
+}
+
+.work-final-unavailable p {
+  margin: 0;
 }
 
 .work-demonstrated-skills {

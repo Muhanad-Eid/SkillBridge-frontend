@@ -312,19 +312,34 @@ export default function WorkProgressPanel({
   const canEditMilestones =
     record.workStatus === WorkSubmissionStatuses.NotSubmitted ||
     record.workStatus === WorkSubmissionStatuses.ChangesRequested;
+  const milestonesApproved = record.milestones.every(
+    (milestone) => milestone.status === MilestoneStatuses.Approved,
+  );
+  const trainingReportsApproved = record.trainingReports.every(
+    (report) => report.status === TrainingReportStatuses.Approved,
+  );
+  const trainingHoursComplete =
+    record.completedTrainingHours >= (record.requiredTrainingHours ?? 0);
+  const canPrepareFinalSubmission =
+    !isCompany && isWorkActive && canEditMilestones;
   const canSubmitFinal =
-    !isCompany &&
-    isWorkActive &&
-    canEditMilestones &&
-    record.milestones.every(
-      (milestone) => milestone.status === MilestoneStatuses.Approved,
-    ) &&
+    canPrepareFinalSubmission &&
+    milestonesApproved &&
     (record.opportunityType !== OpportunityTypes.UniversityTraining ||
-      (record.trainingReports.every(
-        (report) => report.status === TrainingReportStatuses.Approved,
-      ) &&
-        record.completedTrainingHours >=
-          (record.requiredTrainingHours ?? 0)));
+      (trainingReportsApproved && trainingHoursComplete));
+  const finalSubmissionBlocker = !isWorkActive
+    ? "This opportunity must be in progress before final work can be submitted."
+    : !canEditMilestones
+      ? "Your final work is already under review or approved."
+      : !milestonesApproved
+        ? "Every milestone must be approved before final work can be submitted."
+        : record.opportunityType === OpportunityTypes.UniversityTraining &&
+            !trainingReportsApproved
+          ? "Every training report must be approved before final work can be submitted."
+          : record.opportunityType === OpportunityTypes.UniversityTraining &&
+              !trainingHoursComplete
+            ? "Complete the required approved training hours before final work can be submitted."
+            : "";
   const eligibleSupervisors = supervisors.filter(
     (supervisor) =>
       record.studentUniversityName &&
@@ -451,6 +466,90 @@ export default function WorkProgressPanel({
 
       {readiness?.applicationId === record.applicationId ? (
         <EvidenceReadinessPanel readiness={readiness} />
+      ) : null}
+
+      {!isCompany && !record.hasEvidenceCard ? (
+        canPrepareFinalSubmission ? (
+          <form
+            id="final-submission"
+            className="work-final-form"
+            onSubmit={handleFinalSubmission}
+          >
+            <div>
+              <strong>Submit final work</strong>
+              <p>
+                Add your completed-work summary and an optional protected
+                deliverable. The provider will then evaluate the work against
+                the accepted Evidence Contract.
+              </p>
+            </div>
+            {!canSubmitFinal ? (
+              <div className="work-final-prerequisite" role="status">
+                {finalSubmissionBlocker}
+              </div>
+            ) : null}
+            <label className="field">
+              <span>Completed work summary</span>
+              <textarea
+                value={finalNote}
+                minLength={20}
+                maxLength={3000}
+                required
+                onChange={(event) => setFinalNote(event.target.value)}
+              />
+            </label>
+            {record.opportunityType === OpportunityTypes.TeamProject ? (
+              <label className="field">
+                <span>Your responsibilities and completed contribution</span>
+                <textarea
+                  value={contribution}
+                  minLength={20}
+                  maxLength={2000}
+                  required
+                  onChange={(event) => setContribution(event.target.value)}
+                />
+                <small>
+                  Explain what you were responsible for and which parts you completed.
+                </small>
+              </label>
+            ) : null}
+            <label className="field">
+              <span>Deliverable link (optional)</span>
+              <input
+                type="url"
+                value={finalUrl}
+                onChange={(event) => setFinalUrl(event.target.value)}
+              />
+            </label>
+            <label className="field">
+              <span>Protected deliverable file (optional)</span>
+              <input
+                type="file"
+                accept=".pdf,.docx,.xlsx,.pptx,.zip"
+                onChange={(event) =>
+                  setFinalDeliverableFile(event.target.files?.[0] ?? null)
+                }
+              />
+              <small>
+                PDF, DOCX, XLSX, PPTX, or ZIP up to 20 MB. This file remains
+                protected and is never shown on a public evidence page.
+              </small>
+            </label>
+            <Button
+              type="submit"
+              disabled={!canSubmitFinal}
+              isLoading={busyKey === "final-submit"}
+            >
+              <Send size={16} aria-hidden="true" />
+              Submit final work
+            </Button>
+          </form>
+        ) : (
+          <section className="work-final-unavailable" role="status">
+            <strong>Final submission is not available</strong>
+            <p>{finalSubmissionBlocker}</p>
+          </section>
+        )
       ) : null}
 
       {record.hasProtectedFinalDeliverable ? (
@@ -976,69 +1075,6 @@ export default function WorkProgressPanel({
           <Button type="submit" isLoading={busyKey === "create-milestone"}>
             <Plus size={16} aria-hidden="true" />
             Add milestone
-          </Button>
-        </form>
-      ) : null}
-
-      {!isCompany && canSubmitFinal ? (
-        <form className="work-final-form" onSubmit={handleFinalSubmission}>
-          <div>
-            <strong>Submit final work</strong>
-            <p>
-              This submission becomes an Evidence Card only after the required
-              approval.
-            </p>
-          </div>
-          <label className="field">
-            <span>Completed work summary</span>
-            <textarea
-              value={finalNote}
-              minLength={20}
-              maxLength={3000}
-              required
-              onChange={(event) => setFinalNote(event.target.value)}
-            />
-          </label>
-          {record.opportunityType === OpportunityTypes.TeamProject ? (
-            <label className="field">
-              <span>Your responsibilities and completed contribution</span>
-              <textarea
-                value={contribution}
-                minLength={20}
-                maxLength={2000}
-                required
-                onChange={(event) => setContribution(event.target.value)}
-              />
-              <small>
-                Explain what you were responsible for and which parts you completed.
-              </small>
-            </label>
-          ) : null}
-          <label className="field">
-            <span>Deliverable link (optional)</span>
-            <input
-              type="url"
-              value={finalUrl}
-              onChange={(event) => setFinalUrl(event.target.value)}
-            />
-          </label>
-          <label className="field">
-            <span>Protected deliverable file (optional)</span>
-            <input
-              type="file"
-              accept=".pdf,.docx,.xlsx,.pptx,.zip"
-              onChange={(event) =>
-                setFinalDeliverableFile(event.target.files?.[0] ?? null)
-              }
-            />
-            <small>
-              PDF, DOCX, XLSX, PPTX, or ZIP up to 20 MB. This file remains
-              protected and is never shown on a public evidence page.
-            </small>
-          </label>
-          <Button type="submit" isLoading={busyKey === "final-submit"}>
-            <Send size={16} aria-hidden="true" />
-            Submit final work
           </Button>
         </form>
       ) : null}

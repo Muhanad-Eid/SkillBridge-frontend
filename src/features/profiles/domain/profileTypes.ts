@@ -8,6 +8,7 @@ export type JobSeekerProfile = {
   gitHubUrl: string | null;
   universityName: string | null;
   studentNumber: string | null;
+  isProfilePublic?: boolean;
   skills: string[];
   portfolioItemsCount: number;
   reviewsCount: number;
@@ -21,6 +22,7 @@ export type UpdateJobSeekerProfileRequest = {
   gitHubUrl?: string;
   universityName?: string;
   studentNumber?: string;
+  isProfilePublic?: boolean;
 };
 
 export function isJobSeekerProfileComplete(

@@ -44,6 +44,7 @@ export default function JobSeekerProfilePage() {
   const [gitHubUrl, setGitHubUrl] = useState("");
   const [universityName, setUniversityName] = useState("");
   const [studentNumber, setStudentNumber] = useState("");
+  const [isProfilePublic, setIsProfilePublic] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -65,6 +66,7 @@ export default function JobSeekerProfilePage() {
     setGitHubUrl(data.gitHubUrl ?? "");
     setUniversityName(data.universityName ?? "");
     setStudentNumber(data.studentNumber ?? "");
+    setIsProfilePublic(data.isProfilePublic ?? false);
   }
 
   useEffect(() => {
@@ -165,6 +167,7 @@ export default function JobSeekerProfilePage() {
         gitHubUrl: gitHubUrl.trim() || undefined,
         universityName: universityName.trim() || undefined,
         studentNumber: studentNumber.trim() || undefined,
+        isProfilePublic,
       });
 
       const refreshedProfile = await getMyJobSeekerProfileAsync();
@@ -337,6 +340,22 @@ export default function JobSeekerProfilePage() {
                   readOnly={!isEditing}
                 />
               </div>
+
+              <label className="field field-check">
+                <input
+                  type="checkbox"
+                  checked={isProfilePublic}
+                  disabled={!isEditing}
+                  onChange={(event) =>
+                    setIsProfilePublic(event.target.checked)
+                  }
+                />
+                <span>
+                  Make my profile and shared evidence publicly viewable
+                  (anonymous visitors). When unchecked, only signed-in
+                  SkillBridge users you interact with can see your work.
+                </span>
+              </label>
 
               <div className="jobseeker-profile-link-preview">
                 <Link2 size={18} aria-hidden="true" />

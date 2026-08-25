@@ -1,16 +1,37 @@
 # SkillBridge Client
 
-React and TypeScript frontend for SkillBridge. The application contains separate
-public, job seeker, company, and admin experiences and communicates with the
-ASP.NET Core API through `/api`.
+React and TypeScript frontend for SkillBridge — role-based portals for
+participants (job seekers), verified providers (companies), university
+supervisors, and administrators, plus anonymous public evidence-share pages.
+Communicates with the ASP.NET Core API through `/api`.
 
 ## Commands
 
-- `npm run dev` starts the local Vite server.
-- `npm run build` creates the production bundle.
-- `npm run lint` checks the source code.
-- `npm test` runs the unit tests.
+- `npm ci` — install exact dependencies
+- `npm run dev` — Vite dev server at `http://localhost:5173`; proxies `/api` to the local API at `http://localhost:8081`
+- `npm run build` — type-check + production bundle
+- `npm run lint` / `npm test` — ESLint and Vitest suites
 
-During local development, Vite proxies `/api` to `http://localhost:8080`.
-Set `VITE_API_URL` only when the frontend and API are deployed at different
-public origins.
+## Configuration
+
+No environment variables are required for local development (the dev proxy
+targets the local API on port 8081). For deployed builds set:
+
+- `VITE_API_URL` — public API origin (e.g. `https://api.example.com`). When
+  unset, production builds fall back to same-origin `/api`.
+
+Authentication uses bearer JWTs stored in `localStorage`
+(`skillbridge_auth`); sessions auto-expire client-side, sync across tabs, and
+server-side logout revokes the token family.
+
+## Testing notes
+
+Vitest covers domain logic (role normalization, JWT expiry parsing, project
+matching/labels, notification link safety). Run everything from this folder:
+
+```powershell
+npm run lint && npm run build && npm test
+```
+
+See the API repository README for backend setup, migrations, Docker/deployment,
+and manual test journeys per role.

@@ -6,6 +6,7 @@ import {
   GraduationCap,
   KeyRound,
   LayoutDashboard,
+  ScrollText,
   Star,
   ShieldCheck,
   Tags,
@@ -36,6 +37,7 @@ const adminNavItems: AdminNavItem[] = [
   { label: "Applications", to: "/admin/applications", icon: FileCheck2, badge: "applications" },
   { label: "Reviews", to: "/admin/reviews", icon: Star, badge: "reviews" },
   { label: "Skills", to: "/admin/skills", icon: Tags },
+  { label: "Audit log", to: "/admin/audit", icon: ScrollText },
   { label: "Change password", to: "/admin/security", icon: KeyRound },
 ];
 

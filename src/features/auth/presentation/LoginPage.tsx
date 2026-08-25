@@ -65,6 +65,9 @@ export default function LoginPage() {
         <div className={styles.forgot}><Link to="/forgot-password">Forgot password?</Link></div>
         <button className={styles.submit} type="submit" disabled={isSubmitting}>{isSubmitting ? "Signing in..." : "Sign in"}</button>
         <p className={styles.footer}>Don&apos;t have an account?<Link to="/register">Get started</Link></p>
+        <p className={styles.adminLink}>
+          Administrator? <Link to="/admin/login">Use the admin portal</Link>
+        </p>
       </form>
     </section>
   );

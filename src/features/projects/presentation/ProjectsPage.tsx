@@ -148,18 +148,14 @@ export default function ProjectsPage({
                   ? "budget-desc"
                   : "newest",
           }),
-          isJobSeeker ? getMyApplicationsAsync() : Promise.resolve([]),
+          isJobSeeker ? getMyApplicationsAsync() : Promise.resolve(null),
         ]);
 
         if (isMounted) {
           setProjects(projectData.items);
           setTotalCount(projectData.totalCount);
           setTotalPages(Math.max(1, projectData.totalPages));
-          setApplications(
-            isJobSeeker
-              ? (applicationData as Application[])
-              : ([] as Application[]),
-          );
+          setApplications(applicationData?.items ?? []);
         }
       } catch (caughtError) {
         if (isMounted) {

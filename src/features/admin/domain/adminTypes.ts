@@ -104,6 +104,20 @@ export type AdminQueueSummary = {
   pendingCompanies: number;
   pendingApplications: number;
   flaggedReviews: number;
+  totalUsers?: number;
+  totalOpportunities?: number;
+  activeEvidenceCards?: number;
+};
+
+export type AdminAuditEvent = {
+  id: number;
+  action: string;
+  subjectType: string;
+  subjectId: string;
+  actorName: string | null;
+  outcome: string;
+  detail: string | null;
+  occurredAt: string;
 };
 
 export const AdminUserRoles = {

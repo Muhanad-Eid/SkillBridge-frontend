@@ -31,6 +31,9 @@ export const AdminReviewsPage = lazy(
 export const AdminSkillsPage = lazy(
   () => import("../features/admin/presentation/AdminSkillsPage"),
 );
+export const AuditLogPage = lazy(
+  () => import("../features/admin/presentation/AuditLogPage"),
+);
 export const CompaniesPage = lazy(
   () => import("../features/admin/presentation/CompaniesPage"),
 );
