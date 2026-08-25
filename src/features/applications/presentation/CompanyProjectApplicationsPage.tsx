@@ -144,8 +144,8 @@ export default function CompanyProjectApplicationsPage() {
         getProjectApplicationsAsync(numericProjectId),
         getMyCompanyReviewsAsync(),
       ]);
-      setProject(projectData.find((item) => item.id === numericProjectId) ?? null);
-      setApplications(applicationData);
+      setProject(projectData.items.find((item) => item.id === numericProjectId) ?? null);
+      setApplications(applicationData.items);
       setReviews(reviewData.filter((review) => review.projectId === numericProjectId));
     } catch (caughtError) {
       setError(

@@ -157,13 +157,13 @@ export default function WorkHubPage() {
           getMyCompanyReviewsAsync(),
         ]);
         const ownedProject =
-          projectData.find((item) => item.id === numericProjectId) ?? null;
+          projectData.items.find((item) => item.id === numericProjectId) ?? null;
 
         if (!ownedProject) {
           throw new Error("This opportunity was not found in your company.");
         }
 
-        const acceptedApplications = applicationData.filter(
+        const acceptedApplications = applicationData.items.filter(
           (application) =>
             application.status === ApplicationStatuses.Accepted,
         );
@@ -183,7 +183,7 @@ export default function WorkHubPage() {
         );
 
         setProject(ownedProject);
-        setApplications(applicationData);
+        setApplications(applicationData.items);
         setWorkers(workerData);
         setReviews(
           reviewData.filter((review) => review.projectId === numericProjectId),
@@ -201,7 +201,7 @@ export default function WorkHubPage() {
             getMyJobSeekerProfileAsync(),
             getMyPortfolioAsync(),
           ]);
-        const acceptedApplication = applicationData.find(
+        const acceptedApplication = applicationData.items.find(
           (application) =>
             application.projectId === numericProjectId &&
             application.status === ApplicationStatuses.Accepted,

@@ -17,6 +17,7 @@ import { useAuth } from "../../../shared/auth/AuthContext";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
+import Pagination from "../../../shared/components/Pagination";
 import StatusBadge from "../../../shared/components/StatusBadge";
 import {
   ApplicationStatuses,
@@ -35,6 +36,7 @@ import {
   OpportunityTypes,
   ProjectStatuses,
   WorkModes,
+  type OpportunityType,
   type Project,
 } from "../domain/projectTypes";
 import { getProjectsAsync } from "../infrastructure/projectApi";
@@ -60,6 +62,11 @@ export default function ProjectsPage({
   const [projects, setProjects] = useState<Project[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const pageSize = 12;
   const [typeFilter, setTypeFilter] = useState("all");
   const [durationFilter, setDurationFilter] = useState("all");
   const [applicationFilter, setApplicationFilter] = useState("all");
@@ -75,6 +82,20 @@ export default function ProjectsPage({
   const filterControlRef = useRef<HTMLDivElement>(null);
   const isJobSeeker = user?.role === "JobSeeker";
   const isFreelanceView = mode === "freelance";
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 300);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [search]);
+
+  function updatePageResetting<T>(setter: (value: T) => void, value: T) {
+    setter(value);
+    setPage(1);
+  }
 
   useEffect(() => {
     if (!isFiltersOpen) return;
@@ -102,15 +123,43 @@ export default function ProjectsPage({
     let isMounted = true;
 
     async function loadProjects() {
+      setIsLoading(true);
+      setError("");
+
       try {
         const [projectData, applicationData] = await Promise.all([
-          getProjectsAsync(),
+          getProjectsAsync({
+            page,
+            pageSize,
+            search: debouncedSearch,
+            type: isFreelanceView
+              ? OpportunityTypes.FreelanceTask
+              : typeFilter === "all"
+                ? null
+                : (Number(typeFilter) as OpportunityType),
+            workMode: workModeFilter === "all" ? null : Number(workModeFilter),
+            experienceLevel:
+              experienceFilter === "all" ? null : Number(experienceFilter),
+            excludeFreelance: !isFreelanceView,
+            sort:
+              sort === "deadline"
+                ? "deadline"
+                : sort === "budget"
+                  ? "budget-desc"
+                  : "newest",
+          }),
           isJobSeeker ? getMyApplicationsAsync() : Promise.resolve([]),
         ]);
 
         if (isMounted) {
-          setProjects(projectData);
-          setApplications(applicationData);
+          setProjects(projectData.items);
+          setTotalCount(projectData.totalCount);
+          setTotalPages(Math.max(1, projectData.totalPages));
+          setApplications(
+            isJobSeeker
+              ? (applicationData as Application[])
+              : ([] as Application[]),
+          );
         }
       } catch (caughtError) {
         if (isMounted) {
@@ -130,7 +179,16 @@ export default function ProjectsPage({
     return () => {
       isMounted = false;
     };
-  }, [isJobSeeker]);
+  }, [
+    debouncedSearch,
+    experienceFilter,
+    isFreelanceView,
+    isJobSeeker,
+    page,
+    sort,
+    typeFilter,
+    workModeFilter,
+  ]);
 
   const applicationByProject = useMemo(
     () => new Map(applications.map((application) => [application.projectId, application])),
@@ -156,20 +214,9 @@ export default function ProjectsPage({
   }, [scopedProjects]);
 
   const filteredProjects = useMemo(() => {
-    const searchValue = search.trim().toLowerCase();
-
+    // Search, opportunity type, work mode, experience, and ordering are
+    // applied server-side; these refinements narrow the current page.
     return scopedProjects.filter((project) => {
-      const matchesSearch =
-        !searchValue ||
-        project.title.toLowerCase().includes(searchValue) ||
-        project.companyName.toLowerCase().includes(searchValue) ||
-        project.description.toLowerCase().includes(searchValue) ||
-        project.requirements.toLowerCase().includes(searchValue) ||
-        project.skills.some((skill) => skill.name.toLowerCase().includes(searchValue));
-      const matchesType =
-        isFreelanceView ||
-        typeFilter === "all" ||
-        project.type === Number(typeFilter);
       const matchesDuration =
         durationFilter === "all" ||
         (isFreelanceView
@@ -190,11 +237,6 @@ export default function ProjectsPage({
         applicationFilter === "all" ||
         (applicationFilter === "new" && !hasApplied) ||
         (applicationFilter === "applied" && hasApplied);
-      const matchesWorkMode =
-        workModeFilter === "all" || project.workMode === Number(workModeFilter);
-      const matchesExperience =
-        experienceFilter === "all" ||
-        project.experienceLevel === Number(experienceFilter);
       const matchesSkill =
         skillFilter === "all" ||
         project.skills.some((skill) => skill.id === Number(skillFilter));
@@ -211,13 +253,9 @@ export default function ProjectsPage({
           (project.budget ?? 0) <= 500) ||
         (budgetFilter === "over500" && (project.budget ?? 0) > 500);
 
-      return matchesSearch && matchesType && matchesDuration && matchesApplication &&
-        matchesWorkMode && matchesExperience && matchesSkill &&
+      return matchesDuration && matchesApplication && matchesSkill &&
         matchesPricing && matchesBudget;
     }).sort((left, right) => {
-      if (isFreelanceView && sort === "budget") {
-        return (right.budget ?? 0) - (left.budget ?? 0);
-      }
       if (isFreelanceView && sort === "delivery") {
         return (
           (left.freelanceDeliveryDays ?? left.durationWeeks * 7) -
@@ -231,15 +269,11 @@ export default function ProjectsPage({
     applicationFilter,
     budgetFilter,
     durationFilter,
-    experienceFilter,
     isFreelanceView,
     pricingFilter,
     scopedProjects,
-    search,
     skillFilter,
     sort,
-    typeFilter,
-    workModeFilter,
   ]);
 
   const detailsBasePath = isJobSeeker
@@ -370,7 +404,7 @@ export default function ProjectsPage({
             className="freelance-sort-select"
             aria-label="Sort industry micro-tasks"
             value={sort}
-            onChange={(event) => setSort(event.target.value)}
+            onChange={(event) => updatePageResetting(setSort, event.target.value)}
           >
             <option value="recommended">Available tasks</option>
             <option value="budget">Highest budget</option>
@@ -422,7 +456,7 @@ export default function ProjectsPage({
                     <span>Opportunity type</span>
                     <select
                       value={typeFilter}
-                      onChange={(event) => setTypeFilter(event.target.value)}
+                      onChange={(event) => updatePageResetting(setTypeFilter, event.target.value)}
                     >
                       <option value="all">All types</option>
                       <option value={OpportunityTypes.ProfessionalProject}>
@@ -472,7 +506,7 @@ export default function ProjectsPage({
                   <span>Work mode</span>
                   <select
                     value={workModeFilter}
-                    onChange={(event) => setWorkModeFilter(event.target.value)}
+                    onChange={(event) => updatePageResetting(setWorkModeFilter, event.target.value)}
                   >
                     <option value="all">Any work mode</option>
                     <option value={WorkModes.Remote}>Remote</option>
@@ -484,7 +518,7 @@ export default function ProjectsPage({
                   <span>Experience level</span>
                   <select
                     value={experienceFilter}
-                    onChange={(event) => setExperienceFilter(event.target.value)}
+                    onChange={(event) => updatePageResetting(setExperienceFilter, event.target.value)}
                   >
                     <option value="all">Any experience level</option>
                     <option value={ExperienceLevels.Beginner}>Beginner</option>
@@ -547,7 +581,7 @@ export default function ProjectsPage({
                   Clear all
                 </Button>
                 <Button type="button" onClick={() => setIsFiltersOpen(false)}>
-                  Show {filteredProjects.length} result{filteredProjects.length === 1 ? "" : "s"}
+                  Show {totalCount} result{totalCount === 1 ? "" : "s"}
                 </Button>
               </footer>
             </section>
@@ -557,7 +591,7 @@ export default function ProjectsPage({
 
       <div className="jobseeker-results-heading">
         <div>
-          <strong>{filteredProjects.length} result{filteredProjects.length === 1 ? "" : "s"}</strong>
+          <strong>{totalCount} result{totalCount === 1 ? "" : "s"}</strong>
           <span>
             {isFreelanceView
               ? "Every task is posted by a verified client."
@@ -688,6 +722,18 @@ export default function ProjectsPage({
           );
         })}
       </div>
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        totalCount={totalCount}
+        isLoading={isLoading}
+        itemLabel={isFreelanceView ? "tasks" : "opportunities"}
+        onPageChange={(nextPage) => {
+          setPage(nextPage);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
+      />
     </section>
   );
 }
@@ -699,3 +745,4 @@ function FileApplicationCount({ count }: { count: number }) {
     </span>
   );
 }
+

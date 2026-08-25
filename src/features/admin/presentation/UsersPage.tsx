@@ -3,6 +3,9 @@ import { useSearchParams } from "react-router-dom";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
+import Pagination from "../../../shared/components/Pagination";
+import StatusBadge from "../../../shared/components/StatusBadge";
+import { useAuth } from "../../../shared/auth/AuthContext";
 import { normalizeAuthRole } from "../../auth/domain/authTypes";
 import type {
   AdminUser,
@@ -15,6 +18,8 @@ import {
   createAdminUserAsync,
   deleteUserAsync,
   getAdminUsersAsync,
+  setUserRoleAsync,
+  setUserStatusAsync,
   updateAdminUserAsync,
 } from "../infrastructure/adminApi";
 
@@ -49,16 +54,26 @@ export default function UsersPage() {
   const [mode, setMode] = useState<FormMode | null>(null);
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
   const [form, setForm] = useState<UserForm>(emptyForm);
+  const [page, setPage] = useState(1);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const pageSize = 20;
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
+  const { user: authUser } = useAuth();
+  const currentUserId = authUser?.userId;
 
   async function loadUsers() {
     setIsLoading(true);
     setError("");
 
     try {
-      setUsers(await getAdminUsersAsync());
+      const result = await getAdminUsersAsync(page, pageSize, debouncedSearch);
+      setUsers(result.items);
+      setTotalCount(result.totalCount);
+      setTotalPages(Math.max(1, result.totalPages));
     } catch (caughtError) {
       setError(
         caughtError instanceof Error ? caughtError.message : "Unable to load users.",
@@ -71,7 +86,14 @@ export default function UsersPage() {
   useEffect(() => {
     const timeoutId = window.setTimeout(loadUsers, 0);
     return () => window.clearTimeout(timeoutId);
-  }, []);
+  }, [page, debouncedSearch]);
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 300);
+    return () => window.clearTimeout(timeoutId);
+  }, [search]);
 
   useEffect(() => {
     if (searchParams.get("action") !== "create") {
@@ -146,6 +168,16 @@ export default function UsersPage() {
   }
 
   function startEdit(user: AdminUser) {
+    const normalizedRole = normalizeAuthRole(user.role);
+    const numericRole =
+      normalizedRole === "Admin"
+        ? AdminUserRoles.Admin
+        : normalizedRole === "Company"
+          ? AdminUserRoles.Company
+          : normalizedRole === "UniversitySupervisor"
+            ? AdminUserRoles.UniversitySupervisor
+            : AdminUserRoles.JobSeeker;
+
     setMode("edit");
     setEditingUser(user);
     setForm({
@@ -153,6 +185,7 @@ export default function UsersPage() {
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
+      role: numericRole,
     });
     setError("");
   }
@@ -197,11 +230,30 @@ export default function UsersPage() {
 
         await createAdminUserAsync(request);
       } else if (mode === "edit" && editingUser) {
+        const previousRole = normalizeAuthRole(editingUser.role);
+        const nextRole = normalizeAuthRole(form.role);
+
         await updateAdminUserAsync(editingUser.id, {
           firstName: form.firstName.trim(),
           lastName: form.lastName.trim(),
           email: form.email.trim(),
         });
+
+        if (previousRole !== nextRole) {
+          if (editingUser.id === currentUserId) {
+            setError("You cannot change the role of your own account.");
+            setIsSaving(false);
+            return;
+          }
+
+          if (!nextRole) {
+            setError("Select a valid role.");
+            setIsSaving(false);
+            return;
+          }
+
+          await setUserRoleAsync(editingUser.id, nextRole);
+        }
       }
 
       closeForm();
@@ -217,7 +269,8 @@ export default function UsersPage() {
 
   async function handleDelete(user: AdminUser) {
     const confirmed = window.confirm(
-      `Delete user account for ${user.firstName} ${user.lastName}?`,
+      `Deactivate the account for ${user.firstName} ${user.lastName}? ` +
+        "They will be signed out and unable to sign in until reactivated.",
     );
 
     if (!confirmed) {
@@ -231,7 +284,29 @@ export default function UsersPage() {
       await loadUsers();
     } catch (caughtError) {
       setError(
-        caughtError instanceof Error ? caughtError.message : "Unable to delete user.",
+        caughtError instanceof Error ? caughtError.message : "Unable to deactivate user.",
+      );
+    }
+  }
+
+  async function handleStatusToggle(user: AdminUser) {
+    const nextActive = !(user.isActive ?? true);
+
+    if (nextActive === false && user.id === currentUserId) {
+      setError("You cannot deactivate your own account.");
+      return;
+    }
+
+    setError("");
+
+    try {
+      await setUserStatusAsync(user.id, nextActive);
+      await loadUsers();
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Unable to update account status.",
       );
     }
   }
@@ -345,6 +420,32 @@ export default function UsersPage() {
                 required
               />
             </label>
+            {mode === "edit" && editingUser ? (
+              <label className="field">
+                <span>
+                  {editingUser.id === currentUserId
+                    ? "Role (cannot change your own)"
+                    : "Role"}
+                </span>
+                <select
+                  value={String(form.role)}
+                  disabled={editingUser.id === currentUserId}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      role: Number(event.target.value) as AdminUserRole,
+                    }))
+                  }
+                >
+                  <option value={AdminUserRoles.JobSeeker}>Job seeker</option>
+                  <option value={AdminUserRoles.Company}>Company</option>
+                  <option value={AdminUserRoles.UniversitySupervisor}>
+                    University supervisor
+                  </option>
+                  <option value={AdminUserRoles.Admin}>Admin</option>
+                </select>
+              </label>
+            ) : null}
             {mode === "create" ? (
               <>
                 <label className="field">
@@ -474,30 +575,56 @@ export default function UsersPage() {
       />
 
       <div className="table-card admin-table-card">
-        {filteredUsers.map((user) => (
-          <div className="table-row" key={user.id}>
-            <div>
-              <strong>
-                {user.firstName} {user.lastName}
-              </strong>
-              <span>{user.email}</span>
+        {filteredUsers.map((user) => {
+          const isActive = user.isActive ?? true;
+
+          return (
+            <div className="table-row" key={user.id}>
+              <div>
+                <strong>
+                  {user.firstName} {user.lastName}
+                </strong>
+                <span>
+                  {normalizeAuthRole(user.role) ?? user.role} · {user.email}
+                </span>
+              </div>
+              <StatusBadge tone={isActive ? "green" : "red"}>
+                {isActive ? "Active" : "Deactivated"}
+              </StatusBadge>
+              <div className="admin-row-actions">
+                <Button variant="secondary" onClick={() => startEdit(user)}>
+                  Edit
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => void handleStatusToggle(user)}
+                >
+                  {isActive ? "Deactivate" : "Activate"}
+                </Button>
+                <Button
+                  variant="secondary"
+                  className="button-danger"
+                  onClick={() => handleDelete(user)}
+                >
+                  Deactivate
+                </Button>
+              </div>
             </div>
-            <span>{normalizeAuthRole(user.role) ?? user.role}</span>
-            <div className="admin-row-actions">
-              <Button variant="secondary" onClick={() => startEdit(user)}>
-                Edit
-              </Button>
-              <Button
-                variant="secondary"
-                className="button-danger"
-                onClick={() => handleDelete(user)}
-              >
-                Delete
-              </Button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        totalCount={totalCount}
+        isLoading={isLoading}
+        onPageChange={setPage}
+      />
     </section>
   );
 }
+
+
+
+

@@ -43,6 +43,12 @@ export function changePasswordAsync(request: ChangePasswordRequest) {
   });
 }
 
+export function logoutAsync() {
+  return httpClient<void>("/api/auth/logout", {
+    method: "POST",
+  });
+}
+
 export function forgotPasswordAsync(request: ForgotPasswordRequest) {
   return httpClient<AuthMessageResponse>("/api/auth/forgot-password", {
     method: "POST",

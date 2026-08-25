@@ -8,6 +8,9 @@ import type {
   UpdateApplicationShortlistRequest,
   UpdateApplicationStatusRequest,
 } from "../domain/applicationTypes";
+import type { PagedResult } from "../../projects/domain/projectTypes";
+
+const DEFAULT_PAGE_SIZE = 50;
 
 export function applyToProjectAsync(
   projectId: number,
@@ -44,16 +47,29 @@ export function applyToProjectAsync(
   });
 }
 
-export function getMyApplicationsAsync() {
-  return httpClient<Application[]>("/api/applications/my");
+export function getMyApplicationsAsync(page = 1, pageSize = DEFAULT_PAGE_SIZE) {
+  return httpClient<PagedResult<Application>>(
+    `/api/applications/my?page=${page}&pageSize=${pageSize}`,
+  );
 }
 
-export function getCompanyApplicationsAsync() {
-  return httpClient<Application[]>("/api/applications/company");
+export function getCompanyApplicationsAsync(
+  page = 1,
+  pageSize = DEFAULT_PAGE_SIZE,
+) {
+  return httpClient<PagedResult<Application>>(
+    `/api/applications/company?page=${page}&pageSize=${pageSize}`,
+  );
 }
 
-export function getProjectApplicationsAsync(projectId: number) {
-  return httpClient<Application[]>(`/api/applications/projects/${projectId}`);
+export function getProjectApplicationsAsync(
+  projectId: number,
+  page = 1,
+  pageSize = DEFAULT_PAGE_SIZE,
+) {
+  return httpClient<PagedResult<Application>>(
+    `/api/applications/projects/${projectId}?page=${page}&pageSize=${pageSize}`,
+  );
 }
 
 export function updateApplicationStatusAsync(

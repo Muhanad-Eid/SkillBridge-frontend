@@ -17,6 +17,7 @@ import { useOutletContext } from "react-router-dom";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
+import Pagination from "../../../shared/components/Pagination";
 import type { Skill } from "../../skills/domain/skillTypes";
 import { getSkillsAsync } from "../../skills/infrastructure/skillApi";
 import type { TalentSearchResult } from "../domain/talentTypes";
@@ -33,6 +34,10 @@ export default function TalentSearchPage() {
   const [query, setQuery] = useState("");
   const [skillId, setSkillId] = useState("");
   const [evidenceOnly, setEvidenceOnly] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const pageSize = 20;
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -41,6 +46,7 @@ export default function TalentSearchPage() {
       nextQuery: string,
       nextSkillId: string,
       nextEvidenceOnly: boolean,
+      nextPage = 1,
     ) => {
       if (!isCompanyVerified) {
         setResults([]);
@@ -53,13 +59,16 @@ export default function TalentSearchPage() {
       setError("");
 
       try {
-        setResults(
-          await searchTalentAsync({
-            query: nextQuery,
-            skillId: nextSkillId ? Number(nextSkillId) : undefined,
-            evidenceOnly: nextEvidenceOnly,
-          }),
-        );
+        const result = await searchTalentAsync({
+          query: nextQuery,
+          skillId: nextSkillId ? Number(nextSkillId) : undefined,
+          evidenceOnly: nextEvidenceOnly,
+          page: nextPage,
+          pageSize,
+        });
+        setResults(result.items);
+        setTotalCount(result.totalCount);
+        setTotalPages(Math.max(1, result.totalPages));
       } catch (caughtError) {
         setError(
           caughtError instanceof Error
@@ -90,6 +99,7 @@ export default function TalentSearchPage() {
 
   function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setPage(1);
     void loadTalent(query, skillId, evidenceOnly);
   }
 
@@ -97,6 +107,7 @@ export default function TalentSearchPage() {
     setQuery("");
     setSkillId("");
     setEvidenceOnly(false);
+    setPage(1);
     void loadTalent("", "", false);
   }
 
@@ -257,6 +268,19 @@ export default function TalentSearchPage() {
           ))}
         </div>
       ) : null}
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        totalCount={totalCount}
+        isLoading={isLoading}
+        itemLabel="profiles"
+        onPageChange={(nextPage) => {
+          setPage(nextPage);
+          void loadTalent(query, skillId, evidenceOnly, nextPage);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
+      />
     </section>
   );
 }

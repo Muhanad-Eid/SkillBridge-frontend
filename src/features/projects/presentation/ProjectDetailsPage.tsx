@@ -94,8 +94,8 @@ export default function ProjectDetailsPage() {
         const projectData = await getProjectAsync(Number(projectId));
         const [companyData, applicationData, projectDataList, coverageData] = await Promise.all([
           getPublicCompanyProfileAsync(projectData.companyProfileId),
-          isJobSeeker ? getMyApplicationsAsync() : Promise.resolve([]),
-          getProjectsAsync().catch(() => [] as Project[]),
+          isJobSeeker ? getMyApplicationsAsync() : Promise.resolve(null),
+          getProjectsAsync({ pageSize: 12 }).catch(() => null),
           isJobSeeker
             ? getCriterionEvidenceCoverageAsync(projectData.id).catch(() => null)
             : Promise.resolve(null),
@@ -105,10 +105,12 @@ export default function ProjectDetailsPage() {
           setProject(projectData);
           setCompanyProfile(companyData);
           setExistingApplication(
-            applicationData.find((application) => application.projectId === projectData.id) ?? null,
+            (applicationData?.items ?? []).find(
+              (application) => application.projectId === projectData.id,
+            ) ?? null,
           );
           setCriterionCoverage(coverageData);
-          const otherOpenProjects = projectDataList.filter(
+          const otherOpenProjects = (projectDataList?.items ?? []).filter(
             (candidate) =>
               candidate.id !== projectData.id &&
               isProjectAcceptingApplications(candidate) &&

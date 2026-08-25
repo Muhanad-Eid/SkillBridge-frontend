@@ -50,10 +50,10 @@ export default function JobSeekerDashboardPage() {
           ]);
         if (isMounted) {
           setProfile(profileData);
-          setApplications(applicationData);
+          setApplications(applicationData.items);
           setSkills(skillData);
           setPortfolioItems(portfolioData);
-          setProjects(projectData);
+          setProjects(projectData.items);
         }
       } catch (caughtError) {
         if (isMounted) {

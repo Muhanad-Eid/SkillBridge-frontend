@@ -9,6 +9,7 @@ import {
   normalizeAuthRole,
   type AuthResponse,
 } from "../../features/auth/domain/authTypes";
+import { logoutAsync } from "../../features/auth/infrastructure/authApi";
 import {
   AUTH_EXPIRED_EVENT,
   AUTH_STORAGE_KEY,
@@ -154,6 +155,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   function logout() {
+    void logoutAsync().catch(() => {
+      // The local session is cleared regardless; the server token also
+      // expires on its own schedule if the revocation call fails.
+    });
     clearStoredAuth();
     setUser(null);
   }

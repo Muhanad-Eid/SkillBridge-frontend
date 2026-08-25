@@ -2049,3 +2049,18 @@ input {
   }
 }
 
+
+/* Server-side pagination controls */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sb-space-4, 16px);
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.pagination span {
+  color: var(--sb-color-text-muted, #5b6472);
+  font-size: 0.9rem;
+}

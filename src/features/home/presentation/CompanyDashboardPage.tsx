@@ -65,12 +65,12 @@ export default function CompanyDashboardPage() {
           getMyCompanyProjectsAsync(),
           isCompanyVerified
             ? getCompanyApplicationsAsync()
-            : Promise.resolve<Application[]>([]),
+            : Promise.resolve(null),
         ]);
 
         if (isMounted) {
-          setProjects(projectData);
-          setApplications(applicationData);
+          setProjects(projectData.items);
+          setApplications(applicationData?.items ?? []);
         }
       } catch (caughtError) {
         if (isMounted) {

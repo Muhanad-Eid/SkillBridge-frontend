@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
+import Pagination from "../../../shared/components/Pagination";
 import StatusBadge from "../../../shared/components/StatusBadge";
 import {
   getOpportunityTypeLabel,
@@ -68,6 +69,11 @@ export default function AdminProjectsPage() {
     null,
   );
   const [form, setForm] = useState<ProjectForm>(emptyProjectForm);
+  const [page, setPage] = useState(1);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const pageSize = 20;
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
@@ -78,12 +84,14 @@ export default function AdminProjectsPage() {
 
     try {
       const [projectData, companyData] = await Promise.all([
-        getAdminProjectsAsync(),
-        getAdminCompaniesAsync(),
+        getAdminProjectsAsync(page, pageSize, debouncedSearch),
+        getAdminCompaniesAsync(1, 50),
       ]);
 
-      setProjects(projectData);
-      setCompanies(companyData);
+      setProjects(projectData.items);
+      setTotalCount(projectData.totalCount);
+      setTotalPages(Math.max(1, projectData.totalPages));
+      setCompanies(companyData.items);
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -98,7 +106,14 @@ export default function AdminProjectsPage() {
   useEffect(() => {
     const timeoutId = window.setTimeout(loadProjects, 0);
     return () => window.clearTimeout(timeoutId);
-  }, []);
+  }, [page, debouncedSearch]);
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 300);
+    return () => window.clearTimeout(timeoutId);
+  }, [search]);
 
   useEffect(() => {
     if (searchParams.get("action") !== "create") {
@@ -671,6 +686,18 @@ export default function AdminProjectsPage() {
           </div>
         ))}
       </div>
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        totalCount={totalCount}
+        isLoading={isLoading}
+        onPageChange={setPage}
+      />
     </section>
   );
 }
+
+
+
+

@@ -57,6 +57,7 @@ import {
   createProjectAsync,
   deleteProjectAsync,
   getMyCompanyProjectsAsync,
+  publishProjectAsync,
   updateProjectAsync,
   updateProjectStatusAsync,
 } from "../infrastructure/projectApi";
@@ -233,10 +234,10 @@ export default function CompanyProjectsPage({
 
     try {
       const [projectData, skillData] = await Promise.all([
-        getMyCompanyProjectsAsync(),
+        getMyCompanyProjectsAsync(1, 50),
         getSkillsAsync(),
       ]);
-      setProjects(projectData);
+      setProjects(projectData.items);
       setAvailableSkills(skillData);
     } catch (caughtError) {
       setError(
@@ -659,6 +660,26 @@ export default function CompanyProjectsPage({
     }
   }
 
+  async function handlePublish(project: Project) {
+    setBusyProjectId(project.id);
+    setMessage("");
+    setError("");
+
+    try {
+      await publishProjectAsync(project.id);
+      setMessage(`"${project.title}" is now published on the board.`);
+      await loadProjects();
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Unable to publish opportunity.",
+      );
+    } finally {
+      setBusyProjectId(null);
+    }
+  }
+
   async function updateStatus(project: Project, status: ProjectStatus) {
     if (
       status === ProjectStatuses.Cancelled &&
@@ -1005,6 +1026,22 @@ export default function CompanyProjectsPage({
                       ? "Applicants"
                       : "Team & applicants"}
                 </Button>
+
+                {project.status === ProjectStatuses.Draft ? (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={isBusy || !isCompanyVerified}
+                    title={
+                      isCompanyVerified
+                        ? "Publish this draft to the public board"
+                        : "Your company must be verified before publishing"
+                    }
+                    onClick={() => void handlePublish(project)}
+                  >
+                    Publish
+                  </Button>
+                ) : null}
 
                 {project.status === ProjectStatuses.Open ? (
                   <>

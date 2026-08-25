@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
+import Pagination from "../../../shared/components/Pagination";
 import StatusBadge from "../../../shared/components/StatusBadge";
 import type { AdminReview } from "../domain/adminTypes";
 import {
@@ -22,6 +23,11 @@ export default function AdminReviewsPage() {
   const [editingReview, setEditingReview] = useState<AdminReview | null>(null);
   const [rating, setRating] = useState("5");
   const [comment, setComment] = useState("");
+  const [page, setPage] = useState(1);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const pageSize = 20;
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
@@ -31,7 +37,10 @@ export default function AdminReviewsPage() {
     setError("");
 
     try {
-      setReviews(await getAdminReviewsAsync());
+      const result = await getAdminReviewsAsync(page, pageSize, debouncedSearch);
+      setReviews(result.items);
+      setTotalCount(result.totalCount);
+      setTotalPages(Math.max(1, result.totalPages));
     } catch (caughtError) {
       setError(
         caughtError instanceof Error ? caughtError.message : "Unable to load reviews.",
@@ -44,7 +53,14 @@ export default function AdminReviewsPage() {
   useEffect(() => {
     const timeoutId = window.setTimeout(loadReviews, 0);
     return () => window.clearTimeout(timeoutId);
-  }, []);
+  }, [page, debouncedSearch]);
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 300);
+    return () => window.clearTimeout(timeoutId);
+  }, [search]);
 
   const filteredReviews = useMemo(() => {
     const value = search.trim().toLowerCase();
@@ -173,6 +189,18 @@ export default function AdminReviewsPage() {
           </article>
         ))}
       </div>
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        totalCount={totalCount}
+        isLoading={isLoading}
+        onPageChange={setPage}
+      />
     </section>
   );
 }
+
+
+
+

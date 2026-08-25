@@ -39,10 +39,19 @@ export const ProjectStatuses = {
   InProgress: 1,
   Completed: 2,
   Cancelled: 3,
+  Draft: 4,
 } as const;
 
 export type ProjectStatus =
   (typeof ProjectStatuses)[keyof typeof ProjectStatuses];
+
+export type PagedResult<T> = {
+  items: T[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+};
 
 export const CriterionEvaluationTypes = {
   Rating: 0,
@@ -204,6 +213,7 @@ export function getExperienceLevelLabel(level: ExperienceLevel) {
 }
 
 export function getProjectStatusLabel(status: ProjectStatus) {
+  if (status === ProjectStatuses.Draft) return "Draft";
   if (status === ProjectStatuses.InProgress) return "In progress";
   if (status === ProjectStatuses.Completed) return "Completed";
   if (status === ProjectStatuses.Cancelled) return "Cancelled";

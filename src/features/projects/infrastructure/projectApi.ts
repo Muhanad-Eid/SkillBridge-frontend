@@ -2,23 +2,74 @@ import { httpClient } from "../../../shared/api/httpClient";
 import type {
   CreateProjectRequest,
   EvidenceContractVersion,
+  OpportunityType,
+  PagedResult,
   Project,
   ProjectStatus,
   UpdateProjectRequest,
 } from "../domain/projectTypes";
+import { OpportunityTypes } from "../domain/projectTypes";
 
-export function getProjectsAsync() {
-  return httpClient<Project[]>("/api/projects", { skipAuth: true });
+export type ProjectSearchParams = {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  type?: OpportunityType | null;
+  workMode?: number | null;
+  experienceLevel?: number | null;
+  excludeFreelance?: boolean;
+  sort?: string;
+};
+
+export function getProjectsAsync(params: ProjectSearchParams = {}) {
+  const search = new URLSearchParams();
+
+  search.set("page", String(params.page ?? 1));
+  search.set("pageSize", String(params.pageSize ?? 20));
+
+  if (params.search?.trim()) {
+    search.set("search", params.search.trim());
+  }
+
+  if (params.type !== null && params.type !== undefined) {
+    search.set("type", String(params.type));
+  }
+
+  if (params.workMode !== null && params.workMode !== undefined) {
+    search.set("workMode", String(params.workMode));
+  }
+
+  if (params.experienceLevel !== null && params.experienceLevel !== undefined) {
+    search.set("experienceLevel", String(params.experienceLevel));
+  }
+
+  if (params.excludeFreelance) {
+    search.set("excludeFreelance", "true");
+  }
+
+  if (params.sort) {
+    search.set("sort", params.sort);
+  }
+
+  return httpClient<PagedResult<Project>>(`/api/projects?${search}`, {
+    skipAuth: true,
+  });
 }
 
-export function getMyCompanyProjectsAsync() {
-  return httpClient<Project[]>("/api/projects/my");
+export function getMyCompanyProjectsAsync(page = 1, pageSize = 50) {
+  return httpClient<PagedResult<Project>>(
+    `/api/projects/my?page=${page}&pageSize=${pageSize}`,
+  );
+}
+
+export function publishProjectAsync(projectId: number) {
+  return httpClient<void>(`/api/projects/${projectId}/publish`, {
+    method: "POST",
+  });
 }
 
 export function getProjectAsync(projectId: number) {
-  return httpClient<Project>(`/api/projects/${projectId}`, {
-    skipAuth: true,
-  });
+  return httpClient<Project>(`/api/projects/${projectId}`);
 }
 
 export function getEvidenceContractVersionsAsync(projectId: number) {
@@ -59,3 +110,6 @@ export function deleteProjectAsync(projectId: number) {
     method: "DELETE",
   });
 }
+
+// Re-exported so pages can build type filters without importing enums by value.
+export const ProjectFilterTypes = OpportunityTypes;

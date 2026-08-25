@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
+import Pagination from "../../../shared/components/Pagination";
 import StatusBadge from "../../../shared/components/StatusBadge";
 import {
   ApplicationStatuses,
@@ -31,6 +32,11 @@ export default function AdminApplicationsPage() {
       ? String(ApplicationStatuses.Pending)
       : "All",
   );
+  const [page, setPage] = useState(1);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const pageSize = 20;
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -39,7 +45,10 @@ export default function AdminApplicationsPage() {
     setError("");
 
     try {
-      setApplications(await getAdminApplicationsAsync());
+      const result = await getAdminApplicationsAsync(page, pageSize, debouncedSearch);
+      setApplications(result.items);
+      setTotalCount(result.totalCount);
+      setTotalPages(Math.max(1, result.totalPages));
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -54,7 +63,14 @@ export default function AdminApplicationsPage() {
   useEffect(() => {
     const timeoutId = window.setTimeout(loadApplications, 0);
     return () => window.clearTimeout(timeoutId);
-  }, []);
+  }, [page, debouncedSearch]);
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 300);
+    return () => window.clearTimeout(timeoutId);
+  }, [search]);
 
   const filteredApplications = useMemo(() => {
     const value = search.trim().toLowerCase();
@@ -192,6 +208,18 @@ export default function AdminApplicationsPage() {
           </div>
         ))}
       </div>
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        totalCount={totalCount}
+        isLoading={isLoading}
+        onPageChange={setPage}
+      />
     </section>
   );
 }
+
+
+
+

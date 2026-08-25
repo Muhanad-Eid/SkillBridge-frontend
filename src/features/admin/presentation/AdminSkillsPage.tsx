@@ -2,6 +2,7 @@ import { type FormEvent, useEffect, useMemo, useState } from "react";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
+import Pagination from "../../../shared/components/Pagination";
 import type { AdminSkill } from "../domain/adminTypes";
 import {
   createAdminSkillAsync,
@@ -15,6 +16,11 @@ type FormMode = "create" | "edit";
 export default function AdminSkillsPage() {
   const [skills, setSkills] = useState<AdminSkill[]>([]);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const pageSize = 20;
   const [mode, setMode] = useState<FormMode | null>(null);
   const [editingSkill, setEditingSkill] = useState<AdminSkill | null>(null);
   const [name, setName] = useState("");
@@ -22,12 +28,24 @@ export default function AdminSkillsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 300);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [search]);
+
   async function loadSkills() {
     setIsLoading(true);
     setError("");
 
     try {
-      setSkills(await getAdminSkillsAsync());
+      const result = await getAdminSkillsAsync(page, pageSize, debouncedSearch);
+      setSkills(result.items);
+      setTotalCount(result.totalCount);
+      setTotalPages(Math.max(1, result.totalPages));
     } catch (caughtError) {
       setError(
         caughtError instanceof Error ? caughtError.message : "Unable to load skills.",
@@ -40,9 +58,11 @@ export default function AdminSkillsPage() {
   useEffect(() => {
     const timeoutId = window.setTimeout(loadSkills, 0);
     return () => window.clearTimeout(timeoutId);
-  }, []);
+  }, [page, debouncedSearch]);
 
   const filteredSkills = useMemo(() => {
+    // Server-side search already narrowed the page; keep the local filter for
+    // instant refinement while typing.
     const value = search.trim().toLowerCase();
 
     if (!value) {
@@ -222,6 +242,15 @@ export default function AdminSkillsPage() {
           </div>
         ))}
       </div>
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        totalCount={totalCount}
+        isLoading={isLoading}
+        itemLabel="skills"
+        onPageChange={setPage}
+      />
     </section>
   );
 }

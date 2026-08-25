@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   calculateProjectMatch,
   getProjectDisplayStatusLabel,
+  getProjectStatusLabel,
   isApplicationDeadlinePassed,
   isProjectAcceptingApplications,
   ProjectStatuses,
@@ -61,5 +62,17 @@ describe("project application deadline", () => {
     expect(getProjectDisplayStatusLabel(expiredProject)).toBe(
       "Applications closed",
     );
+  });
+});
+
+describe("getProjectStatusLabel", () => {
+  it("labels drafts as Draft and keeps them out of accepting-applications state", () => {
+    expect(getProjectStatusLabel(ProjectStatuses.Draft)).toBe("Draft");
+    expect(
+      isProjectAcceptingApplications({
+        status: ProjectStatuses.Draft,
+        applicationDeadline: null,
+      }),
+    ).toBe(false);
   });
 });

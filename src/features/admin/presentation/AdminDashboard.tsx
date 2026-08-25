@@ -79,23 +79,23 @@ export default function AdminDashboard() {
     async function loadDashboard() {
       try {
         const data = await Promise.all([
-          getAdminUsersAsync(),
-          getAdminCompaniesAsync(),
-          getAdminJobSeekersAsync(),
-          getAdminProjectsAsync(),
-          getAdminApplicationsAsync(),
-          getAdminReviewsAsync(),
-          getAdminSkillsAsync(),
+          getAdminUsersAsync(1, 50),
+          getAdminCompaniesAsync(1, 50),
+          getAdminJobSeekersAsync(1, 50),
+          getAdminProjectsAsync(1, 50),
+          getAdminApplicationsAsync(1, 50),
+          getAdminReviewsAsync(1, 50),
+          getAdminSkillsAsync(1, 50),
         ]);
 
         if (isMounted) {
-          setUsers(data[0]);
-          setCompanies(data[1]);
-          setJobSeekers(data[2]);
-          setProjects(data[3]);
-          setApplications(data[4]);
-          setReviews(data[5]);
-          setSkills(data[6]);
+          setUsers(data[0].items);
+          setCompanies(data[1].items);
+          setJobSeekers(data[2].items);
+          setProjects(data[3].items);
+          setApplications(data[4].items);
+          setReviews(data[5].items);
+          setSkills(data[6].items);
         }
       } catch (caughtError) {
         if (isMounted) {

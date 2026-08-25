@@ -4,6 +4,7 @@ import { useOutletContext, useSearchParams } from "react-router-dom";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
+import Pagination from "../../../shared/components/Pagination";
 import StatusBadge from "../../../shared/components/StatusBadge";
 import type { JobSeekerProfile } from "../../profiles/domain/profileTypes";
 import { getPublicJobSeekerProfileAsync } from "../../profiles/infrastructure/profileApi";
@@ -57,6 +58,10 @@ export default function CompanyApplicationsPage() {
   );
   const [isLoading, setIsLoading] = useState(true);
   const [isProfileLoading, setIsProfileLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const pageSize = 20;
   const [busyApplicationId, setBusyApplicationId] = useState<number | null>(null);
   const [decision, setDecision] = useState<{
     application: Application;
@@ -81,7 +86,10 @@ export default function CompanyApplicationsPage() {
     setError("");
 
     try {
-      setApplications(await getCompanyApplicationsAsync());
+      const result = await getCompanyApplicationsAsync(page, pageSize);
+      setApplications(result.items);
+      setTotalCount(result.totalCount);
+      setTotalPages(Math.max(1, result.totalPages));
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -91,7 +99,7 @@ export default function CompanyApplicationsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [isCompanyVerified]);
+  }, [isCompanyVerified, page]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(loadApplications, 0);
@@ -502,6 +510,18 @@ export default function CompanyApplicationsPage() {
           }
         />
       ) : null}
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        totalCount={totalCount}
+        isLoading={isLoading}
+        itemLabel="applications"
+        onPageChange={(nextPage) => {
+          setPage(nextPage);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
+      />
     </section>
   );
 }

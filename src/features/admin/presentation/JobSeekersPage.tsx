@@ -3,6 +3,7 @@ import { BriefcaseBusiness, Plus, X } from "lucide-react";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
+import Pagination from "../../../shared/components/Pagination";
 import StatusBadge from "../../../shared/components/StatusBadge";
 import type { PortfolioItem } from "../../portfolio/domain/portfolioTypes";
 import { getPublicPortfolioAsync } from "../../portfolio/infrastructure/portfolioApi";
@@ -36,6 +37,11 @@ export default function JobSeekersPage() {
     universityName: "",
     studentNumber: "",
   });
+  const [page, setPage] = useState(1);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const pageSize = 20;
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
@@ -45,7 +51,10 @@ export default function JobSeekersPage() {
     setError("");
 
     try {
-      setJobSeekers(await getAdminJobSeekersAsync());
+      const result = await getAdminJobSeekersAsync(page, pageSize, debouncedSearch);
+      setJobSeekers(result.items);
+      setTotalCount(result.totalCount);
+      setTotalPages(Math.max(1, result.totalPages));
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -60,7 +69,14 @@ export default function JobSeekersPage() {
   useEffect(() => {
     const timeoutId = window.setTimeout(loadJobSeekers, 0);
     return () => window.clearTimeout(timeoutId);
-  }, []);
+  }, [page, debouncedSearch]);
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 300);
+    return () => window.clearTimeout(timeoutId);
+  }, [search]);
 
   const filteredJobSeekers = useMemo(() => {
     const value = search.trim().toLowerCase();
@@ -443,6 +459,18 @@ export default function JobSeekersPage() {
           </aside>
         </div>
       ) : null}
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        totalCount={totalCount}
+        isLoading={isLoading}
+        onPageChange={setPage}
+      />
     </section>
   );
 }
+
+
+
+

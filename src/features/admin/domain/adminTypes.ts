@@ -12,6 +12,7 @@ export type AdminUser = {
   lastName: string;
   email: string;
   role: AuthRole | number;
+  isActive?: boolean;
 };
 
 export type AdminCompany = {
@@ -22,6 +23,7 @@ export type AdminCompany = {
   city: string | null;
   website: string | null;
   isVerified: boolean;
+  verificationNote?: string | null;
   providerType: 0 | 1;
   projectsCount: number;
   applicationsCount: number;

@@ -76,8 +76,8 @@ export default function MyApplicationsPage({
         getMyApplicationsAsync(),
         getProjectsAsync(),
       ]);
-      setApplications(applicationData);
-      setProjects(projectData);
+      setApplications(applicationData.items);
+      setProjects(projectData.items);
     } catch (caughtError) {
       setError(
         caughtError instanceof Error

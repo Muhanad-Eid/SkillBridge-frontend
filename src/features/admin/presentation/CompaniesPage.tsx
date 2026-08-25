@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
+import Pagination from "../../../shared/components/Pagination";
 import StatusBadge from "../../../shared/components/StatusBadge";
 import type {
   AdminCompany,
@@ -27,6 +28,11 @@ export default function CompaniesPage() {
   const [editingCompany, setEditingCompany] = useState<AdminCompany | null>(
     null,
   );
+  const [verificationDecision, setVerificationDecision] = useState<{
+    company: AdminCompany;
+    mode: "verify" | "unverify";
+    note: string;
+  } | null>(null);
   const [form, setForm] = useState<UpdateAdminCompanyRequest>({
     companyName: "",
     description: "",
@@ -35,6 +41,11 @@ export default function CompaniesPage() {
     isVerified: false,
     providerType: 0,
   });
+  const [page, setPage] = useState(1);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const pageSize = 20;
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
@@ -44,7 +55,10 @@ export default function CompaniesPage() {
     setError("");
 
     try {
-      setCompanies(await getAdminCompaniesAsync());
+      const result = await getAdminCompaniesAsync(page, pageSize, debouncedSearch);
+      setCompanies(result.items);
+      setTotalCount(result.totalCount);
+      setTotalPages(Math.max(1, result.totalPages));
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -59,7 +73,14 @@ export default function CompaniesPage() {
   useEffect(() => {
     const timeoutId = window.setTimeout(loadCompanies, 0);
     return () => window.clearTimeout(timeoutId);
-  }, []);
+  }, [page, debouncedSearch]);
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 300);
+    return () => window.clearTimeout(timeoutId);
+  }, [search]);
 
   const filteredCompanies = useMemo(() => {
     const value = search.trim().toLowerCase();
@@ -129,16 +150,25 @@ export default function CompaniesPage() {
     }
   }
 
-  async function toggleVerify(company: AdminCompany) {
+  async function submitVerificationDecision() {
+    if (!verificationDecision) {
+      return;
+    }
+
     setError("");
 
     try {
-      if (company.isVerified) {
-        await unverifyCompanyAsync(company.id);
+      if (verificationDecision.mode === "verify") {
+        await verifyCompanyAsync(verificationDecision.company.id, {
+          note: verificationDecision.note || undefined,
+        });
       } else {
-        await verifyCompanyAsync(company.id);
+        await unverifyCompanyAsync(verificationDecision.company.id, {
+          note: verificationDecision.note,
+        });
       }
 
+      setVerificationDecision(null);
       await loadCompanies();
     } catch (caughtError) {
       setError(
@@ -318,6 +348,9 @@ export default function CompaniesPage() {
                 {company.city ?? "No city"} - {company.website ?? "No website"}
               </span>
               <span>{company.description ?? "No company description"}</span>
+              {company.verificationNote ? (
+                <span>Admin note: {company.verificationNote}</span>
+              ) : null}
               <span>
                 {company.projectsCount ?? 0} projects / {company.applicationsCount ?? 0} applications
               </span>
@@ -329,7 +362,16 @@ export default function CompaniesPage() {
               <Button variant="secondary" onClick={() => startEdit(company)}>
                 Edit
               </Button>
-              <Button variant="secondary" onClick={() => toggleVerify(company)}>
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  setVerificationDecision({
+                    company,
+                    mode: company.isVerified ? "unverify" : "verify",
+                    note: "",
+                  })
+                }
+              >
                 {company.isVerified ? "Unverify" : "Verify"}
               </Button>
               <Button
@@ -337,12 +379,78 @@ export default function CompaniesPage() {
                 className="button-danger"
                 onClick={() => handleDelete(company)}
               >
-                Delete
+                Deactivate
               </Button>
             </div>
           </div>
         ))}
       </div>
+
+      {verificationDecision ? (
+        <form
+          className="admin-edit-card"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void submitVerificationDecision();
+          }}
+        >
+          <div>
+            <span>
+              {verificationDecision.mode === "verify"
+                ? "Verify provider"
+                : "Remove verification"}
+            </span>
+            <strong>{verificationDecision.company.companyName}</strong>
+          </div>
+          <label className="field">
+            <span>
+              {verificationDecision.mode === "verify"
+                ? "Feedback for the provider (optional)"
+                : "Reason for removing verification (required)"}
+            </span>
+            <textarea
+              value={verificationDecision.note}
+              onChange={(event) =>
+                setVerificationDecision({
+                  ...verificationDecision,
+                  note: event.target.value,
+                })
+              }
+              required={verificationDecision.mode === "unverify"}
+            />
+          </label>
+          <p className="notice notice-error" role="alert">
+            Removing verification blocks the provider from publishing and
+            approving work.
+          </p>
+          <div className="admin-edit-actions">
+            <Button type="submit">
+              {verificationDecision.mode === "verify"
+                ? "Confirm verification"
+                : "Confirm removal"}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setVerificationDecision(null)}
+            >
+              Cancel
+            </Button>
+          </div>
+        </form>
+      ) : null}
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        totalCount={totalCount}
+        isLoading={isLoading}
+        onPageChange={setPage}
+      />
     </section>
   );
 }
+
+
+
+
