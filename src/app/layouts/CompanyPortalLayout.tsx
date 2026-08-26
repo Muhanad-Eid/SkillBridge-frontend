@@ -163,6 +163,7 @@ export default function CompanyPortalLayout() {
       homePath={profileIsComplete ? "/company/dashboard" : "/company/profile"}
       userName={profile?.companyName || user?.fullName}
       userEmail={user?.email}
+      profilePath="/company/profile"
       onLogout={handleLogout}
       navItems={navItems.map((item) => ({
         label: item.label,

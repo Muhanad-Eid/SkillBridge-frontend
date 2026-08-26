@@ -1107,9 +1107,11 @@ export default function CompanyProjectsPage({
                 <Button
                   type="button"
                   variant="ghost"
+                  size="icon"
                   className="company-icon-action"
                   aria-label={`Edit ${project.title}`}
                   title="Edit opportunity"
+                  disabled={isBusy}
                   onClick={() => openEditForm(project)}
                 >
                   <Edit3 size={17} aria-hidden="true" />
@@ -1117,15 +1119,16 @@ export default function CompanyProjectsPage({
                 <Button
                   type="button"
                   variant="ghost"
+                  size="icon"
                   className="company-icon-action company-danger-icon"
                   aria-label={`Delete ${project.title}`}
                   title={
                     project.applicationsCount > 0
-                      ? "Cancel opportunities with activity"
+                      ? "This task has activity and must be cancelled instead"
                       : "Delete opportunity"
                   }
                   disabled={isBusy || project.applicationsCount > 0}
-                  onClick={() => handleDelete(project)}
+                  onClick={() => void handleDelete(project)}
                 >
                   <Trash2 size={17} aria-hidden="true" />
                 </Button>

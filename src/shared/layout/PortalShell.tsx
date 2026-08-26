@@ -29,6 +29,7 @@ type PortalShellProps = {
   navItems: PortalNavItem[];
   userName?: string;
   userEmail?: string;
+  profilePath?: string;
   banner?: ReactNode;
   children: ReactNode;
   onLogout: () => void;
@@ -53,6 +54,7 @@ export default function PortalShell({
   navItems,
   userName,
   userEmail,
+  profilePath,
   banner,
   children,
   onLogout,
@@ -148,15 +150,33 @@ export default function PortalShell({
         </nav>
 
         <div className={styles.sidebarFooter}>
-          <div className={styles.user} title={isCollapsed ? userName : undefined}>
-            <span className={styles.avatar} aria-hidden="true">
-              {getInitials(userName)}
-            </span>
-            <span className={styles.userText}>
-              <strong>{userName || "SkillBridge user"}</strong>
-              <small>{userEmail}</small>
-            </span>
-          </div>
+          {profilePath ? (
+            <Link
+              className={`${styles.user} ${styles.userLink}`}
+              to={profilePath}
+              aria-label={`Open ${userName || "your"} profile`}
+              title={isCollapsed ? "Open profile" : undefined}
+              onClick={() => setIsMobileOpen(false)}
+            >
+              <span className={styles.avatar} aria-hidden="true">
+                {getInitials(userName)}
+              </span>
+              <span className={styles.userText}>
+                <strong>{userName || "SkillBridge user"}</strong>
+                <small>{userEmail}</small>
+              </span>
+            </Link>
+          ) : (
+            <div className={styles.user} title={isCollapsed ? userName : undefined}>
+              <span className={styles.avatar} aria-hidden="true">
+                {getInitials(userName)}
+              </span>
+              <span className={styles.userText}>
+                <strong>{userName || "SkillBridge user"}</strong>
+                <small>{userEmail}</small>
+              </span>
+            </div>
+          )}
           <div className={styles.footerActions}>
             <ThemeToggle className={styles.iconButton} />
             <button
