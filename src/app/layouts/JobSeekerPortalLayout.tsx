@@ -156,6 +156,7 @@ export default function JobSeekerPortalLayout() {
       homePath={profileIsComplete ? "/job-seeker/dashboard" : "/job-seeker/profile"}
       userName={user?.fullName}
       userEmail={user?.email}
+      profilePath="/job-seeker/profile"
       onLogout={handleLogout}
       navItems={navItems.map((item) => ({
         label: item.label,

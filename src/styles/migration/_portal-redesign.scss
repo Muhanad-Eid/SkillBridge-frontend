@@ -630,6 +630,44 @@
 .evidence-contract-history button { display: inline-flex; align-items: center; gap: 0.38rem; padding: 0.42rem 0.55rem; border: 1px solid var(--sb-color-border); border-radius: 7px; background: var(--sb-color-surface); color: var(--sb-color-text-secondary); font: inherit; font-size: 0.75rem; cursor: pointer; }
 .evidence-contract-history button:hover, .evidence-contract-history button.is-selected { border-color: #2563eb; background: #eff6ff; color: #1d4ed8; }
 .evidence-contract-history svg { color: #2563eb; }
+
+/* Keep compact row actions usable after the shared button migration layer. */
+.company-portal-v2 .company-opportunity-controls .company-icon-action.button {
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  min-height: 40px;
+  flex: 0 0 40px;
+  padding: 0 !important;
+  border: 1px solid var(--sb-color-border-strong);
+  background: var(--sb-color-surface);
+  color: var(--sb-color-text-secondary) !important;
+}
+
+.company-portal-v2 .company-opportunity-controls .company-icon-action.button svg {
+  width: 18px;
+  min-width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  stroke-width: 2;
+}
+
+.company-portal-v2 .company-opportunity-controls .company-icon-action.button:hover:not(:disabled) {
+  border-color: var(--sb-color-action);
+  background: var(--sb-color-action-soft);
+  color: var(--sb-color-action) !important;
+}
+
+.company-portal-v2 .company-opportunity-controls .company-danger-icon.button {
+  border-color: color-mix(in srgb, var(--sb-color-rejected) 38%, var(--sb-color-border));
+  color: var(--sb-color-rejected) !important;
+}
+
+.company-portal-v2 .company-opportunity-controls .company-danger-icon.button:hover:not(:disabled) {
+  border-color: var(--sb-color-rejected);
+  background: color-mix(in srgb, var(--sb-color-rejected) 10%, var(--sb-color-surface));
+  color: var(--sb-color-rejected) !important;
+}
 .evidence-contract-history small { color: var(--sb-color-text-muted); }
 .evidence-contract-detail { display: grid; gap: 0.9rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #dbeafe; }
 .evidence-contract-detail > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }

@@ -1,10 +1,13 @@
 import { type ButtonHTMLAttributes, type ReactNode } from "react";
-import SbButton from "./primitives/SbButton/SbButton";
+import SbButton, {
+  type SbButtonSize,
+} from "./primitives/SbButton/SbButton";
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   children: ReactNode;
   to?: string;
   variant?: "primary" | "secondary" | "ghost" | "danger";
+  size?: SbButtonSize;
   fullWidth?: boolean;
   isLoading?: boolean;
 };
@@ -13,6 +16,7 @@ export default function Button({
   children,
   to,
   variant = "primary",
+  size = "md",
   fullWidth = false,
   isLoading = false,
   className = "",
@@ -27,6 +31,7 @@ export default function Button({
       {...props}
       to={to}
       variant={variant}
+      size={size}
       fullWidth={fullWidth}
       isLoading={isLoading}
       className={classes}
