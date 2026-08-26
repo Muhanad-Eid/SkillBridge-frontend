@@ -101,7 +101,7 @@ export default function JobSeekerDashboardPage() {
         label: "Skills",
         detail: `${skills.length}/3 recommended skills added`,
         done: skills.length >= 3,
-        to: "/job-seeker/skills",
+        to: "/job-seeker/profile?tab=skills",
         icon: Wrench,
       },
       {

@@ -119,9 +119,6 @@ export const ProjectDetailsPage = lazy(
 export const ProjectsPage = lazy(
   () => import("../features/projects/presentation/ProjectsPage"),
 );
-export const SkillsPage = lazy(
-  () => import("../features/skills/presentation/SkillsPage"),
-);
 export const TalentProfilePage = lazy(
   () => import("../features/talent/presentation/TalentProfilePage"),
 );

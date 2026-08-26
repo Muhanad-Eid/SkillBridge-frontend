@@ -18,7 +18,15 @@ import {
   removeSkillAsync,
 } from "../infrastructure/skillApi";
 
-export default function SkillsPage() {
+type SkillsPageProps = {
+  embedded?: boolean;
+  onSkillsChanged?: () => void | Promise<void>;
+};
+
+export default function SkillsPage({
+  embedded = false,
+  onSkillsChanged,
+}: SkillsPageProps) {
   const [allSkills, setAllSkills] = useState<Skill[]>([]);
   const [mySkills, setMySkills] = useState<Skill[]>([]);
   const [skillName, setSkillName] = useState("");
@@ -98,6 +106,7 @@ export default function SkillsPage() {
       setSkillName("");
       setMessage(`${trimmedSkillName} added to your profile.`);
       await loadSkills();
+      await onSkillsChanged?.();
     } catch (caughtError) {
       setError(
         caughtError instanceof Error ? caughtError.message : "Unable to add skill.",
@@ -121,6 +130,7 @@ export default function SkillsPage() {
       await removeSkillAsync(skill.id);
       setMessage(`${skill.name} removed.`);
       await loadSkills();
+      await onSkillsChanged?.();
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -135,10 +145,12 @@ export default function SkillsPage() {
   const profileStrength = Math.min(100, Math.round((mySkills.length / 5) * 100));
 
   return (
-    <section className="page jobseeker-skills-page">
-      <PageHeader
-        title="Skills"
-      />
+    <section
+      className={`${embedded ? "" : "page "}jobseeker-skills-page${
+        embedded ? " is-embedded" : ""
+      }`}
+    >
+      {!embedded ? <PageHeader title="Skills" /> : null}
 
       <DataState
         isLoading={isLoading}

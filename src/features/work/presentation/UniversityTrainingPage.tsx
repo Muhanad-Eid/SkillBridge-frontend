@@ -7,6 +7,9 @@ import {
   useState,
 } from "react";
 import {
+  AlertTriangle,
+  ArrowRight,
+  BookOpenCheck,
   Building2,
   CheckCircle2,
   Clock3,
@@ -17,6 +20,7 @@ import {
   Printer,
   RotateCcw,
   Search,
+  ShieldCheck,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Button from "../../../shared/components/Button";
@@ -113,18 +117,120 @@ export default function UniversityTrainingPage() {
       ].some((value) => value.toLowerCase().includes(query)),
     );
   }, [records, search]);
-  const pendingReportCount = records.reduce(
-    (total, item) =>
-      total +
-      item.trainingReports.filter(
-        (report) =>
-          report.status === TrainingReportStatuses.Submitted,
-      ).length,
-    0,
-  );
+  const awaitingUniversityCount = records.filter(
+    (item) =>
+      item.workStatus === WorkSubmissionStatuses.AwaitingUniversityApproval,
+  ).length;
+  const incompleteAcademicCount = records.filter(
+    (item) => !item.academicRequirementsMet,
+  ).length;
+  const approvedTrainingCount = records.filter(
+    (item) => item.workStatus === WorkSubmissionStatuses.Approved,
+  ).length;
   const canUpdateProgress =
     record?.projectStatus === ProjectStatuses.InProgress &&
     record.workStatus !== WorkSubmissionStatuses.Approved;
+  const requiredHours = record?.requiredTrainingHours ?? 0;
+  const completedHours = record?.completedTrainingHours ?? 0;
+  const hoursPercent =
+    requiredHours > 0
+      ? Math.min(100, Math.round((completedHours / requiredHours) * 100))
+      : 0;
+  const approvedMilestones =
+    record?.milestones.filter(
+      (milestone) => milestone.status === MilestoneStatuses.Approved,
+    ).length ?? 0;
+  const selectedPendingReportCount =
+    record?.trainingReports.filter(
+      (report) => report.status === TrainingReportStatuses.Submitted,
+    ).length ?? 0;
+  const companyApprovalComplete = Boolean(
+    record?.companyApprovedAt && !record.approvalIsStale,
+  );
+  const universityApprovalComplete = Boolean(
+    record?.universityApprovedAt && !record.approvalIsStale,
+  );
+
+  const nextAction = useMemo(() => {
+    if (!record) return null;
+
+    if (record.evaluationIsStale || record.approvalIsStale) {
+      return {
+        eyebrow: "Integrity check",
+        title: "Re-evaluation is required",
+        description:
+          "The participant resubmitted work, so earlier evaluation or approval can no longer authorize evidence.",
+        targetId: "evidence-readiness",
+        tone: "danger",
+      } as const;
+    }
+
+    if (
+      record.workStatus === WorkSubmissionStatuses.AwaitingUniversityApproval
+    ) {
+      return {
+        eyebrow: "Your next action",
+        title: "Complete university approval",
+        description:
+          "Review the final result, confirmed hours, learning outcomes, and academic requirements.",
+        targetId: "university-approval",
+        tone: "academic",
+      } as const;
+    }
+
+    if (requiredHours > 0 && completedHours < requiredHours) {
+      return {
+        eyebrow: "Training progress",
+        title: `${requiredHours - completedHours} approved hours remaining`,
+        description:
+          "Training hours increase only when the company approves submitted reports.",
+        targetId: "training-reports",
+        tone: "attention",
+      } as const;
+    }
+
+    if (!record.academicRequirementsMet) {
+      return {
+        eyebrow: "Academic monitoring",
+        title: "Confirm learning outcomes",
+        description:
+          "Record progress notes and confirm the academic requirements when the evidence supports them.",
+        targetId: "academic-monitoring",
+        tone: "attention",
+      } as const;
+    }
+
+    if (!record.companyApprovedAt) {
+      return {
+        eyebrow: "Approval route",
+        title: "Waiting for company approval",
+        description:
+          "The provider must evaluate and approve the final work before university approval becomes available.",
+        targetId: "approval-route",
+        tone: "neutral",
+      } as const;
+    }
+
+    if (record.workStatus === WorkSubmissionStatuses.Approved) {
+      return {
+        eyebrow: "Training complete",
+        title: "Academic approval recorded",
+        description:
+          "The training record is approved. Review its issuance readiness and resulting evidence status.",
+        targetId: "evidence-readiness",
+        tone: "complete",
+      } as const;
+    }
+
+    return {
+      eyebrow: "Participant action",
+      title: "Waiting for final submission",
+      description:
+        "Continue monitoring reports and milestones while the participant completes the final work.",
+      targetId: "training-reports",
+      tone: "neutral",
+    } as const;
+  }, [completedHours, record, requiredHours]);
 
   useEffect(() => {
     if (!record) return;
@@ -215,6 +321,8 @@ export default function UniversityTrainingPage() {
     <section className="page university-training-page">
       <PageHeader
         title="Supervised training"
+        eyebrow="Academic oversight"
+        description="Monitor approved hours and learning outcomes, then complete the university stage of the evidence route."
         actions={
           record ? (
             <div className="page-header-actions">
@@ -261,20 +369,16 @@ export default function UniversityTrainingPage() {
               <strong>{records.length}</strong>
             </article>
             <article>
-              <span>Reports awaiting company review</span>
-              <strong>{pendingReportCount}</strong>
+              <span>Needs academic monitoring</span>
+              <strong>{incompleteAcademicCount}</strong>
             </article>
             <article>
               <span>Awaiting university approval</span>
-              <strong>
-                {
-                  records.filter(
-                    (item) =>
-                      item.workStatus ===
-                      WorkSubmissionStatuses.AwaitingUniversityApproval,
-                  ).length
-                }
-              </strong>
+              <strong>{awaitingUniversityCount}</strong>
+            </article>
+            <article>
+              <span>Approved training</span>
+              <strong>{approvedTrainingCount}</strong>
             </article>
           </section>
           <div className="university-training-toolbar">
@@ -295,9 +399,48 @@ export default function UniversityTrainingPage() {
                 key={item.applicationId}
                 onClick={() => selectRecord(item)}
               >
-                <span>{item.jobSeekerName}</span>
-                <strong>{item.projectTitle}</strong>
+                <span className="university-training-list-heading">
+                  <strong>{item.jobSeekerName}</strong>
+                  <StatusBadge
+                    tone={
+                      item.workStatus === WorkSubmissionStatuses.Approved
+                        ? "green"
+                        : item.workStatus ===
+                            WorkSubmissionStatuses.AwaitingUniversityApproval
+                          ? "blue"
+                          : "amber"
+                    }
+                  >
+                    {item.workStatus ===
+                    WorkSubmissionStatuses.AwaitingUniversityApproval
+                      ? "University review"
+                      : getWorkSubmissionStatusLabel(item.workStatus)}
+                  </StatusBadge>
+                </span>
+                <span>{item.projectTitle}</span>
                 <small>{item.companyName}</small>
+                <span className="university-training-list-progress">
+                  <i
+                    aria-hidden="true"
+                    style={{
+                      width: `${
+                        (item.requiredTrainingHours ?? 0) > 0
+                          ? Math.min(
+                              100,
+                              Math.round(
+                                (item.completedTrainingHours /
+                                  (item.requiredTrainingHours ?? 1)) *
+                                  100,
+                              ),
+                            )
+                          : 0
+                      }%`,
+                    }}
+                  />
+                </span>
+                <small>
+                  {item.completedTrainingHours} / {item.requiredTrainingHours ?? "?"} approved hours
+                </small>
               </button>
             ))}
             {visibleRecords.length === 0 ? (
@@ -323,29 +466,102 @@ export default function UniversityTrainingPage() {
               </StatusBadge>
             </header>
 
-            <div className="university-training-meta">
-              <article>
-                <Building2 size={18} aria-hidden="true" />
-                <span>Provider</span>
-                <strong>{record.companyName}</strong>
-              </article>
-              <article>
-                <Clock3 size={18} aria-hidden="true" />
-                <span>Required hours</span>
-                <strong>{record.requiredTrainingHours ?? "Not set"}</strong>
-              </article>
-              <article>
-                <GraduationCap size={18} aria-hidden="true" />
-                <span>Student university</span>
-                <strong>{record.studentUniversityName ?? "Not provided"}</strong>
-                <small>{record.studentNumber ?? "No student number"}</small>
-              </article>
-              <article>
-                <Clock3 size={18} aria-hidden="true" />
-                <span>Completed hours</span>
-                <strong>{record.completedTrainingHours}</strong>
-              </article>
-            </div>
+            {nextAction ? (
+              <section
+                className={`university-next-action university-next-action-${nextAction.tone}`}
+              >
+                <div>
+                  <span>{nextAction.eyebrow}</span>
+                  <h3>{nextAction.title}</h3>
+                  <p>{nextAction.description}</p>
+                </div>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() =>
+                    document
+                      .getElementById(nextAction.targetId)
+                      ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                  }
+                >
+                  Review now
+                  <ArrowRight size={16} aria-hidden="true" />
+                </Button>
+              </section>
+            ) : null}
+
+            <section className="university-training-overview">
+              <div className="university-hours-progress">
+                <header>
+                  <div>
+                    <span>Approved training hours</span>
+                    <strong>
+                      {completedHours}
+                      <small> / {requiredHours || "?"} hours</small>
+                    </strong>
+                  </div>
+                  <b>{hoursPercent}%</b>
+                </header>
+                <div
+                  className="university-hours-track"
+                  role="progressbar"
+                  aria-label="Approved training hours"
+                  aria-valuemin={0}
+                  aria-valuemax={Math.max(requiredHours || 100, completedHours)}
+                  aria-valuenow={completedHours}
+                >
+                  <span style={{ width: `${hoursPercent}%` }} />
+                </div>
+                <p>
+                  {selectedPendingReportCount > 0
+                    ? `${selectedPendingReportCount} submitted report${selectedPendingReportCount === 1 ? " is" : "s are"} awaiting company review for this training record.`
+                    : "Approved reports contribute to the completed-hours total."}
+                </p>
+              </div>
+
+              <dl className="university-training-identity">
+                <div>
+                  <dt><Building2 size={16} aria-hidden="true" /> Provider</dt>
+                  <dd>{record.companyName}</dd>
+                </div>
+                <div>
+                  <dt><GraduationCap size={16} aria-hidden="true" /> University</dt>
+                  <dd>{record.studentUniversityName ?? "Not provided"}</dd>
+                  <small>{record.studentNumber ?? "No student number"}</small>
+                </div>
+                <div>
+                  <dt><BookOpenCheck size={16} aria-hidden="true" /> Milestones</dt>
+                  <dd>{approvedMilestones} / {record.milestones.length} approved</dd>
+                </div>
+              </dl>
+            </section>
+
+            <section className="university-approval-route" id="approval-route">
+              <header>
+                <span>Required approval route</span>
+                <h3>Company confirmation, then university approval</h3>
+                <p>Both accountable stages must complete before University Training evidence can be issued.</p>
+              </header>
+              <div>
+                <article className={companyApprovalComplete ? "complete" : "current"}>
+                  <span>1</span>
+                  <div>
+                    <strong>Company approval</strong>
+                    <small>{companyApprovalComplete ? "Provider evaluation recorded" : "Waiting for provider evaluation"}</small>
+                  </div>
+                  {companyApprovalComplete ? <CheckCircle2 size={20} aria-hidden="true" /> : <Clock3 size={20} aria-hidden="true" />}
+                </article>
+                <ArrowRight className="university-approval-route-arrow" size={20} aria-hidden="true" />
+                <article className={universityApprovalComplete ? "complete" : record.workStatus === WorkSubmissionStatuses.AwaitingUniversityApproval ? "current academic" : "locked"}>
+                  <span>2</span>
+                  <div>
+                    <strong>University approval</strong>
+                    <small>{universityApprovalComplete ? "Academic approval recorded" : record.workStatus === WorkSubmissionStatuses.AwaitingUniversityApproval ? "Ready for your review" : "Available after company approval"}</small>
+                  </div>
+                  {universityApprovalComplete ? <CheckCircle2 size={20} aria-hidden="true" /> : <ShieldCheck size={20} aria-hidden="true" />}
+                </article>
+              </div>
+            </section>
 
             <div className="notice">
               <strong>
@@ -359,17 +575,13 @@ export default function UniversityTrainingPage() {
 
             {record.evaluationIsStale || record.approvalIsStale ? (
               <div className="notice notice-error" role="status">
+                <AlertTriangle size={18} aria-hidden="true" />
                 <strong>Re-evaluation required</strong>
                 <span>
                   This work was resubmitted. Previous evaluation or approval no
                   longer authorizes evidence issuance.
                 </span>
               </div>
-            ) : null}
-
-            {readiness ? <EvidenceReadinessPanel readiness={readiness} /> : null}
-            {readinessError ? (
-              <div className="notice notice-error">{readinessError}</div>
             ) : null}
 
             {record.academicRequirements ? (
@@ -445,11 +657,13 @@ export default function UniversityTrainingPage() {
               )}
             </section>
 
-            <TrainingReportsPanel
-              mode="university"
-              record={record}
-              onUpdated={load}
-            />
+            <div id="training-reports">
+              <TrainingReportsPanel
+                mode="university"
+                record={record}
+                onUpdated={load}
+              />
+            </div>
 
             <div className="university-training-contact-actions">
               <Button
@@ -484,8 +698,12 @@ export default function UniversityTrainingPage() {
               </Button>
             </div>
 
-            <form className="university-progress-form" onSubmit={saveProgress}>
-              <h3>Academic monitoring</h3>
+            <form className="university-progress-form" id="academic-monitoring" onSubmit={saveProgress}>
+              <header>
+                <span>University supervision</span>
+                <h3>Academic monitoring</h3>
+                <p>Record academic progress independently from the provider's workplace evaluation.</p>
+              </header>
               <label className="field">
                 <span>Progress and academic notes</span>
                 <textarea
@@ -509,13 +727,16 @@ export default function UniversityTrainingPage() {
                   Academic requirements and learning outcomes have been met
                 </span>
               </label>
-              <Button
-                type="submit"
-                disabled={!canUpdateProgress}
-                isLoading={busyAction === "progress"}
-              >
-                Save progress
-              </Button>
+              <div className="university-form-actions">
+                <Button
+                  type="submit"
+                  disabled={!canUpdateProgress}
+                  isLoading={busyAction === "progress"}
+                >
+                  Save academic monitoring
+                </Button>
+                {!canUpdateProgress ? <small>This training record is no longer editable.</small> : null}
+              </div>
             </form>
 
             {record.finalSubmissionNote ? (
@@ -542,8 +763,12 @@ export default function UniversityTrainingPage() {
 
             {record.workStatus ===
             WorkSubmissionStatuses.AwaitingUniversityApproval ? (
-              <section className="university-approval-form">
-                <h3>University approval</h3>
+              <section className="university-approval-form" id="university-approval">
+                <header>
+                  <span>Final academic decision</span>
+                  <h3>University approval</h3>
+                  <p>This is the second required approval. Company approval alone cannot issue University Training evidence.</p>
+                </header>
                 {!record.academicRequirementsMet ||
                 record.completedTrainingHours <
                   (record.requiredTrainingHours ?? 0) ? (
@@ -613,6 +838,18 @@ export default function UniversityTrainingPage() {
                 </div>
               </section>
             ) : null}
+
+            <section id="evidence-readiness" className="university-readiness-section">
+              <header>
+                <span>Evidence issuance</span>
+                <h3>Issuance readiness</h3>
+                <p>The card can be created only when the complete training lineage and both approvals satisfy the protocol.</p>
+              </header>
+              {readiness ? <EvidenceReadinessPanel readiness={readiness} /> : null}
+              {readinessError ? (
+                <div className="notice notice-error">{readinessError}</div>
+              ) : null}
+            </section>
           </main>
         </div>
         </>

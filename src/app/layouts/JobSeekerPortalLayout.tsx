@@ -11,7 +11,6 @@ import {
   Search,
   Star,
   UserRound,
-  Wrench,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -45,7 +44,6 @@ const jobSeekerNavItems: JobSeekerNavItem[] = [
   { label: "Freelance", to: "/job-seeker/freelance", icon: CircleDollarSign },
   { label: "Applications", to: "/job-seeker/applications", icon: FileCheck2 },
   { label: "Work", to: "/job-seeker/work", icon: ListChecks },
-  { label: "Skills", to: "/job-seeker/skills", icon: Wrench },
   { label: "Portfolio", to: "/job-seeker/portfolio", icon: FolderKanban },
   { label: "Reviews", to: "/job-seeker/reviews", icon: Star },
   {

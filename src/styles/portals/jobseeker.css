@@ -1147,6 +1147,50 @@
   display: block;
 }
 
+.jobseeker-profile-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: fit-content;
+  padding: 4px;
+  border: 1px solid var(--sb-color-border);
+  border-radius: 8px;
+  background: var(--sb-color-surface-raised);
+}
+
+.jobseeker-profile-tabs button {
+  min-height: 38px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--sb-color-text-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.jobseeker-profile-tabs button:hover {
+  color: var(--sb-color-text);
+  background: var(--sb-color-surface-subtle);
+}
+
+.jobseeker-profile-tabs button.active {
+  color: var(--sb-color-action);
+  background: var(--sb-color-action-soft);
+}
+
+.jobseeker-profile-tabs button:focus-visible {
+  outline: 3px solid var(--sb-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.jobseeker-skills-page.is-embedded {
+  display: grid;
+  gap: 18px;
+}
+
 .jobseeker-required-banner strong {
   font-size: 13px;
 }

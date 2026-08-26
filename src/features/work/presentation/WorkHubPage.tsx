@@ -19,6 +19,7 @@ import {
   MessageSquare,
   Play,
   Star,
+  Upload,
   UsersRound,
   Wrench,
   type LucideIcon,
@@ -140,8 +141,8 @@ export default function WorkHubPage() {
     "delivery",
   );
 
-  const loadWorkHub = useCallback(async () => {
-    setIsLoading(true);
+  const loadWorkHub = useCallback(async (showLoading = true) => {
+    if (showLoading) setIsLoading(true);
     setAccessDenied(false);
     setError("");
 
@@ -238,7 +239,7 @@ export default function WorkHubPage() {
           : "Unable to load this work hub.",
       );
     } finally {
-      setIsLoading(false);
+      if (showLoading) setIsLoading(false);
     }
   }, [numericProjectId, role]);
 
@@ -281,6 +282,28 @@ export default function WorkHubPage() {
       (application) =>
         application.workStatus === WorkSubmissionStatuses.Approved,
     );
+  const participantWorkStatus = acceptedApplications[0]?.workStatus;
+  const canParticipantSubmitFinal =
+    participantWorkStatus === WorkSubmissionStatuses.NotSubmitted ||
+    participantWorkStatus === WorkSubmissionStatuses.ChangesRequested;
+
+  function focusFinalSubmission() {
+    setActiveSection("delivery");
+    window.requestAnimationFrame(() => {
+      const form = document.getElementById("final-submission");
+      if (!form) {
+        setError(
+          "Final submission is not available until the opportunity is active and every required milestone is approved.",
+        );
+        return;
+      }
+
+      form.scrollIntoView({ behavior: "smooth", block: "start" });
+      form.querySelector<HTMLElement>("textarea, input, button")?.focus({
+        preventScroll: true,
+      });
+    });
+  }
 
   const timeline = useMemo<TimelineStep[]>(() => {
     if (!project) return [];
@@ -806,6 +829,7 @@ export default function WorkHubPage() {
                 <WorkProgressPanel
                   isCompany={isCompany}
                   projectId={project.id}
+                  onWorkUpdated={() => loadWorkHub(false)}
                 />
               )}
             </div>
@@ -942,12 +966,42 @@ export default function WorkHubPage() {
                 {!isCompany &&
                 project.status === ProjectStatuses.InProgress ? (
                   <>
-                    <h2>Continue the work</h2>
+                    <h2>
+                      {canParticipantSubmitFinal
+                        ? participantWorkStatus ===
+                          WorkSubmissionStatuses.ChangesRequested
+                          ? "Revision requested"
+                          : "Submit your completed work"
+                        : participantWorkStatus ===
+                            WorkSubmissionStatuses.Submitted ||
+                          participantWorkStatus ===
+                            WorkSubmissionStatuses.AwaitingUniversityApproval
+                        ? "Final work under review"
+                        : "Final work approved"}
+                    </h2>
                     <p>
-                      Use the project conversation for questions, decisions,
-                      and delivery updates.
+                      {canParticipantSubmitFinal
+                        ? "Complete the final submission form and send the work to the provider for criterion-level evaluation."
+                        : participantWorkStatus ===
+                            WorkSubmissionStatuses.Submitted ||
+                          participantWorkStatus ===
+                            WorkSubmissionStatuses.AwaitingUniversityApproval
+                        ? "Your submission is saved. The provider or university must complete the remaining review."
+                        : "Your final work has completed the required approval route."}
                     </p>
-                    {companyProfile ? (
+                    {canParticipantSubmitFinal ? (
+                      <Button
+                        type="button"
+                        fullWidth
+                        onClick={focusFinalSubmission}
+                      >
+                        <Upload size={17} aria-hidden="true" />
+                        {participantWorkStatus ===
+                        WorkSubmissionStatuses.ChangesRequested
+                          ? "Submit revision"
+                          : "Submit final work"}
+                      </Button>
+                    ) : companyProfile ? (
                       <Button
                         to={buildConversationUrl(
                           "job-seeker",
@@ -968,23 +1022,55 @@ export default function WorkHubPage() {
                 project.status === ProjectStatuses.Completed ? (
                   <>
                     <h2>
-                      {portfolioItem
-                        ? "Evidence card ready"
-                        : "Final approval required"}
+                      {acceptedApplications[0]?.workStatus === WorkSubmissionStatuses.Approved
+                        ? portfolioItem
+                          ? "Evidence card ready"
+                          : "Final approval required"
+                        : participantWorkStatus === WorkSubmissionStatuses.Submitted ||
+                          participantWorkStatus ===
+                            WorkSubmissionStatuses.AwaitingUniversityApproval
+                        ? "Final work under review"
+                        : portfolioItem
+                        ? "Evidence card ready (work pending approval)"
+                        : "Submit your completed work"}
                     </h2>
                     <p>
-                      {portfolioItem
-                        ? "Choose whether this approved evidence is visible in your shared portfolio."
+                      {acceptedApplications[0]?.workStatus === WorkSubmissionStatuses.Approved
+                        ? portfolioItem
+                          ? "Choose whether this approved evidence is visible in your shared portfolio."
+                          : "Waiting for provider approval."
+                        : participantWorkStatus === WorkSubmissionStatuses.Submitted ||
+                          participantWorkStatus ===
+                            WorkSubmissionStatuses.AwaitingUniversityApproval
+                        ? "Your final submission is saved and waiting for the remaining review and approval steps."
+                        : portfolioItem
+                        ? "Your work is pending provider approval."
                         : "Submit your completed work above. The evidence card is created after the provider approves it."}
                     </p>
-                    <Button
-                      to="/job-seeker/portfolio"
-                      variant="secondary"
-                      fullWidth
-                    >
-                      <FolderKanban size={17} aria-hidden="true" />
-                      View Evidence Portfolio
-                    </Button>
+                    {canParticipantSubmitFinal ? (
+                      <Button
+                        type="button"
+                        variant="primary"
+                        fullWidth
+                        onClick={focusFinalSubmission}
+                      >
+                        <Upload size={17} aria-hidden="true" />
+                        {participantWorkStatus ===
+                        WorkSubmissionStatuses.ChangesRequested
+                          ? "Submit revision"
+                          : "Submit final work"}
+                      </Button>
+                    ) : null}
+                    {acceptedApplications[0]?.workStatus === WorkSubmissionStatuses.Approved && portfolioItem && (
+                      <Button
+                        to="/job-seeker/portfolio"
+                        variant="secondary"
+                        fullWidth
+                      >
+                        <FolderKanban size={17} aria-hidden="true" />
+                        View Evidence Portfolio
+                      </Button>
+                    )}
                   </>
                 ) : null}
 

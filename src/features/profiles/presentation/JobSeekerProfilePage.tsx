@@ -27,6 +27,7 @@ import {
   getMyJobSeekerProfileAsync,
   updateMyJobSeekerProfileAsync,
 } from "../infrastructure/profileApi";
+import SkillsPage from "../../skills/presentation/SkillsPage";
 
 type JobSeekerPortalContext = {
   refreshProfileCompletion?: () => Promise<void>;
@@ -35,7 +36,7 @@ type JobSeekerPortalContext = {
 export default function JobSeekerProfilePage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const portalContext = useOutletContext<JobSeekerPortalContext>();
   const [profile, setProfile] = useState<JobSeekerProfile | null>(null);
   const [bio, setBio] = useState("");
@@ -51,6 +52,10 @@ export default function JobSeekerProfilePage() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const isRequiredFlow = searchParams.get("required") === "1";
+  const activeTab =
+    !isRequiredFlow && searchParams.get("tab") === "skills"
+      ? "skills"
+      : "details";
 
   const stateFrom = (location.state as { from?: unknown } | null)?.from;
   const returnPath =
@@ -141,6 +146,19 @@ export default function JobSeekerProfilePage() {
     setIsEditing(false);
   }
 
+  function selectTab(tab: "details" | "skills") {
+    const nextParams = new URLSearchParams(searchParams);
+    if (tab === "skills") nextParams.set("tab", "skills");
+    else nextParams.delete("tab");
+    setSearchParams(nextParams, { replace: true });
+  }
+
+  async function handleSkillsChanged() {
+    const refreshedProfile = await getMyJobSeekerProfileAsync();
+    applyProfile(refreshedProfile);
+    await portalContext.refreshProfileCompletion?.();
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -195,7 +213,7 @@ export default function JobSeekerProfilePage() {
       <PageHeader
         title={isRequiredFlow ? "Complete your profile" : "Profile"}
         actions={
-          profile && !isEditing ? (
+          activeTab === "details" && profile && !isEditing ? (
             <>
               <Button
                 to="/job-seeker/profile/preview"
@@ -229,6 +247,29 @@ export default function JobSeekerProfilePage() {
         </div>
       ) : null}
 
+      {!isRequiredFlow ? (
+        <div className="jobseeker-profile-tabs" role="tablist" aria-label="Profile sections">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "details"}
+            className={activeTab === "details" ? "active" : ""}
+            onClick={() => selectTab("details")}
+          >
+            Profile details
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "skills"}
+            className={activeTab === "skills" ? "active" : ""}
+            onClick={() => selectTab("skills")}
+          >
+            Skills
+          </button>
+        </div>
+      ) : null}
+
       <DataState
         isLoading={isLoading}
         error={error}
@@ -237,7 +278,7 @@ export default function JobSeekerProfilePage() {
         emptyDescription="The API did not return a job seeker profile."
       />
 
-      {profile ? (
+      {profile && activeTab === "details" ? (
         <div className="jobseeker-profile-layout">
           <aside className="jobseeker-profile-summary">
             <div className="jobseeker-profile-avatar" aria-hidden="true">
@@ -383,15 +424,14 @@ export default function JobSeekerProfilePage() {
                     Cancel
                   </Button>
                 ) : null}
-                {!isRequiredFlow ? (
-                  <Button to="/job-seeker/skills" variant="secondary">
-                    Manage skills
-                  </Button>
-                ) : null}
               </div>
             </form>
           </section>
         </div>
+      ) : null}
+
+      {profile && activeTab === "skills" ? (
+        <SkillsPage embedded onSkillsChanged={handleSkillsChanged} />
       ) : null}
     </section>
   );

@@ -1,6 +1,7 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { Edit3, Search, Star, Trash2 } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
+import { useOutletContext, useSearchParams } from "react-router-dom";
+import type { AdminPortalOutletContext } from "../../../app/layouts/AdminPortalLayout";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
@@ -14,6 +15,7 @@ import {
 } from "../infrastructure/adminApi";
 
 export default function AdminReviewsPage() {
+  const { refreshQueues } = useOutletContext<AdminPortalOutletContext>();
   const [searchParams] = useSearchParams();
   const [reviews, setReviews] = useState<AdminReview[]>([]);
   const [search, setSearch] = useState("");
@@ -112,6 +114,7 @@ export default function AdminReviewsPage() {
       });
       setEditingReview(null);
       await loadReviews();
+      await refreshQueues();
     } catch (caughtError) {
       setError(
         caughtError instanceof Error ? caughtError.message : "Unable to update review.",
@@ -130,6 +133,7 @@ export default function AdminReviewsPage() {
     try {
       await deleteReviewAsync(review.id);
       await loadReviews();
+      await refreshQueues();
     } catch (caughtError) {
       setError(
         caughtError instanceof Error ? caughtError.message : "Unable to delete review.",

@@ -1,5 +1,6 @@
 import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import {
+  ArrowDown,
   Check,
   CircleDollarSign,
   ClipboardCheck,
@@ -42,6 +43,7 @@ import {
   getCriterionDraftKey,
   parseEvaluationCriteria,
 } from "../domain/workEvaluation";
+import { getWorkNextAction } from "../domain/workNextAction";
 import {
   assignUniversitySupervisorAsync,
   createWorkMilestoneAsync,
@@ -64,6 +66,7 @@ import TrainingReportsPanel from "./TrainingReportsPanel";
 type WorkProgressPanelProps = {
   isCompany: boolean;
   projectId: number;
+  onWorkUpdated?: () => void | Promise<void>;
 };
 
 function toCriterionEvaluationPayload(item: {
@@ -85,6 +88,7 @@ function toCriterionEvaluationPayload(item: {
 export default function WorkProgressPanel({
   isCompany,
   projectId,
+  onWorkUpdated,
 }: WorkProgressPanelProps) {
   const [records, setRecords] = useState<WorkRecord[]>([]);
   const [supervisors, setSupervisors] = useState<UniversitySupervisor[]>([]);
@@ -221,6 +225,7 @@ export default function WorkProgressPanel({
       await action();
       setMessage("Work record updated.");
       await load();
+      await onWorkUpdated?.();
       return true;
     } catch (caughtError) {
       setError(
@@ -308,10 +313,13 @@ export default function WorkProgressPanel({
     return null;
   }
 
-  const isWorkActive = record.projectStatus === ProjectStatuses.InProgress;
   const canEditMilestones =
     record.workStatus === WorkSubmissionStatuses.NotSubmitted ||
     record.workStatus === WorkSubmissionStatuses.ChangesRequested;
+  const isWorkActive =
+    record.projectStatus === ProjectStatuses.InProgress ||
+    (record.projectStatus === ProjectStatuses.Completed &&
+      canEditMilestones);
   const milestonesApproved = record.milestones.every(
     (milestone) => milestone.status === MilestoneStatuses.Approved,
   );
@@ -390,6 +398,20 @@ export default function WorkProgressPanel({
   const projectContributionReviews = contributionReviewQueue.filter(
     (item) => item.projectId === record.projectId,
   );
+  const nextAction = getWorkNextAction(record, isCompany, readiness);
+
+  function focusWorkSection(targetId: string) {
+    const target = document.getElementById(targetId);
+    if (!target) {
+      setError("The required workflow control is not available in the current state.");
+      return;
+    }
+
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+    target
+      .querySelector<HTMLElement>("textarea, input, select, button")
+      ?.focus({ preventScroll: true });
+  }
 
   return (
     <section className="work-hub-panel work-progress-panel">
@@ -424,7 +446,10 @@ export default function WorkProgressPanel({
               key={item.applicationId}
               onClick={() => {
                 setSelectedApplicationId(item.applicationId);
+                setEvaluation("");
+                setFinalFeedback("");
                 setDemonstratedSkillIds([]);
+                setContributionResolutionNote("");
               }}
             >
               {item.jobSeekerName}
@@ -464,9 +489,29 @@ export default function WorkProgressPanel({
         </div>
       ) : null}
 
-      {readiness?.applicationId === record.applicationId ? (
-        <EvidenceReadinessPanel readiness={readiness} />
-      ) : null}
+      <section className="work-next-action" aria-labelledby="work-next-action-title">
+        <div>
+          <span>Next required action</span>
+          <h3 id="work-next-action-title">{nextAction.label}</h3>
+          <p>{nextAction.detail}</p>
+        </div>
+        {nextAction.targetId && nextAction.actionLabel ? (
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => focusWorkSection(nextAction.targetId!)}
+          >
+            {nextAction.actionLabel}
+            <ArrowDown size={16} aria-hidden="true" />
+          </Button>
+        ) : null}
+      </section>
+
+      <div id="evidence-readiness">
+        {readiness?.applicationId === record.applicationId ? (
+          <EvidenceReadinessPanel readiness={readiness} />
+        ) : null}
+      </div>
 
       {!isCompany && !record.hasEvidenceCard ? (
         canPrepareFinalSubmission ? (
@@ -616,7 +661,7 @@ export default function WorkProgressPanel({
 
       {record.opportunityType === OpportunityTypes.UniversityTraining ? (
         <>
-          <section className="training-supervision-summary">
+          <section id="training-record" className="training-supervision-summary">
           <div>
             <span>Student university</span>
             <strong>{record.studentUniversityName ?? "Not provided"}</strong>
@@ -683,13 +728,16 @@ export default function WorkProgressPanel({
           <TrainingReportsPanel
             mode={isCompany ? "company" : "student"}
             record={record}
-            onUpdated={load}
+            onUpdated={async () => {
+              await load();
+              await onWorkUpdated?.();
+            }}
           />
         </>
       ) : null}
 
       {record.opportunityType === OpportunityTypes.TeamProject ? (
-        <section className="team-responsibility-record">
+        <section id="contribution-record" className="team-responsibility-record">
           <header>
             <span>Individual contribution record</span>
             <strong>Assigned responsibilities</strong>
@@ -870,7 +918,7 @@ export default function WorkProgressPanel({
         </section>
       ) : null}
 
-      <div className="work-milestone-list">
+      <div id="work-milestones" className="work-milestone-list">
         {record.milestones.length === 0 ? (
           <p className="work-empty-copy">
             No detailed milestones have been added yet.
@@ -883,7 +931,11 @@ export default function WorkProgressPanel({
               feedback: "",
             };
             return (
-              <article className="work-milestone" key={milestone.id}>
+              <article
+                id={`work-milestone-${milestone.id}`}
+                className="work-milestone"
+                key={milestone.id}
+              >
                 <div className="work-milestone-index">{index + 1}</div>
                 <div>
                   <header>
@@ -1081,7 +1133,7 @@ export default function WorkProgressPanel({
 
       {isCompany &&
       record.workStatus === WorkSubmissionStatuses.Submitted ? (
-        <section className="work-final-review">
+        <section id="final-review" className="work-final-review">
           <section className="work-approval-standard">
             <header>
               <span>Approval standard</span>

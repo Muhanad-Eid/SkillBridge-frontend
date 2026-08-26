@@ -23,6 +23,7 @@ export type AdminCompany = {
   city: string | null;
   website: string | null;
   isVerified: boolean;
+  isActive: boolean;
   verificationNote?: string | null;
   providerType: 0 | 1;
   projectsCount: number;

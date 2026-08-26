@@ -1,5 +1,6 @@
 import { httpClient } from "../../../shared/api/httpClient";
 import { ApplicationStatuses } from "../../applications/domain/applicationTypes";
+import type { UpdateApplicationStatusRequest } from "../../applications/domain/applicationTypes";
 import type { PagedResult } from "../../projects/domain/projectTypes";
 import type {
   AdminAuditEvent,
@@ -264,6 +265,13 @@ export function unverifyCompanyAsync(
   });
 }
 
+export function setCompanyStatusAsync(companyId: number, isActive: boolean) {
+  return httpClient<void>(`/api/admin/companies/${companyId}/status`, {
+    method: "PUT",
+    body: JSON.stringify({ isActive }),
+  });
+}
+
 export function deleteUserAsync(userId: string) {
   return httpClient<void>(`/api/admin/users/${userId}`, {
     method: "DELETE",
@@ -291,6 +299,16 @@ export function deleteProjectAsync(projectId: number) {
 export function deleteApplicationAsync(applicationId: number) {
   return httpClient<void>(`/api/admin/applications/${applicationId}`, {
     method: "DELETE",
+  });
+}
+
+export function updateAdminApplicationStatusAsync(
+  applicationId: number,
+  request: UpdateApplicationStatusRequest,
+) {
+  return httpClient<void>(`/api/admin/applications/${applicationId}/status`, {
+    method: "PUT",
+    body: JSON.stringify(request),
   });
 }
 

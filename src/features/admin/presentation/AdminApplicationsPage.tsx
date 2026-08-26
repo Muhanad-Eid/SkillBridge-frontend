@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { Check, X } from "lucide-react";
+import { useOutletContext, useSearchParams } from "react-router-dom";
+import type { AdminPortalOutletContext } from "../../../app/layouts/AdminPortalLayout";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
@@ -14,6 +16,7 @@ import type { AdminApplication } from "../domain/adminTypes";
 import {
   deleteApplicationAsync,
   getAdminApplicationsAsync,
+  updateAdminApplicationStatusAsync,
 } from "../infrastructure/adminApi";
 
 function getApplicationTone(status: ApplicationStatus) {
@@ -24,6 +27,7 @@ function getApplicationTone(status: ApplicationStatus) {
 }
 
 export default function AdminApplicationsPage() {
+  const { refreshQueues } = useOutletContext<AdminPortalOutletContext>();
   const [searchParams] = useSearchParams();
   const [applications, setApplications] = useState<AdminApplication[]>([]);
   const [search, setSearch] = useState("");
@@ -38,7 +42,15 @@ export default function AdminApplicationsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const pageSize = 20;
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
+  const [decision, setDecision] = useState<{
+    application: AdminApplication;
+    status:
+      | typeof ApplicationStatuses.Accepted
+      | typeof ApplicationStatuses.Rejected;
+  } | null>(null);
+  const [decisionNote, setDecisionNote] = useState("");
 
   async function loadApplications() {
     setIsLoading(true);
@@ -118,12 +130,53 @@ export default function AdminApplicationsPage() {
     try {
       await deleteApplicationAsync(application.id);
       await loadApplications();
+      await refreshQueues();
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
           ? caughtError.message
           : "Unable to delete application.",
       );
+    }
+  }
+
+  function openDecision(
+    application: AdminApplication,
+    status:
+      | typeof ApplicationStatuses.Accepted
+      | typeof ApplicationStatuses.Rejected,
+  ) {
+    setDecision({ application, status });
+    setDecisionNote("");
+    setError("");
+  }
+
+  async function submitDecision(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!decision || isSaving) return;
+
+    setIsSaving(true);
+    setError("");
+
+    try {
+      await updateAdminApplicationStatusAsync(decision.application.id, {
+        status: decision.status,
+        decisionNote:
+          decision.status === ApplicationStatuses.Rejected
+            ? decisionNote.trim()
+            : undefined,
+      });
+      setDecision(null);
+      await loadApplications();
+      await refreshQueues();
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Unable to update the application.",
+      );
+    } finally {
+      setIsSaving(false);
     }
   }
 
@@ -197,6 +250,32 @@ export default function AdminApplicationsPage() {
               <span>Application #{application.id}</span>
             </div>
             <div className="admin-row-actions">
+              {application.status === ApplicationStatuses.Pending ? (
+                <>
+                  <Button
+                    variant="secondary"
+                    className="button-success"
+                    title={`Accept ${application.jobSeekerName}`}
+                    onClick={() =>
+                      openDecision(application, ApplicationStatuses.Accepted)
+                    }
+                  >
+                    <Check size={16} aria-hidden="true" />
+                    Accept
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    className="button-danger"
+                    title={`Reject ${application.jobSeekerName}`}
+                    onClick={() =>
+                      openDecision(application, ApplicationStatuses.Rejected)
+                    }
+                  >
+                    <X size={16} aria-hidden="true" />
+                    Reject
+                  </Button>
+                </>
+              ) : null}
               <Button
                 variant="secondary"
                 className="button-danger"
@@ -208,6 +287,66 @@ export default function AdminApplicationsPage() {
           </div>
         ))}
       </div>
+
+      {decision ? (
+        <div className="confirm-dialog-backdrop" role="presentation">
+          <form className="confirm-dialog" onSubmit={submitDecision}>
+            <span className="confirm-dialog-icon" aria-hidden="true">
+              {decision.status === ApplicationStatuses.Accepted ? (
+                <Check size={22} />
+              ) : (
+                <X size={22} />
+              )}
+            </span>
+            <h2>
+              {decision.status === ApplicationStatuses.Accepted
+                ? "Accept application?"
+                : "Reject application?"}
+            </h2>
+            <p>
+              {decision.status === ApplicationStatuses.Accepted
+                ? `${decision.application.jobSeekerName} will be accepted for ${decision.application.projectTitle}. The accepted Evidence Contract version will be pinned.`
+                : `Provide ${decision.application.jobSeekerName} with a useful reason for rejecting this application.`}
+            </p>
+            {decision.status === ApplicationStatuses.Rejected ? (
+              <label className="field">
+                <span>Decision reason</span>
+                <textarea
+                  autoFocus
+                  required
+                  minLength={10}
+                  maxLength={1000}
+                  value={decisionNote}
+                  onChange={(event) => setDecisionNote(event.target.value)}
+                />
+              </label>
+            ) : null}
+            <footer>
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={isSaving}
+                onClick={() => setDecision(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className={
+                  decision.status === ApplicationStatuses.Rejected
+                    ? "button-danger"
+                    : "button-success"
+                }
+                isLoading={isSaving}
+              >
+                {decision.status === ApplicationStatuses.Accepted
+                  ? "Accept application"
+                  : "Reject application"}
+              </Button>
+            </footer>
+          </form>
+        </div>
+      ) : null}
 
       <Pagination
         page={page}

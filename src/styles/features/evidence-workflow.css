@@ -82,6 +82,58 @@
   color: var(--blue-dark);
 }
 
+.work-next-action {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 20px;
+  padding: 18px 20px;
+  border: 1px solid var(--sb-color-border);
+  border-left: 4px solid var(--sb-color-action);
+  border-radius: 10px;
+  background: var(--sb-color-surface-raised);
+  box-shadow: var(--sb-shadow-xs);
+}
+
+.work-next-action > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.work-next-action span {
+  color: var(--sb-color-action);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.work-next-action h3,
+.work-next-action p {
+  margin: 0;
+}
+
+.work-next-action h3 {
+  color: var(--sb-color-text);
+  font-size: 1rem;
+}
+
+.work-next-action p {
+  color: var(--sb-color-text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+#evidence-readiness,
+#training-record,
+#contribution-record,
+#work-milestones,
+#final-submission,
+#final-review,
+[id^="work-milestone-"] {
+  scroll-margin-top: 88px;
+}
+
 .work-record-heading,
 .work-milestone header,
 .evidence-card header,
@@ -328,5 +380,16 @@
   border-color: #9fd2c2;
   background: #e9f8f2;
   color: #086b50;
+}
+
+@media (max-width: 700px) {
+  .work-next-action {
+    grid-template-columns: 1fr;
+  }
+
+  .work-next-action .button,
+  .work-next-action button {
+    width: 100%;
+  }
 }
 

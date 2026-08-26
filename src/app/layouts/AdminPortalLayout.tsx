@@ -27,6 +27,10 @@ type AdminNavItem = {
   badge?: "companies" | "applications" | "reviews";
 };
 
+export type AdminPortalOutletContext = {
+  refreshQueues: () => Promise<void>;
+};
+
 const adminNavItems: AdminNavItem[] = [
   { label: "Overview", to: "/admin/dashboard", icon: LayoutDashboard },
   { label: "Users", to: "/admin/users", icon: UserCog },
@@ -99,7 +103,7 @@ export default function AdminPortalLayout() {
                 : undefined,
       }))}
     >
-      <Outlet context={{ refreshQueues }} />
+      <Outlet context={{ refreshQueues } satisfies AdminPortalOutletContext} />
       <ConfirmDialog
         isOpen={isLogoutDialogOpen}
         title="Log out?"
