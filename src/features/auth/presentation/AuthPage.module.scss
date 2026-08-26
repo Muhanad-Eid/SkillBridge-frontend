@@ -41,10 +41,21 @@
 .divider::before, .divider::after { flex: 1; height: 1px; background: var(--border); content: ""; }
 
 .field { position: relative; display: block; margin-bottom: 1rem; }
-.field input, .field select { width: 100%; min-height: 52px; padding: 0.8125rem 2.875rem; border: 1.5px solid var(--border); border-radius: 16px; outline: 0; background: #fff; color: var(--ink); font: inherit; font-size: 0.875rem; transition: border-color 160ms ease, box-shadow 160ms ease; }
-.field select { padding-left: 0.875rem; }
-.field input:focus, .field select:focus { border-color: var(--ink); box-shadow: 0 0 0 4px rgb(15 23 42 / 0.045); }
-.field input::placeholder { color: var(--dim); }
+.card .field input, .card .field select { width: 100%; min-height: 52px; padding: 0.8125rem 2.875rem; border: 1.5px solid var(--border); border-radius: 16px; outline: 0; background: #fff; color: var(--ink); font: inherit; font-size: 0.875rem; transition: border-color 160ms ease, box-shadow 160ms ease; }
+.card .field select { padding-left: 0.875rem; }
+.card .field input:focus, .card .field select:focus { border-color: var(--ink); box-shadow: 0 0 0 4px rgb(15 23 42 / 0.045); }
+.card .field input::placeholder { color: var(--dim); }
+
+:global(:root[data-theme="dark"]) .card .field input,
+:global(:root[data-theme="dark"]) .card .field select {
+  border-color: var(--border) !important;
+  background: #fff !important;
+  color: var(--ink) !important;
+}
+
+:global(:root[data-theme="dark"]) .card .field input::placeholder {
+  color: var(--dim) !important;
+}
 .fieldIcon { position: absolute; top: 50%; left: 1rem; color: var(--dim); pointer-events: none; transform: translateY(-50%); }
 .eye { position: absolute; top: 50%; right: 0.75rem; width: 32px; height: 32px; display: grid; place-items: center; padding: 0; border: 0; background: transparent; color: var(--dim); cursor: pointer; transform: translateY(-50%); }
 .eye:hover { color: var(--secondary); }

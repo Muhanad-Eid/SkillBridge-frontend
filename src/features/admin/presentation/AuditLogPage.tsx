@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
 import Pagination from "../../../shared/components/Pagination";
@@ -31,7 +31,7 @@ export default function AuditLogPage() {
     return () => window.clearTimeout(timeoutId);
   }, [search]);
 
-  async function loadEvents() {
+  const loadEvents = useCallback(async () => {
     setIsLoading(true);
     setError("");
 
@@ -53,12 +53,12 @@ export default function AuditLogPage() {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [debouncedSearch, page]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(loadEvents, 0);
     return () => window.clearTimeout(timeoutId);
-  }, [page, debouncedSearch]);
+  }, [loadEvents]);
 
   return (
     <section className="page admin-list-page">

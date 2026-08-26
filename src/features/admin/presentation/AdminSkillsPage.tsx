@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
@@ -37,7 +37,7 @@ export default function AdminSkillsPage() {
     return () => window.clearTimeout(timeoutId);
   }, [search]);
 
-  async function loadSkills() {
+  const loadSkills = useCallback(async () => {
     setIsLoading(true);
     setError("");
 
@@ -53,12 +53,12 @@ export default function AdminSkillsPage() {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [debouncedSearch, page]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(loadSkills, 0);
     return () => window.clearTimeout(timeoutId);
-  }, [page, debouncedSearch]);
+  }, [loadSkills]);
 
   const filteredSkills = useMemo(() => {
     // Server-side search already narrowed the page; keep the local filter for

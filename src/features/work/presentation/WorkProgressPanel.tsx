@@ -130,8 +130,8 @@ export default function WorkProgressPanel({
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
-  const load = useCallback(async () => {
-    setIsLoading(true);
+  const load = useCallback(async (showLoading = true) => {
+    if (showLoading) setIsLoading(true);
     setError("");
 
     try {
@@ -163,7 +163,7 @@ export default function WorkProgressPanel({
           : "Unable to load work progress.",
       );
     } finally {
-      setIsLoading(false);
+      if (showLoading) setIsLoading(false);
     }
   }, [isCompany, projectId]);
 
@@ -218,14 +218,18 @@ export default function WorkProgressPanel({
     }));
   }
 
-  async function runAction(key: string, action: () => Promise<unknown>) {
+  async function runAction(
+    key: string,
+    action: () => Promise<unknown>,
+    successMessage = "Work record updated.",
+  ) {
     setBusyKey(key);
     resetMessages();
     try {
       await action();
-      setMessage("Work record updated.");
-      await load();
+      await load(false);
       await onWorkUpdated?.();
+      setMessage(successMessage);
       return true;
     } catch (caughtError) {
       setError(
@@ -272,7 +276,7 @@ export default function WorkProgressPanel({
         deliverableUrl: finalUrl.trim() || undefined,
         contributionSummary: contribution.trim() || undefined,
       });
-    });
+    }, "Final work submitted. The provider can now evaluate the current submission.");
     if (updated) {
       setFinalNote("");
       setFinalUrl("");
@@ -607,11 +611,19 @@ export default function WorkProgressPanel({
             type="button"
             variant="secondary"
             isLoading={busyKey === "download-deliverable"}
-            onClick={() =>
-              void runAction("download-deliverable", () =>
-                downloadFinalDeliverableAsync(record.applicationId),
-              )
-            }
+            onClick={() => {
+              setBusyKey("download-deliverable");
+              resetMessages();
+              void downloadFinalDeliverableAsync(record.applicationId)
+                .catch((caughtError) => {
+                  setError(
+                    caughtError instanceof Error
+                      ? caughtError.message
+                      : "Unable to download the protected deliverable.",
+                  );
+                })
+                .finally(() => setBusyKey(""));
+            }}
           >
             <Download size={14} aria-hidden="true" />
             Download

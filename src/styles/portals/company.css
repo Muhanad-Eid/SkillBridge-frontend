@@ -1802,9 +1802,14 @@
   min-height: 42px;
   flex: 0 0 42px;
   padding: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .notification-row-actions .company-icon-action svg {
+  display: block;
+  flex: 0 0 auto;
   width: 18px;
   height: 18px;
   stroke-width: 2;

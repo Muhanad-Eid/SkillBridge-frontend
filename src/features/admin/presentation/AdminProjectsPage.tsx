@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
@@ -78,7 +78,7 @@ export default function AdminProjectsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
 
-  async function loadProjects() {
+  const loadProjects = useCallback(async () => {
     setIsLoading(true);
     setError("");
 
@@ -101,12 +101,12 @@ export default function AdminProjectsPage() {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [debouncedSearch, page]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(loadProjects, 0);
     return () => window.clearTimeout(timeoutId);
-  }, [page, debouncedSearch]);
+  }, [loadProjects]);
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
       setDebouncedSearch(search);

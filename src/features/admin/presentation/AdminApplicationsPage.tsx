@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { Check, X } from "lucide-react";
 import { useOutletContext, useSearchParams } from "react-router-dom";
 import type { AdminPortalOutletContext } from "../../../app/layouts/AdminPortalLayout";
@@ -52,7 +52,7 @@ export default function AdminApplicationsPage() {
   } | null>(null);
   const [decisionNote, setDecisionNote] = useState("");
 
-  async function loadApplications() {
+  const loadApplications = useCallback(async () => {
     setIsLoading(true);
     setError("");
 
@@ -70,12 +70,12 @@ export default function AdminApplicationsPage() {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [debouncedSearch, page]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(loadApplications, 0);
     return () => window.clearTimeout(timeoutId);
-  }, [page, debouncedSearch]);
+  }, [loadApplications]);
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
       setDebouncedSearch(search);

@@ -17,6 +17,7 @@ import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
 import { useAuth } from "../../../shared/auth/AuthContext";
 import useVisibilityPolling from "../../../shared/hooks/useVisibilityPolling";
+import { notifyPortalBadgesChanged } from "../../../shared/events/portalEvents";
 import {
   getNotificationDestination,
   type Notification,
@@ -93,6 +94,7 @@ export default function NotificationsPage() {
     try {
       await markAllNotificationsReadAsync();
       await loadNotifications(false);
+      notifyPortalBadgesChanged();
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -108,6 +110,7 @@ export default function NotificationsPage() {
     try {
       await markNotificationReadAsync(notificationId);
       await loadNotifications(false);
+      notifyPortalBadgesChanged();
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -125,6 +128,7 @@ export default function NotificationsPage() {
     try {
       await deleteNotificationAsync(notificationId);
       await loadNotifications(false);
+      notifyPortalBadgesChanged();
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -145,9 +149,11 @@ export default function NotificationsPage() {
           item.id === notification.id ? { ...item, isRead: true } : item,
         ),
       );
-      void markNotificationReadAsync(notification.id).catch(() => {
-        // Opening the destination should not be blocked by a read-state error.
-      });
+      void markNotificationReadAsync(notification.id)
+        .then(notifyPortalBadgesChanged)
+        .catch(() => {
+          // Opening the destination should not be blocked by a read-state error.
+        });
     }
 
     navigate(destination);

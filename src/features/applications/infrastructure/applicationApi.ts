@@ -9,6 +9,7 @@ import type {
   UpdateApplicationStatusRequest,
 } from "../domain/applicationTypes";
 import type { PagedResult } from "../../projects/domain/projectTypes";
+import { normalizePagedResult } from "../../../shared/api/pagedResult";
 
 const DEFAULT_PAGE_SIZE = 50;
 
@@ -50,7 +51,7 @@ export function applyToProjectAsync(
 export function getMyApplicationsAsync(page = 1, pageSize = DEFAULT_PAGE_SIZE) {
   return httpClient<PagedResult<Application>>(
     `/api/applications/my?page=${page}&pageSize=${pageSize}`,
-  );
+  ).then(normalizePagedResult<Application>);
 }
 
 export function getCompanyApplicationsAsync(
@@ -59,7 +60,7 @@ export function getCompanyApplicationsAsync(
 ) {
   return httpClient<PagedResult<Application>>(
     `/api/applications/company?page=${page}&pageSize=${pageSize}`,
-  );
+  ).then(normalizePagedResult<Application>);
 }
 
 export function getProjectApplicationsAsync(
@@ -69,7 +70,7 @@ export function getProjectApplicationsAsync(
 ) {
   return httpClient<PagedResult<Application>>(
     `/api/applications/projects/${projectId}?page=${page}&pageSize=${pageSize}`,
-  );
+  ).then(normalizePagedResult<Application>);
 }
 
 export function updateApplicationStatusAsync(

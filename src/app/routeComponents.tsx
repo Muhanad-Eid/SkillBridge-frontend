@@ -83,6 +83,9 @@ export const HomePage = lazy(
 export const NotFoundPage = lazy(
   () => import("../features/home/presentation/NotFoundPage"),
 );
+export const PublicInfoPage = lazy(
+  () => import("../features/home/presentation/PublicInfoPage"),
+);
 export const JobSeekerDashboardPage = lazy(
   () => import("../features/home/presentation/JobSeekerDashboardPage"),
 );

@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { Plus, ShieldCheck, X } from "lucide-react";
 import { useOutletContext, useSearchParams } from "react-router-dom";
 import type { AdminPortalOutletContext } from "../../../app/layouts/AdminPortalLayout";
@@ -54,7 +54,7 @@ export default function CompaniesPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
 
-  async function loadCompanies() {
+  const loadCompanies = useCallback(async () => {
     setIsLoading(true);
     setError("");
 
@@ -80,12 +80,12 @@ export default function CompaniesPage() {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [debouncedSearch, page]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(loadCompanies, 0);
     return () => window.clearTimeout(timeoutId);
-  }, [page, debouncedSearch]);
+  }, [loadCompanies]);
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
       setDebouncedSearch(search);

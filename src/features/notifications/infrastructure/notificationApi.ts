@@ -1,4 +1,4 @@
-import { httpClient } from "../../../shared/api/httpClient";
+import { HttpError, httpClient } from "../../../shared/api/httpClient";
 import type { Notification } from "../domain/notificationTypes";
 
 let unreadCountEndpointSupported = true;
@@ -14,7 +14,11 @@ export async function getUnreadNotificationCountAsync() {
         "/api/notifications/unread-count",
       );
       return result.count;
-    } catch {
+    } catch (error) {
+      if (!(error instanceof HttpError) || ![404, 405].includes(error.status)) {
+        throw error;
+      }
+
       unreadCountEndpointSupported = false;
     }
   }

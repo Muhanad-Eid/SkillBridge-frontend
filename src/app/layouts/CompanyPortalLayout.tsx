@@ -30,6 +30,7 @@ import { getMyCompanyProfileAsync } from "../../features/profiles/infrastructure
 import { getUnreadMessageCountAsync } from "../../features/messages/infrastructure/messageApi";
 import { getUnreadNotificationCountAsync } from "../../features/notifications/infrastructure/notificationApi";
 import useVisibilityPolling from "../../shared/hooks/useVisibilityPolling";
+import { subscribeToPortalBadgeChanges } from "../../shared/events/portalEvents";
 import PortalShell from "../../shared/layout/PortalShell";
 
 type CompanyNavItem = {
@@ -112,6 +113,11 @@ export default function CompanyPortalLayout() {
   }, [refreshProfileCompletion]);
 
   useVisibilityPolling(refreshBadges, 30000, { runImmediately: true });
+
+  useEffect(
+    () => subscribeToPortalBadgeChanges(() => void refreshBadges()),
+    [refreshBadges],
+  );
 
   const profileIsComplete = isCompanyProfileComplete(profile);
   const isCompanyVerified = Boolean(profile?.isVerified);

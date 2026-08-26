@@ -17,6 +17,27 @@ type HttpOptions = RequestInit & {
   skipAuth?: boolean;
 };
 
+export class HttpError extends Error {
+  readonly status: number;
+  readonly code?: string;
+  readonly traceId?: string;
+  readonly details: unknown;
+
+  constructor(message: string, status: number, details: unknown) {
+    super(message);
+    this.name = "HttpError";
+    this.status = status;
+    this.details = details;
+
+    if (details && typeof details === "object") {
+      if ("code" in details && details.code) this.code = String(details.code);
+      if ("traceId" in details && details.traceId) {
+        this.traceId = String(details.traceId);
+      }
+    }
+  }
+}
+
 export async function httpClient<T>(
   endpoint: string,
   options: HttpOptions = {},
@@ -68,7 +89,11 @@ export async function httpClient<T>(
       expireAuthSession();
     }
 
-    throw new Error(getErrorMessage(data, response.status));
+    throw new HttpError(
+      getErrorMessage(data, response.status),
+      response.status,
+      data,
+    );
   }
 
   return data as T;
@@ -105,7 +130,11 @@ export async function httpDownload(endpoint: string) {
       expireAuthSession();
     }
 
-    throw new Error(getErrorMessage(data, response.status));
+    throw new HttpError(
+      getErrorMessage(data, response.status),
+      response.status,
+      data,
+    );
   }
 
   return {
@@ -201,7 +230,7 @@ async function readResponse(response: Response) {
 
 function getDownloadFileName(contentDisposition: string | null) {
   if (!contentDisposition) {
-    return "CV.pdf";
+    return "skillbridge-download";
   }
 
   const encodedName = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
@@ -211,7 +240,7 @@ function getDownloadFileName(contentDisposition: string | null) {
   }
 
   const plainName = contentDisposition.match(/filename="?([^";]+)"?/i);
-  return plainName?.[1] ?? "CV.pdf";
+  return plainName?.[1] ?? "skillbridge-download";
 }
 
 function getErrorMessage(data: unknown, status: number) {

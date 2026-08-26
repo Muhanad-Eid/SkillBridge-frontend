@@ -1,4 +1,5 @@
 import { httpClient } from "../../../shared/api/httpClient";
+import { normalizePagedResult } from "../../../shared/api/pagedResult";
 import type { PagedResult } from "../../projects/domain/projectTypes";
 import type {
   TalentSearchFilters,
@@ -36,5 +37,5 @@ export function searchTalentAsync({
 
   return httpClient<PagedResult<TalentSearchResult>>(
     `/api/profiles/job-seekers/search?${searchParams}`,
-  );
+  ).then(normalizePagedResult<TalentSearchResult>);
 }

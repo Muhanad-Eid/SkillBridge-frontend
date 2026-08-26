@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getTokenExpiresAt, isTokenExpired } from "./httpClient";
+import { HttpError, getTokenExpiresAt, isTokenExpired } from "./httpClient";
 
 function createToken(expiresAtSeconds?: number) {
   const payload =
@@ -34,5 +34,18 @@ describe("JWT session expiration", () => {
   it("handles malformed tokens without throwing", () => {
     expect(getTokenExpiresAt("not-a-jwt")).toBeNull();
     expect(isTokenExpired("not-a-jwt")).toBe(false);
+  });
+});
+
+describe("HttpError", () => {
+  it("retains response metadata for endpoint compatibility decisions", () => {
+    const error = new HttpError("Not found", 404, {
+      code: "route_missing",
+      traceId: "trace-123",
+    });
+
+    expect(error.status).toBe(404);
+    expect(error.code).toBe("route_missing");
+    expect(error.traceId).toBe("trace-123");
   });
 });

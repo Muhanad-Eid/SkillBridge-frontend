@@ -1,4 +1,5 @@
 import { httpClient } from "../../../shared/api/httpClient";
+import { normalizePagedResult } from "../../../shared/api/pagedResult";
 import type {
   CreateProjectRequest,
   EvidenceContractVersion,
@@ -53,13 +54,13 @@ export function getProjectsAsync(params: ProjectSearchParams = {}) {
 
   return httpClient<PagedResult<Project>>(`/api/projects?${search}`, {
     skipAuth: true,
-  });
+  }).then(normalizePagedResult<Project>);
 }
 
 export function getMyCompanyProjectsAsync(page = 1, pageSize = 50) {
   return httpClient<PagedResult<Project>>(
     `/api/projects/my?page=${page}&pageSize=${pageSize}`,
-  );
+  ).then(normalizePagedResult<Project>);
 }
 
 export function publishProjectAsync(projectId: number) {

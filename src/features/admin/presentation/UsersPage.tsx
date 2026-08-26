@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
@@ -65,7 +65,7 @@ export default function UsersPage() {
   const { user: authUser } = useAuth();
   const currentUserId = authUser?.userId;
 
-  async function loadUsers() {
+  const loadUsers = useCallback(async () => {
     setIsLoading(true);
     setError("");
 
@@ -81,12 +81,12 @@ export default function UsersPage() {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [debouncedSearch, page]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(loadUsers, 0);
     return () => window.clearTimeout(timeoutId);
-  }, [page, debouncedSearch]);
+  }, [loadUsers]);
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
       setDebouncedSearch(search);

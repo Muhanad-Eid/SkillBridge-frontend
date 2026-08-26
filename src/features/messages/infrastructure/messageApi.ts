@@ -1,4 +1,4 @@
-import { httpClient } from "../../../shared/api/httpClient";
+import { HttpError, httpClient } from "../../../shared/api/httpClient";
 import type { Message, SendMessageRequest } from "../domain/messageTypes";
 
 let unreadCountEndpointSupported = true;
@@ -14,7 +14,11 @@ export async function getUnreadMessageCountAsync(currentUserId?: string) {
         "/api/messages/unread-count",
       );
       return result.count;
-    } catch {
+    } catch (error) {
+      if (!(error instanceof HttpError) || ![404, 405].includes(error.status)) {
+        throw error;
+      }
+
       unreadCountEndpointSupported = false;
     }
   }

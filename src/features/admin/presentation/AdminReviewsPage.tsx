@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { Edit3, Search, Star, Trash2 } from "lucide-react";
 import { useOutletContext, useSearchParams } from "react-router-dom";
 import type { AdminPortalOutletContext } from "../../../app/layouts/AdminPortalLayout";
@@ -34,7 +34,7 @@ export default function AdminReviewsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
 
-  async function loadReviews() {
+  const loadReviews = useCallback(async () => {
     setIsLoading(true);
     setError("");
 
@@ -50,12 +50,12 @@ export default function AdminReviewsPage() {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [debouncedSearch, page]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(loadReviews, 0);
     return () => window.clearTimeout(timeoutId);
-  }, [page, debouncedSearch]);
+  }, [loadReviews]);
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
       setDebouncedSearch(search);

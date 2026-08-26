@@ -1,4 +1,5 @@
-import { httpClient } from "../../../shared/api/httpClient";
+import { HttpError, httpClient } from "../../../shared/api/httpClient";
+import { normalizePagedResult } from "../../../shared/api/pagedResult";
 import { ApplicationStatuses } from "../../applications/domain/applicationTypes";
 import type { UpdateApplicationStatusRequest } from "../../applications/domain/applicationTypes";
 import type { PagedResult } from "../../projects/domain/projectTypes";
@@ -51,7 +52,7 @@ export function getAdminUsersAsync(
 ) {
   return httpClient<PagedResult<AdminUser>>(
     `/api/admin/users?${buildPagedQuery(page, pageSize, search)}`,
-  );
+  ).then(normalizePagedResult<AdminUser>);
 }
 
 export function getAdminCompaniesAsync(
@@ -61,7 +62,7 @@ export function getAdminCompaniesAsync(
 ) {
   return httpClient<PagedResult<AdminCompany>>(
     `/api/admin/companies?${buildPagedQuery(page, pageSize, search)}`,
-  );
+  ).then(normalizePagedResult<AdminCompany>);
 }
 
 export function getAdminJobSeekersAsync(
@@ -71,7 +72,7 @@ export function getAdminJobSeekersAsync(
 ) {
   return httpClient<PagedResult<AdminJobSeeker>>(
     `/api/admin/job-seekers?${buildPagedQuery(page, pageSize, search)}`,
-  );
+  ).then(normalizePagedResult<AdminJobSeeker>);
 }
 
 export function getAdminProjectsAsync(
@@ -81,7 +82,7 @@ export function getAdminProjectsAsync(
 ) {
   return httpClient<PagedResult<AdminProject>>(
     `/api/admin/projects?${buildPagedQuery(page, pageSize, search)}`,
-  );
+  ).then(normalizePagedResult<AdminProject>);
 }
 
 export function getAdminApplicationsAsync(
@@ -91,7 +92,7 @@ export function getAdminApplicationsAsync(
 ) {
   return httpClient<PagedResult<AdminApplication>>(
     `/api/admin/applications?${buildPagedQuery(page, pageSize, search)}`,
-  );
+  ).then(normalizePagedResult<AdminApplication>);
 }
 
 export function getAdminReviewsAsync(
@@ -101,7 +102,7 @@ export function getAdminReviewsAsync(
 ) {
   return httpClient<PagedResult<AdminReview>>(
     `/api/admin/reviews?${buildPagedQuery(page, pageSize, search)}`,
-  );
+  ).then(normalizePagedResult<AdminReview>);
 }
 
 export function getAdminSkillsAsync(
@@ -111,7 +112,7 @@ export function getAdminSkillsAsync(
 ) {
   return httpClient<PagedResult<AdminSkill>>(
     `/api/admin/skills?${buildPagedQuery(page, pageSize, search)}`,
-  );
+  ).then(normalizePagedResult<AdminSkill>);
 }
 
 export function getAdminAuditEventsAsync(
@@ -121,14 +122,18 @@ export function getAdminAuditEventsAsync(
 ) {
   return httpClient<PagedResult<AdminAuditEvent>>(
     `/api/admin/audit?${buildPagedQuery(page, pageSize, search)}`,
-  );
+  ).then(normalizePagedResult<AdminAuditEvent>);
 }
 
 export async function getAdminQueueSummaryAsync() {
   if (queueSummaryEndpointSupported) {
     try {
       return await httpClient<AdminQueueSummary>("/api/admin/queues");
-    } catch {
+    } catch (error) {
+      if (!(error instanceof HttpError) || ![404, 405].includes(error.status)) {
+        throw error;
+      }
+
       queueSummaryEndpointSupported = false;
     }
   }

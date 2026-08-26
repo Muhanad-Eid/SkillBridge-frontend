@@ -29,6 +29,7 @@ import { getUnreadNotificationCountAsync } from "../../features/notifications/in
 import { useAuth } from "../../shared/auth/AuthContext";
 import ConfirmDialog from "../../shared/components/ConfirmDialog";
 import useVisibilityPolling from "../../shared/hooks/useVisibilityPolling";
+import { subscribeToPortalBadgeChanges } from "../../shared/events/portalEvents";
 import PortalShell from "../../shared/layout/PortalShell";
 
 type JobSeekerNavItem = {
@@ -112,6 +113,11 @@ export default function JobSeekerPortalLayout() {
   }, [refreshProfileCompletion]);
 
   useVisibilityPolling(refreshBadges, 30000, { runImmediately: true });
+
+  useEffect(
+    () => subscribeToPortalBadgeChanges(() => void refreshBadges()),
+    [refreshBadges],
+  );
 
   const profileIsComplete = isJobSeekerProfileComplete(profile);
   const isProfileRoute = location.pathname === "/job-seeker/profile";

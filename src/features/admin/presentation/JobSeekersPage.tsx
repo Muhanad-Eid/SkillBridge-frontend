@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { BriefcaseBusiness, Plus, X } from "lucide-react";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
@@ -46,7 +46,7 @@ export default function JobSeekersPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
 
-  async function loadJobSeekers() {
+  const loadJobSeekers = useCallback(async () => {
     setIsLoading(true);
     setError("");
 
@@ -64,12 +64,12 @@ export default function JobSeekersPage() {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [debouncedSearch, page]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(loadJobSeekers, 0);
     return () => window.clearTimeout(timeoutId);
-  }, [page, debouncedSearch]);
+  }, [loadJobSeekers]);
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
       setDebouncedSearch(search);
