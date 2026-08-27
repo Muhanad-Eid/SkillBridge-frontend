@@ -381,8 +381,9 @@ export default function ProjectsPage({
         </div>
       ) : null}
 
-      <div className="jobseeker-discovery-toolbar">
-        <label className="jobseeker-search-field">
+      <div className="jobseeker-discovery-filter-area" ref={filterControlRef}>
+        <div className="jobseeker-discovery-toolbar">
+          <label className="jobseeker-search-field">
           <Search size={18} aria-hidden="true" />
           <input
             aria-label={isFreelanceView ? "Search industry micro-tasks" : "Search opportunities"}
@@ -394,8 +395,8 @@ export default function ProjectsPage({
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
-        </label>
-        {isFreelanceView ? (
+          </label>
+          {isFreelanceView ? (
           <select
             className="freelance-sort-select"
             aria-label="Sort industry micro-tasks"
@@ -406,8 +407,8 @@ export default function ProjectsPage({
             <option value="budget">Highest budget</option>
             <option value="delivery">Fastest delivery</option>
           </select>
-        ) : null}
-        <div className="jobseeker-filter-control" ref={filterControlRef}>
+          ) : null}
+          <div className="jobseeker-filter-control">
           <Button
             type="button"
             variant="secondary"
@@ -428,8 +429,11 @@ export default function ProjectsPage({
             />
           </Button>
 
-          {isFiltersOpen ? (
-            <section
+          </div>
+        </div>
+
+        {isFiltersOpen ? (
+          <section
               id="opportunity-filters"
               className="jobseeker-filter-panel"
               aria-label="Opportunity filters"
@@ -580,9 +584,8 @@ export default function ProjectsPage({
                   Show {totalCount} result{totalCount === 1 ? "" : "s"}
                 </Button>
               </footer>
-            </section>
-          ) : null}
-        </div>
+          </section>
+        ) : null}
       </div>
 
       <div className="jobseeker-results-heading">

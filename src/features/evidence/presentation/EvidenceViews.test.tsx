@@ -45,6 +45,10 @@ describe("evidence views", () => {
     expect(html).toContain("Contract version 2");
     expect(html).toContain("University approval is still required.");
     expect(html).toContain("API Security");
+    expect(html).toContain("2 conditions need attention");
+    expect(html).toContain("Integrity progress");
+    expect(html).toContain("University approval recorded");
+    expect(html).toContain("MISSING");
   });
 
   it("keeps unsupported optional criteria inside the Claim Boundary", () => {
@@ -95,6 +99,7 @@ describe("evidence views", () => {
     expect(html).toContain("Version 1");
     expect(html).toContain("Skill Evidence Card");
     expect(html).toContain("System-issued evidence");
+    expect(html).toContain("2 recorded steps");
   });
 
   it("renders contextual criterion coverage without a score", () => {
@@ -132,5 +137,6 @@ describe("evidence views", () => {
     expect(html).toContain("Deployment");
     expect(html).toContain("Not supported");
     expect(html).toContain("no score or ranking");
+    expect(html).toContain("Comparison boundary");
   });
 });

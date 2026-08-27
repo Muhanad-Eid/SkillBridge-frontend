@@ -127,7 +127,7 @@ export default function TalentProfilePage({
   );
 
   return (
-    <section className="page company-talent-profile-page">
+    <section className={`page company-talent-profile-page${isSelfPreview ? " profile-preview-page" : ""}`}>
       <PageHeader
         title={isSelfPreview ? "Profile preview" : "Talent profile"}
         actions={
@@ -146,7 +146,7 @@ export default function TalentProfilePage({
           <Eye size={19} aria-hidden="true" />
           <div>
             <strong>This is how organizations see your profile</strong>
-            <span>Only evidence you marked as shared appears in this preview.</span>
+            <span>Only active Skill Evidence Cards that you marked as shared appear in this preview.</span>
           </div>
         </div>
       ) : null}
@@ -172,7 +172,7 @@ export default function TalentProfilePage({
             <div className="company-talent-profile-identity">
               <span className="company-talent-profile-kicker">
                 <ShieldCheck size={14} aria-hidden="true" />
-                Evidence-backed professional profile
+                {isSelfPreview ? "External reviewer view" : "Evidence-backed professional profile"}
               </span>
               <h1>{profile.fullName}</h1>
               <div className="company-talent-profile-meta">
@@ -321,11 +321,11 @@ export default function TalentProfilePage({
                     <article key={item.id}>
                       <header>
                         <div>
-                          <div className="company-talent-evidence-labels">
+                        <div className="company-talent-evidence-labels">
                             <span>
                               {getOpportunityTypeLabel(item.opportunityType)}
                             </span>
-                            <small>{evidenceReference(item.id)}</small>
+                            <small>{item.isEvidenceCard ? evidenceReference(item.id) : "Portfolio presentation"}</small>
                           </div>
                           <h3>{item.projectTitle}</h3>
                           <p>
@@ -338,7 +338,7 @@ export default function TalentProfilePage({
                         </div>
                         <span className="company-talent-approved-label">
                           <ShieldCheck size={16} aria-hidden="true" />
-                          Provider approved
+                          {item.isEvidenceCard ? "Issued evidence" : "Portfolio presentation"}
                         </span>
                       </header>
 

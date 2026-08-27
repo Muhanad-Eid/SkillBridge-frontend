@@ -28,10 +28,16 @@ import FreelanceWorkspaceNav from "../../projects/presentation/FreelanceWorkspac
 import {
   MilestoneStatuses,
   TrainingReportStatuses,
+  ContributionReviewDecisions,
   getWorkSubmissionStatusLabel,
   type WorkRecord,
+  type ContributionReviewTask,
 } from "../domain/workTypes";
-import { getMyWorkAsync } from "../infrastructure/workApi";
+import {
+  getContributionReviewQueueAsync,
+  getMyWorkAsync,
+  reviewContributionAsync,
+} from "../infrastructure/workApi";
 
 type WorkView = "all" | "active" | "attention" | "review" | "completed";
 
@@ -203,6 +209,10 @@ export default function WorkOverviewPage({
     isCompany && isCompanyVerified === false;
   const isFreelanceView = mode === "freelance";
   const [records, setRecords] = useState<WorkRecord[]>([]);
+  const [contributionReviews, setContributionReviews] = useState<ContributionReviewTask[]>([]);
+  const [contributionComments, setContributionComments] = useState<Record<number, string>>({});
+  const [busyContributionId, setBusyContributionId] = useState<number | null>(null);
+  const [contributionError, setContributionError] = useState("");
   const [view, setView] = useState<WorkView>("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [search, setSearch] = useState("");
@@ -221,8 +231,14 @@ export default function WorkOverviewPage({
       setError("");
 
       try {
-        const data = await getMyWorkAsync();
-        if (isMounted) setRecords(data);
+        const [data, reviewQueue] = await Promise.all([
+          getMyWorkAsync(),
+          isCompany ? Promise.resolve([]) : getContributionReviewQueueAsync().catch(() => []),
+        ]);
+        if (isMounted) {
+          setRecords(data);
+          setContributionReviews(reviewQueue);
+        }
       } catch (caughtError) {
         if (isMounted) {
           setError(
@@ -240,7 +256,7 @@ export default function WorkOverviewPage({
     return () => {
       isMounted = false;
     };
-  }, [isCompanyVerificationRequired]);
+  }, [isCompany, isCompanyVerificationRequired]);
 
   const scopedRecords = useMemo(
     () =>
@@ -325,6 +341,37 @@ export default function WorkOverviewPage({
     return `/${isCompany ? "company" : "job-seeker"}/messages?${params.toString()}`;
   }
 
+  async function submitContributionReview(
+    task: ContributionReviewTask,
+    decision: number,
+  ) {
+    const comment = contributionComments[task.targetApplicationId]?.trim() ?? "";
+    if (decision === ContributionReviewDecisions.Disputed && comment.length < 3) {
+      setContributionError("Add a short reason before disputing an attribution.");
+      return;
+    }
+
+    setBusyContributionId(task.targetApplicationId);
+    setContributionError("");
+    try {
+      await reviewContributionAsync(task.targetApplicationId, {
+        decision,
+        comment: decision === ContributionReviewDecisions.Disputed ? comment : undefined,
+      });
+      setContributionReviews((current) =>
+        current.filter((item) => item.targetApplicationId !== task.targetApplicationId),
+      );
+    } catch (caughtError) {
+      setContributionError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Unable to record this contribution review.",
+      );
+    } finally {
+      setBusyContributionId(null);
+    }
+  }
+
   if (isCompanyVerificationRequired) {
     return (
       <section className="page work-overview-page">
@@ -345,6 +392,61 @@ export default function WorkOverviewPage({
       <PageHeader title={isFreelanceView ? "Freelance contracts" : "Work"} />
 
       {isFreelanceView ? <FreelanceWorkspaceNav /> : null}
+
+      {!isCompany && contributionReviews.length > 0 ? (
+        <section className="contribution-review-inbox" aria-labelledby="contribution-review-inbox-title">
+          <header>
+            <div>
+              <span>Team Project action</span>
+              <h2 id="contribution-review-inbox-title">Contribution review inbox</h2>
+              <p>Confirm or dispute the declared work of affected team members before a contribution record can be locked.</p>
+            </div>
+            <StatusBadge tone="amber">{contributionReviews.length} awaiting review</StatusBadge>
+          </header>
+          {contributionError ? <p className="contribution-review-error" role="alert">{contributionError}</p> : null}
+          <div>
+            {contributionReviews.map((task) => (
+              <article key={task.targetApplicationId}>
+                <div>
+                  <strong>{task.participantName}</strong>
+                  <span>{task.projectTitle}</span>
+                  <p>{task.declaration}</p>
+                </div>
+                <div className="contribution-review-actions">
+                  <textarea
+                    aria-label={`Dispute reason for ${task.participantName}`}
+                    value={contributionComments[task.targetApplicationId] ?? ""}
+                    placeholder="Reason required only when disputing"
+                    onChange={(event) =>
+                      setContributionComments((current) => ({
+                        ...current,
+                        [task.targetApplicationId]: event.target.value,
+                      }))
+                    }
+                  />
+                  <div>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      isLoading={busyContributionId === task.targetApplicationId}
+                      onClick={() => void submitContributionReview(task, ContributionReviewDecisions.Confirmed)}
+                    >Confirm</Button>
+                    <Button
+                      type="button"
+                      variant="danger"
+                      disabled={(contributionComments[task.targetApplicationId] ?? "").trim().length < 3}
+                      onClick={() => void submitContributionReview(task, ContributionReviewDecisions.Disputed)}
+                    >Dispute</Button>
+                    <Button to={`/job-seeker/work/${task.projectId}#contribution-record`} variant="ghost" title="Open the full work record">
+                      Details <ArrowRight size={16} aria-hidden="true" />
+                    </Button>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <div className="work-overview-summary" aria-label="Work summary">
         <article>

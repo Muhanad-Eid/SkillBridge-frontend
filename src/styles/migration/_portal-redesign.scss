@@ -644,6 +644,58 @@
   color: var(--sb-color-text-secondary) !important;
 }
 
+.evidence-contract-template-picker {
+  display: grid;
+  gap: 0.85rem;
+  margin: 0 0 1rem;
+  padding: 1rem;
+  border: 1px solid #cbd5e1;
+  border-top: 3px solid #10213f;
+  border-radius: 10px;
+  background: linear-gradient(120deg, color-mix(in srgb, #c5f36a 10%, transparent), transparent 48%), var(--sb-color-surface);
+}
+
+.evidence-contract-template-picker > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.evidence-contract-template-picker > header > div { display: grid; gap: 0.25rem; }
+.evidence-contract-template-picker > header span {
+  color: var(--sb-color-text-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.evidence-contract-template-picker > header strong { color: var(--sb-color-text); font-size: 0.9rem; }
+.evidence-contract-template-picker > header small { color: var(--sb-color-text-muted); font-size: 0.73rem; line-height: 1.45; }
+.evidence-contract-template-picker > div { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.65rem; }
+.evidence-contract-template-picker button {
+  display: grid;
+  align-content: start;
+  gap: 0.35rem;
+  min-height: 94px;
+  padding: 0.8rem;
+  border: 1px solid var(--sb-color-border);
+  border-radius: 8px;
+  background: var(--sb-color-surface-raised);
+  color: var(--sb-color-text);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+.evidence-contract-template-picker button:hover {
+  transform: translateY(-2px);
+  border-color: #10213f;
+  box-shadow: 3px 3px 0 #c5f36a;
+}
+.evidence-contract-template-picker button:focus-visible { outline: 3px solid var(--sb-focus-ring); outline-offset: 2px; }
+.evidence-contract-template-picker button strong { font-size: 0.83rem; }
+.evidence-contract-template-picker button span { color: var(--sb-color-text-muted); font-size: 0.74rem; line-height: 1.45; }
+
 .company-portal-v2 .company-opportunity-controls .company-icon-action.button svg {
   width: 18px;
   min-width: 18px;
@@ -697,10 +749,53 @@
   .evidence-contract-summary { grid-template-columns: 1fr; }
   .evidence-contract-detail dl { grid-template-columns: 1fr; }
   .evidence-contract-approvals, .evidence-contract-criteria li { align-items: flex-start; flex-direction: column; }
+  .evidence-contract-template-picker > header { flex-direction: column; }
+  .evidence-contract-template-picker > div { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 420px) {
   .page-header h1 { font-size: 1.7rem; }
   .page-actions .button, .page-header-actions .button { flex-basis: 100%; }
   .card-body { padding: 1rem; }
+}
+
+/* The Discover filter is anchored to the page content, not the small trigger.
+   This prevents the overlay from escaping behind the fixed portal sidebar. */
+.jobseeker-discovery-filter-area {
+  position: relative;
+  z-index: 2;
+}
+
+.jobseeker-discovery-filter-area .jobseeker-discovery-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.jobseeker-discovery-filter-area .jobseeker-search-field,
+.jobseeker-discovery-filter-area .jobseeker-filter-control {
+  min-width: 0;
+}
+
+.jobseeker-discovery-filter-area .jobseeker-filter-panel {
+  inset: calc(100% + 0.75rem) 0 auto;
+  width: auto;
+  max-width: none;
+}
+
+@media (max-width: 760px) {
+  .jobseeker-discovery-filter-area .jobseeker-discovery-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .jobseeker-discovery-filter-area .jobseeker-filter-control,
+  .jobseeker-discovery-filter-area .jobseeker-filter-trigger.button {
+    width: 100%;
+  }
+
+  .jobseeker-discovery-filter-area .jobseeker-filter-panel {
+    position: static;
+    width: 100%;
+    margin-top: 0.75rem;
+  }
 }

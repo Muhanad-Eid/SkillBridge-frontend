@@ -15,6 +15,40 @@
   overflow: hidden;
 }
 
+.contribution-review-inbox {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding: 1.1rem;
+  border: 1px solid var(--border);
+  border-top: 3px solid #10213f;
+  border-radius: 12px;
+  background: linear-gradient(120deg, color-mix(in srgb, #c5f36a 10%, transparent), transparent 40%), var(--surface);
+  box-shadow: 0 14px 30px color-mix(in srgb, #10213f 7%, transparent);
+}
+.contribution-review-inbox > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.contribution-review-inbox > header > div { display: grid; gap: 0.3rem; }
+.contribution-review-inbox > header span { color: var(--muted); font-size: 0.68rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+.contribution-review-inbox h2 { margin: 0; color: var(--text); font-size: 1rem; }
+.contribution-review-inbox p { margin: 0; color: var(--muted); font-size: 0.8rem; line-height: 1.5; }
+.contribution-review-inbox > div { display: grid; gap: 1px; overflow: hidden; border: 1px solid var(--border); border-radius: 8px; background: var(--border); }
+.contribution-review-inbox article { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.85rem; background: var(--surface); }
+.contribution-review-inbox article > div:first-child { display: grid; gap: 0.2rem; min-width: 0; }
+.contribution-review-inbox article strong { color: var(--text); font-size: 0.86rem; }
+.contribution-review-inbox article span { color: var(--muted); font-size: 0.75rem; }
+.contribution-review-inbox article p { max-width: 62rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.contribution-review-error { padding: 0.7rem 0.85rem; border-left: 3px solid var(--red, #b42318); background: color-mix(in srgb, var(--red, #b42318) 8%, var(--surface)); color: var(--red, #b42318) !important; }
+.contribution-review-actions { display: grid; grid-template-columns: minmax(200px, 1fr) auto; gap: 0.55rem; width: min(100%, 540px); }
+.contribution-review-actions textarea { min-height: 42px; padding: 0.6rem 0.7rem; border: 1px solid var(--border); border-radius: 7px; background: var(--surface-soft); color: var(--text); font: inherit; font-size: 0.76rem; resize: vertical; }
+.contribution-review-actions > div { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; }
+
+@media (max-width: 640px) {
+  .contribution-review-inbox > header,
+  .contribution-review-inbox article { align-items: stretch; flex-direction: column; }
+  .contribution-review-inbox article p { white-space: normal; }
+  .contribution-review-actions { grid-template-columns: 1fr; width: 100%; }
+}
+
 .work-overview-summary article {
   min-width: 0;
   display: grid;

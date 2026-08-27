@@ -417,6 +417,28 @@ export default function WorkProgressPanel({
       ?.focus({ preventScroll: true });
   }
 
+  function resolveReadinessCondition(code: string) {
+    const targetByCode: Record<string, string> = {
+      FinalSubmissionMissing: "final-submission",
+      WorkIncomplete: "work-milestones",
+      CriterionEvaluationMissing: "final-review",
+      RequiredCriterionUnsatisfied: "final-review",
+      ContributionUnresolved: "contribution-record",
+      CompanyApprovalMissing: "final-review",
+      UniversityApprovalMissing: "training-record",
+    };
+
+    const target = targetByCode[code];
+    if (target) {
+      focusWorkSection(target);
+      return;
+    }
+
+    setError(
+      "This integrity condition is controlled by the recorded Evidence Contract or authorization route. Review the condition details before continuing.",
+    );
+  }
+
   return (
     <section className="work-hub-panel work-progress-panel">
       <header className="work-hub-panel-header">
@@ -513,7 +535,10 @@ export default function WorkProgressPanel({
 
       <div id="evidence-readiness">
         {readiness?.applicationId === record.applicationId ? (
-          <EvidenceReadinessPanel readiness={readiness} />
+          <EvidenceReadinessPanel
+            readiness={readiness}
+            onResolveCondition={resolveReadinessCondition}
+          />
         ) : null}
       </div>
 
@@ -754,6 +779,58 @@ export default function WorkProgressPanel({
             <span>Individual contribution record</span>
             <strong>Assigned responsibilities</strong>
           </header>
+          <section
+            className="contribution-confidence"
+            aria-label="Contribution confidence record"
+            data-resolution={record.contributionRecord?.status ?? "pending"}
+          >
+            <header>
+              <span>Contribution confidence</span>
+              <strong>
+                {record.contributionRecord?.status === ContributionResolutionStatuses.Locked
+                  ? "Resolved and locked"
+                  : "Attribution still in review"}
+              </strong>
+            </header>
+            <div>
+              <article className={record.assignedResponsibilities ? "complete" : "pending"}>
+                <span>1</span>
+                <strong>Responsibilities</strong>
+                <small>{record.assignedResponsibilities ? "Provider-defined" : "Awaiting provider definition"}</small>
+              </article>
+              <article className={record.contributionRecord?.declaration ? "complete" : "pending"}>
+                <span>2</span>
+                <strong>Participant declaration</strong>
+                <small>{record.contributionRecord?.declaration ? "Recorded" : "Not yet recorded"}</small>
+              </article>
+              <article
+                className={
+                  record.contributionRecord?.status === ContributionResolutionStatuses.Disputed
+                    ? "disputed"
+                    : record.contributionRecord?.reviews.length
+                      ? "complete"
+                      : "pending"
+                }
+              >
+                <span>3</span>
+                <strong>Affected-member review</strong>
+                <small>{record.contributionRecord?.reviews.length ? `${record.contributionRecord.reviews.length}/${record.contributionRecord.requiredReviewerCount} reviewed` : "Awaiting review"}</small>
+              </article>
+              <article
+                className={
+                  record.contributionRecord?.status === ContributionResolutionStatuses.Locked
+                    ? "complete"
+                    : record.contributionRecord?.status === ContributionResolutionStatuses.Disputed
+                      ? "disputed"
+                      : "pending"
+                }
+              >
+                <span>4</span>
+                <strong>Provider resolution</strong>
+                <small>{record.contributionRecord?.status === ContributionResolutionStatuses.Locked ? "Locked for evidence" : "Required before issuance"}</small>
+              </article>
+            </div>
+          </section>
           {isCompany &&
           canEditMilestones &&
           record.projectStatus !== ProjectStatuses.Completed &&

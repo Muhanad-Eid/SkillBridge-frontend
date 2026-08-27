@@ -166,6 +166,91 @@ function createEmptyProjectForm(isFreelanceView: boolean): ProjectForm {
   };
 }
 
+type EvidenceContractTemplate = {
+  id: "training" | "team" | "micro-task";
+  title: string;
+  description: string;
+  apply: (base: ProjectForm) => ProjectForm;
+};
+
+const evidenceContractTemplates: EvidenceContractTemplate[] = [
+  {
+    id: "training",
+    title: "University Training",
+    description: "Hours, reports, learning outcomes, and two approvals.",
+    apply: (base) => ({
+      ...base,
+      type: OpportunityTypes.UniversityTraining,
+      title: "Supervised university training",
+      description: "A supervised workplace training opportunity with connected company and university review.",
+      requirements: "Complete the agreed training hours, submit reports, and demonstrate the stated learning outcomes.",
+      deliverables: "Training reports, approved milestones, final deliverable, and learning-outcome evidence.",
+      academicRequirements: "University monitoring and final academic approval are required.",
+      requiredTrainingHours: "120",
+      durationWeeks: "12",
+      evidenceCriteria: [
+        { key: "template-training-outcomes", title: "Learning outcomes demonstrated", description: "Evidence addresses the approved learning outcomes.", evaluationType: CriterionEvaluationTypes.Rating, minimumRating: 2, isRequired: true, sortOrder: 0 },
+        { key: "template-training-work", title: "Workplace deliverables completed", description: "Required deliverables and milestones are complete.", evaluationType: CriterionEvaluationTypes.PassFail, minimumRating: 2, isRequired: true, sortOrder: 1 },
+        { key: "template-training-reflection", title: "Professional reflection", description: "The participant explains learning from the training context.", evaluationType: CriterionEvaluationTypes.Rating, minimumRating: 2, isRequired: false, sortOrder: 2 },
+      ],
+      milestones: [
+        { key: "template-training-plan", title: "Training plan agreed", description: "Confirm supervision, hours, and intended outcomes.", dueAfterDays: 7 },
+        { key: "template-training-report", title: "Progress report submitted", description: "Submit a report for company review.", dueAfterDays: 42 },
+        { key: "template-training-final", title: "Final training record", description: "Complete final work and training evidence.", dueAfterDays: 84 },
+      ],
+    }),
+  },
+  {
+    id: "team",
+    title: "Team Project",
+    description: "Participant-specific work with an accountable contribution record.",
+    apply: (base) => ({
+      ...base,
+      type: OpportunityTypes.TeamProject,
+      title: "Team delivery project",
+      description: "A shared project with individual responsibilities, reviewable contribution, and criterion-level evaluation.",
+      requirements: "Complete assigned responsibilities, declare participant-specific contribution, and respond to affected-member review.",
+      deliverables: "Team deliverable, attributed work record, final submission, and contribution declaration.",
+      durationWeeks: "8",
+      evidenceCriteria: [
+        { key: "template-team-delivery", title: "Assigned work delivered", description: "Participant-specific responsibilities are completed to the accepted standard.", evaluationType: CriterionEvaluationTypes.PassFail, minimumRating: 2, isRequired: true, sortOrder: 0 },
+        { key: "template-team-contribution", title: "Contribution attribution resolved", description: "Affected-member review and provider resolution are complete.", evaluationType: CriterionEvaluationTypes.PassFail, minimumRating: 2, isRequired: true, sortOrder: 1 },
+        { key: "template-team-collaboration", title: "Collaboration practices", description: "Evidence of effective collaboration within the project context.", evaluationType: CriterionEvaluationTypes.Rating, minimumRating: 2, isRequired: false, sortOrder: 2 },
+      ],
+      milestones: [
+        { key: "template-team-scope", title: "Responsibilities agreed", description: "Provider defines participant-specific responsibilities.", dueAfterDays: 7 },
+        { key: "template-team-review", title: "Contribution review", description: "Affected members review the declared contribution.", dueAfterDays: 35 },
+        { key: "template-team-final", title: "Final team delivery", description: "Submit the final work for evaluation and approval.", dueAfterDays: 56 },
+      ],
+    }),
+  },
+  {
+    id: "micro-task",
+    title: "Industry Micro-Task",
+    description: "A concise, evaluated brief with one final delivery.",
+    apply: (base) => ({
+      ...base,
+      type: OpportunityTypes.FreelanceTask,
+      title: "Focused industry micro-task",
+      description: "A small, practical brief evaluated against clear delivery criteria.",
+      requirements: "Respond to the brief, complete the agreed scope, and submit one final deliverable.",
+      deliverables: "Final deliverable, concise delivery note, and any agreed revision response.",
+      durationWeeks: "2",
+      freelanceDeliveryDays: "14",
+      includedRevisions: "1",
+      evidenceCriteria: [
+        { key: "template-micro-scope", title: "Brief requirements met", description: "The deliverable satisfies the agreed brief and scope.", evaluationType: CriterionEvaluationTypes.PassFail, minimumRating: 2, isRequired: true, sortOrder: 0 },
+        { key: "template-micro-quality", title: "Quality of final delivery", description: "The final work meets the provider's stated quality standard.", evaluationType: CriterionEvaluationTypes.Rating, minimumRating: 2, isRequired: true, sortOrder: 1 },
+        { key: "template-micro-communication", title: "Delivery communication", description: "The delivery note explains key decisions and handoff details.", evaluationType: CriterionEvaluationTypes.Rating, minimumRating: 2, isRequired: false, sortOrder: 2 },
+      ],
+      milestones: [
+        { key: "template-micro-brief", title: "Brief acknowledged", description: "Confirm scope and final delivery format.", dueAfterDays: 2 },
+        { key: "template-micro-final", title: "Final delivery", description: "Submit the completed work for provider evaluation.", dueAfterDays: 14 },
+      ],
+    }),
+  },
+];
+
 function mergeSkillNames(...groups: string[][]) {
   const names = new Map<string, string>();
 
@@ -322,6 +407,12 @@ export default function CompanyProjectsPage({
     setRequiredSkillInput("");
     setPreferredSkillInput("");
     setIsFormOpen(true);
+  }
+
+  function applyEvidenceContractTemplate(template: EvidenceContractTemplate) {
+    setForm(template.apply(createEmptyProjectForm(isFreelanceView)));
+    setRequiredSkillInput("");
+    setPreferredSkillInput("");
   }
 
   function openEditForm(project: Project) {
@@ -1179,6 +1270,30 @@ export default function CompanyProjectsPage({
                 canInspectHistory
                 className="company-contract-history"
               />
+            ) : null}
+
+            {mode === "create" ? (
+              <section className="evidence-contract-template-picker" aria-labelledby="contract-template-title">
+                <header>
+                  <div>
+                    <span>Evidence Contract templates</span>
+                    <strong id="contract-template-title">Start with a proven evidence structure</strong>
+                  </div>
+                  <small>All fields remain editable before publishing.</small>
+                </header>
+                <div>
+                  {evidenceContractTemplates.map((template) => (
+                    <button
+                      type="button"
+                      key={template.id}
+                      onClick={() => applyEvidenceContractTemplate(template)}
+                    >
+                      <strong>{template.title}</strong>
+                      <span>{template.description}</span>
+                    </button>
+                  ))}
+                </div>
+              </section>
             ) : null}
 
             <form onSubmit={handleSave}>

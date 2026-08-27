@@ -934,3 +934,308 @@
   }
 }
 
+/* Reviewer preview. Kept last so legacy talent/profile declarations cannot bleed into it. */
+.profile-preview-page {
+  --profile-preview-canvas: #f5f7fb;
+  --profile-preview-surface: #ffffff;
+  --profile-preview-ink: #10213f;
+  --profile-preview-muted: #5e6d82;
+  --profile-preview-line: #dbe3ef;
+  --profile-preview-navy: #10213f;
+  --profile-preview-coral: #ff675d;
+  --profile-preview-lime: #c5f36a;
+  --profile-preview-mint: #eaf8f1;
+  display: grid;
+  gap: 22px;
+  padding: clamp(1rem, 2vw, 1.75rem);
+  border: 1px solid var(--profile-preview-line);
+  border-radius: 16px;
+  background: var(--profile-preview-canvas);
+}
+
+[data-theme="dark"] .profile-preview-page {
+  --profile-preview-canvas: #111b2e;
+  --profile-preview-surface: #19263b;
+  --profile-preview-ink: #f8fbff;
+  --profile-preview-muted: #aab9ce;
+  --profile-preview-line: #30415d;
+  --profile-preview-navy: #0d1628;
+  --profile-preview-mint: #153d36;
+}
+
+.profile-preview-page .page-header {
+  margin: 0;
+  padding: 0 0 16px;
+  border-bottom: 1px solid var(--profile-preview-line);
+}
+
+.profile-preview-page .page-header h1,
+.profile-preview-page .page-header h2,
+.profile-preview-page .page-header p {
+  color: var(--profile-preview-ink);
+}
+
+.profile-preview-page .profile-preview-notice {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  overflow: hidden;
+  padding: 14px 18px;
+  border: 1px solid var(--profile-preview-line);
+  border-left: 4px solid var(--profile-preview-coral);
+  border-radius: 10px;
+  background: var(--profile-preview-surface);
+  box-shadow: none;
+}
+
+.profile-preview-page .profile-preview-notice::after {
+  position: absolute;
+  top: -14px;
+  right: 18px;
+  width: 40px;
+  height: 40px;
+  border: 7px solid var(--profile-preview-lime);
+  border-radius: 50%;
+  content: "";
+  opacity: 0.72;
+}
+
+.profile-preview-page .profile-preview-notice > svg {
+  color: var(--profile-preview-coral);
+}
+
+.profile-preview-page .profile-preview-notice strong {
+  color: var(--profile-preview-ink);
+}
+
+.profile-preview-page .profile-preview-notice span {
+  color: var(--profile-preview-muted);
+}
+
+.profile-preview-page .company-talent-profile-intro {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(300px, auto);
+  gap: 20px;
+  overflow: hidden;
+  padding: clamp(1.5rem, 3.5vw, 2.5rem);
+  border: 0;
+  border-radius: 14px;
+  background: var(--profile-preview-navy);
+  box-shadow: none;
+}
+
+.profile-preview-page .company-talent-profile-intro::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 6px;
+  background: var(--profile-preview-coral);
+  content: "";
+}
+
+.profile-preview-page .company-talent-profile-intro::after {
+  position: absolute;
+  top: -84px;
+  right: -64px;
+  width: 224px;
+  height: 224px;
+  border: 30px solid var(--profile-preview-lime);
+  border-radius: 50%;
+  content: "";
+  opacity: 0.28;
+}
+
+.profile-preview-page .company-talent-profile-avatar,
+.profile-preview-page .company-talent-profile-identity,
+.profile-preview-page .company-talent-profile-metrics {
+  position: relative;
+  z-index: 1;
+}
+
+.profile-preview-page .company-talent-profile-avatar {
+  width: 72px;
+  height: 72px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--profile-preview-lime);
+  color: var(--profile-preview-navy);
+  font-size: 1.5rem;
+  box-shadow: 5px 5px 0 var(--profile-preview-coral);
+}
+
+.profile-preview-page .company-talent-profile-kicker {
+  color: var(--profile-preview-lime);
+}
+
+.profile-preview-page .company-talent-profile-intro h1 {
+  color: #ffffff;
+  font-size: clamp(1.85rem, 3.4vw, 3rem);
+}
+
+.profile-preview-page .company-talent-profile-meta > span {
+  color: rgb(255 255 255 / 0.7);
+}
+
+.profile-preview-page .company-talent-profile-metrics {
+  min-width: 300px;
+  padding-left: 18px;
+  border-left-color: rgb(255 255 255 / 0.18);
+}
+
+.profile-preview-page .company-talent-profile-metrics > div {
+  border-left-color: rgb(255 255 255 / 0.18);
+}
+
+.profile-preview-page .company-talent-profile-metrics dt {
+  color: rgb(255 255 255 / 0.6);
+}
+
+.profile-preview-page .company-talent-profile-metrics dd {
+  color: #ffffff;
+  font-size: 1.45rem;
+}
+
+.profile-preview-page .company-talent-profile-body {
+  grid-template-columns: minmax(250px, 0.65fr) minmax(0, 1.45fr);
+  gap: 22px;
+}
+
+.profile-preview-page .company-talent-profile-body > aside {
+  gap: 12px;
+}
+
+.profile-preview-page .company-talent-profile-section,
+.profile-preview-page .company-talent-evidence article,
+.profile-preview-page .company-talent-no-evidence {
+  border-color: var(--profile-preview-line);
+  border-radius: 10px;
+  background: var(--profile-preview-surface);
+  box-shadow: none;
+}
+
+.profile-preview-page .company-talent-profile-section {
+  padding: 18px;
+}
+
+.profile-preview-page .company-talent-profile-section:first-child {
+  padding-top: 18px;
+}
+
+.profile-preview-page .company-talent-profile-body h2,
+.profile-preview-page .company-talent-evidence h2,
+.profile-preview-page .company-talent-evidence h3,
+.profile-preview-page .company-talent-evidence-summary > p,
+.profile-preview-page .company-talent-evidence dd {
+  color: var(--profile-preview-ink);
+}
+
+.profile-preview-page .company-talent-profile-body > aside p,
+.profile-preview-page .company-talent-evidence p,
+.profile-preview-page .company-talent-evidence dt,
+.profile-preview-page .company-talent-evidence-summary > span,
+.profile-preview-page .company-talent-evidence-labels small,
+.profile-preview-page .company-talent-evidence-total {
+  color: var(--profile-preview-muted);
+}
+
+.profile-preview-page .company-talent-evidence > header {
+  padding: 2px 0 16px;
+  border-bottom-color: var(--profile-preview-line);
+}
+
+.profile-preview-page .company-talent-evidence > header > div > span,
+.profile-preview-page .company-talent-evidence-labels > span {
+  color: var(--profile-preview-coral);
+}
+
+.profile-preview-page .company-talent-evidence article {
+  gap: 14px;
+}
+
+.profile-preview-page .company-talent-evidence article:hover {
+  border-color: color-mix(in srgb, var(--profile-preview-coral) 42%, var(--profile-preview-line));
+  box-shadow: none;
+}
+
+.profile-preview-page .company-talent-evidence-details,
+.profile-preview-page .company-talent-evidence-details > div {
+  border-color: var(--profile-preview-line);
+}
+
+.profile-preview-page .company-talent-evidence-chain {
+  border-radius: 7px;
+  background: var(--profile-preview-mint);
+}
+
+.profile-preview-page .company-talent-evidence-chain > span {
+  color: var(--profile-preview-muted);
+}
+
+.profile-preview-page .company-talent-profile-skills > span,
+.profile-preview-page .company-talent-evidence footer > div > span {
+  border-color: var(--profile-preview-line);
+  background: color-mix(in srgb, var(--profile-preview-surface) 84%, var(--profile-preview-canvas));
+  color: var(--profile-preview-muted);
+}
+
+.profile-preview-page .company-talent-profile-skills > span.is-supported {
+  border-color: color-mix(in srgb, #1c9a78 45%, var(--profile-preview-line));
+  background: var(--profile-preview-mint);
+  color: #087058;
+}
+
+[data-theme="dark"] .profile-preview-page .company-talent-profile-skills > span.is-supported {
+  color: #9de5cf;
+}
+
+.profile-preview-page .company-talent-profile-links a,
+.profile-preview-page .company-talent-evidence footer > a {
+  color: var(--profile-preview-ink);
+}
+
+@media (max-width: 860px) {
+  .profile-preview-page .company-talent-profile-intro {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .profile-preview-page .company-talent-profile-metrics {
+    grid-column: 1 / -1;
+    min-width: 0;
+    padding: 16px 0 0;
+    border-top: 1px solid rgb(255 255 255 / 0.18);
+    border-left: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .profile-preview-page {
+    gap: 16px;
+    padding: 12px;
+    border-radius: 0;
+  }
+
+  .profile-preview-page .page-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .profile-preview-page .company-talent-profile-intro,
+  .profile-preview-page .company-talent-profile-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .profile-preview-page .company-talent-profile-avatar {
+    width: 60px;
+    height: 60px;
+  }
+
+  .profile-preview-page .company-talent-profile-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .profile-preview-page .company-talent-profile-metrics > div {
+    padding: 0 8px;
+  }
+}
+

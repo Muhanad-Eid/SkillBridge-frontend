@@ -28,14 +28,19 @@ import type { PublicShareSummary } from "../../evidence/domain/evidenceTypes";
 import {
   createPublicEvidenceShareAsync,
   disablePublicEvidenceShareAsync,
+  getCriterionEvidenceCoverageAsync,
   getPublicEvidenceSharesAsync,
 } from "../../evidence/infrastructure/evidenceApi";
+import type { CriterionEvidenceCoverage } from "../../evidence/domain/evidenceTypes";
+import { getProjectsAsync } from "../../projects/infrastructure/projectApi";
+import { ProjectStatuses, type Project } from "../../projects/domain/projectTypes";
 import type { PortfolioItem } from "../domain/portfolioTypes";
 import {
   getMyPortfolioAsync,
   updatePortfolioItemAsync,
 } from "../infrastructure/portfolioApi";
 import EvidenceDetailsDialog from "./EvidenceDetailsDialog";
+import CriterionCoveragePanel from "../../evidence/presentation/CriterionCoveragePanel";
 
 const visibilityOptions = [
   { label: "All evidence", value: "all" },
@@ -64,6 +69,28 @@ function evidenceReference(id: number) {
   return `SB-EV-${String(id).padStart(6, "0")}`;
 }
 
+async function copyText(value: string) {
+  if (navigator.clipboard?.writeText && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(value);
+      return true;
+    } catch {
+      // Some desktop browser shells expose Clipboard but reject the permission request.
+    }
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = value;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.opacity = "0";
+  document.body.append(textarea);
+  textarea.select();
+  const copied = document.execCommand("copy");
+  textarea.remove();
+  return copied;
+}
+
 export default function PortfolioPage() {
   const [items, setItems] = useState<PortfolioItem[]>([]);
   const [shares, setShares] = useState<PublicShareSummary[]>([]);
@@ -79,6 +106,13 @@ export default function PortfolioPage() {
   const [editFeatured, setEditFeatured] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [busyItemId, setBusyItemId] = useState<number | null>(null);
+  const [isCreatingShare, setIsCreatingShare] = useState(false);
+  const [comparisonProjects, setComparisonProjects] = useState<Project[]>([]);
+  const [comparisonProjectId, setComparisonProjectId] = useState("");
+  const [criterionCoverage, setCriterionCoverage] =
+    useState<CriterionEvidenceCoverage | null>(null);
+  const [isLoadingCoverage, setIsLoadingCoverage] = useState(false);
+  const [coverageError, setCoverageError] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
@@ -109,6 +143,47 @@ export default function PortfolioPage() {
   }, []);
 
   useEffect(() => {
+    let active = true;
+
+    void getProjectsAsync({ pageSize: 50 })
+      .then((result) => {
+        if (!active) return;
+        setComparisonProjects(
+          result.items.filter((project) => project.status === ProjectStatuses.Open),
+        );
+      })
+      .catch(() => {
+        if (active) setComparisonProjects([]);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  async function selectComparisonProject(value: string) {
+    setComparisonProjectId(value);
+    setCriterionCoverage(null);
+    setCoverageError("");
+
+    const projectId = Number(value);
+    if (!projectId) return;
+
+    setIsLoadingCoverage(true);
+    try {
+      setCriterionCoverage(await getCriterionEvidenceCoverageAsync(projectId));
+    } catch (caughtError) {
+      setCoverageError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Unable to compare evidence for this opportunity.",
+      );
+    } finally {
+      setIsLoadingCoverage(false);
+    }
+  }
+
+  useEffect(() => {
     if (!editingItem) return;
 
     const previousOverflow = document.body.style.overflow;
@@ -131,6 +206,14 @@ export default function PortfolioPage() {
       shared: items.filter((item) => item.isVisible).length,
       featured: items.filter((item) => item.isFeatured).length,
     }),
+    [items],
+  );
+
+  const shareableCardIds = useMemo(
+    () =>
+      items
+        .filter((item) => item.isVisible && item.isEvidenceCard && item.evidenceStatus === 0)
+        .map((item) => item.id),
     [items],
   );
 
@@ -267,12 +350,17 @@ export default function PortfolioPage() {
   }
 
   async function copyPortfolioLink() {
+    if (shareableCardIds.length === 0) {
+      setError("Share at least one active evidence card before creating a public link.");
+      return;
+    }
+
+    setIsCreatingShare(true);
+    setError("");
+    setMessage("");
     try {
-      const visibleCardIds = items
-        .filter((item) => item.isVisible && item.isEvidenceCard && item.evidenceStatus === 0)
-        .map((item) => item.id);
-      if (visibleCardIds.length === 0) return;
-      const share = await createPublicEvidenceShareAsync(visibleCardIds);
+      const share = await createPublicEvidenceShareAsync(shareableCardIds);
+      const publicUrl = new URL(share.publicPath, window.location.origin).toString();
       setPublicPath(share.publicPath);
       setShares((current) => [
         {
@@ -282,17 +370,31 @@ export default function PortfolioPage() {
           createdAt: share.createdAt,
           expiresAt: share.expiresAt,
           disabledAt: null,
-          cardCount: visibleCardIds.length,
+          cardCount: shareableCardIds.length,
         },
         ...current,
       ]);
-      await navigator.clipboard.writeText(
-        `${window.location.origin}${share.publicPath}`,
+      const copied = await copyText(publicUrl);
+      setMessage(
+        copied
+          ? "A new public evidence link was created and copied."
+          : "A new public evidence link was created. Copy the URL shown below.",
       );
-      setMessage("A new private evidence link was created and copied.");
-    } catch {
-      setError("Unable to copy the portfolio link.");
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Unable to create a public evidence link.",
+      );
+    } finally {
+      setIsCreatingShare(false);
     }
+  }
+
+  async function copyCurrentPublicLink() {
+    if (!publicPath) return;
+    const copied = await copyText(new URL(publicPath, window.location.origin).toString());
+    setMessage(copied ? "Public evidence link copied." : "Select and copy the public URL below.");
   }
 
   async function disableShare(shareId: number) {
@@ -334,7 +436,13 @@ export default function PortfolioPage() {
             ) : null}
             <Button
               type="button"
-              disabled={stats.shared === 0}
+              disabled={shareableCardIds.length === 0}
+              title={
+                shareableCardIds.length === 0
+                  ? "Mark an active evidence card as shared before creating a public link."
+                  : "Create and copy a public evidence link"
+              }
+              isLoading={isCreatingShare}
               onClick={() => void copyPortfolioLink()}
             >
               <Copy size={16} aria-hidden="true" />
@@ -346,11 +454,11 @@ export default function PortfolioPage() {
 
       <div className="portfolio-summary-grid">
         <article>
-          <span>Approved evidence</span>
+          <span>Portfolio records</span>
           <strong>{stats.total}</strong>
         </article>
         <article>
-          <span>Shared</span>
+          <span>Shared presentation</span>
           <strong>{stats.shared}</strong>
         </article>
         <article>
@@ -358,6 +466,36 @@ export default function PortfolioPage() {
           <strong>{stats.featured}</strong>
         </article>
       </div>
+
+      {items.length > 0 && shareableCardIds.length === 0 ? (
+        <section className="portfolio-share-guidance" aria-label="How to create a public evidence link">
+          <Share2 size={18} aria-hidden="true" />
+          <div>
+            <strong>Public links are available only for active evidence cards.</strong>
+            <p>Use the share icon on an active card below to mark it shared, then create the reviewer link here. Private, revoked, and superseded cards are never included.</p>
+          </div>
+        </section>
+      ) : null}
+
+      {publicPath ? (
+        <section className="portfolio-new-share" aria-label="New public evidence link">
+          <div>
+            <span>New public link</span>
+            <strong>Share this reviewer-safe evidence URL</strong>
+            <code>{new URL(publicPath, window.location.origin).toString()}</code>
+          </div>
+          <div>
+            <Button type="button" variant="secondary" onClick={() => void copyCurrentPublicLink()}>
+              <Copy size={16} aria-hidden="true" />
+              Copy link
+            </Button>
+            <Button to={publicPath} variant="ghost">
+              <Eye size={16} aria-hidden="true" />
+              Preview
+            </Button>
+          </div>
+        </section>
+      ) : null}
 
       {shares.length > 0 ? (
         <section className="portfolio-share-manager" aria-labelledby="share-manager-title">
@@ -398,6 +536,35 @@ export default function PortfolioPage() {
           </div>
         </section>
       ) : null}
+
+      <section className="portfolio-gap-view" aria-labelledby="portfolio-gap-title">
+        <header>
+          <div>
+            <span>Evidence Gap View</span>
+            <h2 id="portfolio-gap-title">Compare one opportunity with your evidence</h2>
+            <p>
+              This is a criterion-by-criterion comparison, not a score, ranking, or recommendation.
+            </p>
+          </div>
+          <label>
+            <span>Target opportunity</span>
+            <select
+              value={comparisonProjectId}
+              onChange={(event) => void selectComparisonProject(event.target.value)}
+            >
+              <option value="">Choose an available opportunity</option>
+              {comparisonProjects.map((project) => (
+                <option key={project.id} value={project.id}>
+                  {project.title} · {project.companyName}
+                </option>
+              ))}
+            </select>
+          </label>
+        </header>
+        {isLoadingCoverage ? <p className="portfolio-gap-state">Comparing your active evidence…</p> : null}
+        {coverageError ? <p className="portfolio-gap-state portfolio-gap-error">{coverageError}</p> : null}
+        {criterionCoverage ? <CriterionCoveragePanel coverage={criterionCoverage} /> : null}
+      </section>
 
       <div className="portfolio-toolbar">
         <label>
@@ -493,7 +660,7 @@ export default function PortfolioPage() {
                 <div>
                   <div className="portfolio-manager-eyebrow">
                     <span>{getOpportunityTypeLabel(item.opportunityType)}</span>
-                    <span>{evidenceReference(item.id)}</span>
+                    <span>{item.isEvidenceCard ? evidenceReference(item.id) : "Portfolio presentation"}</span>
                   </div>
                   <h2>{item.projectTitle}</h2>
                   <p>{item.companyName}</p>
@@ -503,7 +670,9 @@ export default function PortfolioPage() {
                     <StatusBadge tone="blue">Featured</StatusBadge>
                   ) : null}
                   <StatusBadge tone={item.isVisible ? "green" : "neutral"}>
-                    {item.isVisible ? "Shared" : "Private"}
+                    {item.isEvidenceCard
+                      ? item.isVisible ? "Shared evidence" : "Private evidence"
+                      : item.isVisible ? "Visible presentation" : "Private presentation"}
                   </StatusBadge>
                 </div>
               </header>
@@ -517,7 +686,7 @@ export default function PortfolioPage() {
               <div className="portfolio-manager-meta">
                 <span title="System-generated evidence">
                   <ShieldCheck size={14} aria-hidden="true" />
-                  Approved record
+                  {item.isEvidenceCard ? "Issued evidence" : "Portfolio record"}
                 </span>
                 <span>
                   <CalendarDays size={14} aria-hidden="true" />
@@ -588,9 +757,17 @@ export default function PortfolioPage() {
                 aria-label={
                   item.isVisible
                     ? `Make ${item.projectTitle} private`
-                    : `Share ${item.projectTitle}`
+                    : item.isEvidenceCard
+                      ? `Share evidence for ${item.projectTitle}`
+                      : `Show ${item.projectTitle} in the portfolio`
                 }
-                title={item.isVisible ? "Make private" : "Share"}
+                title={
+                  item.isVisible
+                    ? "Make private"
+                    : item.isEvidenceCard
+                      ? "Share evidence"
+                      : "Show in portfolio"
+                }
                 isLoading={busyItemId === item.id}
                 onClick={() => void toggleVisibility(item)}
               >

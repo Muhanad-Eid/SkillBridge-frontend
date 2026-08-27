@@ -657,6 +657,7 @@
 }
 
 .university-training-record > header > div > span,
+.training-passport-summary-heading > span,
 .university-next-action > div > span,
 .university-approval-route > header > span,
 .university-progress-form > header > span,
@@ -666,6 +667,131 @@
   font-size: 0.72rem;
   font-weight: 800;
   text-transform: uppercase;
+}
+
+.training-passport-summary {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(190px, 0.72fr) minmax(0, 2.28fr);
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, #7c3aed 22%, var(--border));
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: 0 18px 42px color-mix(in srgb, #10213f 8%, transparent);
+}
+
+.training-passport-summary-heading {
+  position: relative;
+  display: grid;
+  align-content: center;
+  gap: 6px;
+  padding: 19px 20px;
+  border-right: 1px solid var(--border);
+  background: color-mix(in srgb, #7c3aed 8%, var(--surface));
+}
+
+.training-passport-summary-heading::after {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #c5f36a;
+  box-shadow: 0 0 0 6px color-mix(in srgb, #c5f36a 17%, transparent);
+  content: "";
+}
+
+.training-passport-summary-heading strong {
+  color: var(--text);
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.training-passport-summary-heading small,
+.training-passport-stages small {
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.training-passport-stages {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.training-passport-stages button {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-content: center;
+  align-items: center;
+  gap: 10px;
+  min-height: 92px;
+  padding: 15px 16px;
+  border: 0;
+  border-left: 1px solid var(--border);
+  border-radius: 0;
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+  transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.training-passport-stages button:first-child {
+  border-left: 0;
+}
+
+.training-passport-stages button:hover {
+  background: var(--surface-soft);
+  transform: translateY(-2px);
+}
+
+.training-passport-stages button[data-passport-stage="company"] { border-top: 3px solid #0f8f78; }
+.training-passport-stages button[data-passport-stage="university"] { border-top: 3px solid #8b5cf6; }
+.training-passport-stages button[data-passport-stage="issuance"] { border-top: 3px solid #10213f; }
+.training-passport-stages button.locked { border-top-color: var(--border); }
+.training-passport-stages button.needs-attention { border-top-color: var(--amber); }
+.training-passport-stages button.complete { border-top-color: var(--green); }
+
+.training-passport-stages button:focus-visible {
+  position: relative;
+  z-index: 1;
+  outline: 3px solid var(--focus-ring);
+  outline-offset: -3px;
+}
+
+.training-passport-stages button > svg {
+  color: var(--muted);
+}
+
+.training-passport-stages button > span {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.training-passport-stages button strong {
+  color: var(--text);
+  font-size: 0.83rem;
+}
+
+.training-passport-stages button.complete > svg {
+  color: var(--green);
+}
+
+.training-passport-stages button.needs-attention > svg {
+  color: var(--amber-dark);
+}
+
+.training-passport-stages button.ready {
+  background: color-mix(in srgb, #7c3aed 7%, var(--surface));
+}
+
+.training-passport-stages button.ready > svg {
+  color: #7c3aed;
+}
+
+.training-passport-stages button.locked {
+  opacity: 0.76;
 }
 
 .university-next-action {
@@ -980,6 +1106,15 @@
   .university-training-overview {
     grid-template-columns: 1fr;
   }
+
+  .training-passport-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .training-passport-summary-heading {
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
 }
 
 @media (max-width: 760px) {
@@ -1004,6 +1139,19 @@
     justify-self: center;
     transform: rotate(90deg);
   }
+
+  .training-passport-stages {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .training-passport-stages button:nth-child(3) {
+    border-left: 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .training-passport-stages button:nth-child(4) {
+    border-top: 1px solid var(--border);
+  }
 }
 
 @media (max-width: 520px) {
@@ -1017,6 +1165,7 @@
   }
 
   .university-training-record,
+  .training-passport-summary-heading,
   .university-next-action,
   .university-hours-progress,
   .university-training-identity,

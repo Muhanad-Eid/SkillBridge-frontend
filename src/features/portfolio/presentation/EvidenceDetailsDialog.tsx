@@ -22,6 +22,7 @@ import {
 } from "../../evidence/domain/evidenceTypes";
 import { getEvidenceDetailsAsync } from "../../evidence/infrastructure/evidenceApi";
 import ClaimBoundaryPanel from "../../evidence/presentation/ClaimBoundaryPanel";
+import EvidencePassport from "../../evidence/presentation/EvidencePassport";
 import EvidenceTrace from "../../evidence/presentation/EvidenceTrace";
 import {
   getOpportunityTypeLabel,
@@ -267,19 +268,49 @@ export default function EvidenceDetailsDialog({
         ) : null}
         {details ? (
           <div className="evidence-protocol-details">
+            <EvidencePassport
+              cardId={item.id}
+              title={item.projectTitle}
+              participantName="Evidence owner"
+              providerName={item.companyName}
+              status={item.evidenceStatus}
+              issuedAt={item.approvedAt}
+              contractVersionId={item.evidenceContractVersionId}
+              submissionRevision={item.submissionRevision}
+              supportedCriteriaCount={details.claimBoundary.supportedCriteria.length}
+            />
             <ClaimBoundaryPanel boundary={details.claimBoundary} />
             <EvidenceTrace trace={details.trace} />
-            {details.statusHistory.length > 1 ? (
-              <section className="evidence-record-section">
-                <header><span>History</span><h3>Correction history</h3></header>
-                <ul>
+            {details.statusHistory.length > 0 ? (
+              <section className="evidence-record-section evidence-lifecycle-timeline">
+                <header>
+                  <span>Lifecycle history</span>
+                  <h3>Every correction stays checkable</h3>
+                </header>
+                <p>
+                  A corrected card is never silently overwritten. This history preserves the previous status, the authorized actor, and the recorded reason.
+                </p>
+                <ol>
                   {details.statusHistory.map((event) => (
                     <li key={`${event.occurredAt}-${event.newStatus}`}>
-                      {getEvidenceCardStatusLabel(event.previousStatus)} to {" "}
-                      {getEvidenceCardStatusLabel(event.newStatus)} by {event.actorName}: {event.reason}
+                      <div>
+                        <span>{getEvidenceCardStatusLabel(event.previousStatus)}</span>
+                        <strong>{getEvidenceCardStatusLabel(event.newStatus)}</strong>
+                      </div>
+                      <div>
+                        <strong>{event.reason}</strong>
+                        <small>
+                          {event.actorName} · {formatDate(event.occurredAt)}
+                        </small>
+                        {event.replacementCardId ? (
+                          <small>
+                            Replacement: {evidenceReference(event.replacementCardId)}
+                          </small>
+                        ) : null}
+                      </div>
                     </li>
                   ))}
-                </ul>
+                </ol>
               </section>
             ) : null}
           </div>

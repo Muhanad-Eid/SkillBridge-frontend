@@ -25,20 +25,102 @@
   margin-bottom: var(--sb-space-6);
 }
 
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #167f72;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.kicker::before {
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 50%;
+  background: #c5f36a;
+  box-shadow: 0 0 0 4px rgb(197 243 106 / 0.2);
+  content: "";
+}
 .heading h1,
 .heading p { margin: 0; }
-.heading h1 { color: var(--sb-text-primary); font-size: clamp(1.85rem, 3.2vw, 2.8rem); letter-spacing: 0; line-height: 1.12; }
+.heading h1 { margin-top: 0.65rem; color: var(--sb-text-primary); font-size: clamp(2rem, 3.4vw, 3.15rem); letter-spacing: 0; line-height: 1.06; }
 .heading p { max-width: 42rem; color: var(--sb-text-muted); margin-top: 0.7rem; font-size: 1rem; line-height: 1.6; }
 
 .cards { display: grid; gap: var(--sb-space-5); }
 
-.card {
+.comparisonIntro,
+.comparison {
+  margin-bottom: var(--sb-space-5);
   border: 1px solid var(--sb-border);
-  border-top: 4px solid var(--sb-status-verified);
   border-radius: 14px;
   background: var(--sb-surface);
-  box-shadow: var(--sb-shadow-sm);
-  padding: clamp(1.25rem, 3vw, 2rem);
+  box-shadow: 0 14px 32px rgb(16 33 63 / 0.07);
+}
+
+.comparisonIntro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.15rem;
+  border-left: 4px solid #c5f36a;
+}
+.comparisonIntro > div { display: grid; gap: 0.22rem; }
+.comparisonIntro span,
+.comparison > header span,
+.comparison article header > span,
+.comparison article section > span {
+  color: var(--sb-text-muted);
+  font-size: 0.67rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+.comparisonIntro strong { color: var(--sb-text-primary); font-size: 0.95rem; }
+.comparisonIntro p { margin: 0; color: var(--sb-text-muted); font-size: 0.79rem; line-height: 1.45; }
+
+.comparison { overflow: hidden; border-top: 3px solid #10213f; }
+.comparison > header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.15rem; border-bottom: 1px solid var(--sb-border); }
+.comparison > header > div { display: grid; gap: 0.23rem; }
+.comparison h2 { margin: 0; color: var(--sb-text-primary); font-size: 1rem; }
+.comparison > header button,
+.compareToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border: 1px solid var(--sb-border);
+  border-radius: 8px;
+  background: var(--sb-surface);
+  color: var(--sb-text-primary);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+.comparison > header button { min-height: 34px; padding: 0 0.75rem; }
+.comparison > header button:hover,
+.compareToggle:hover { border-color: #10213f; background: var(--sb-surface-subtle); }
+.comparisonGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); background: var(--sb-border); gap: 1px; }
+.comparisonGrid > article { display: grid; gap: 1rem; padding: 1.15rem; background: var(--sb-surface); }
+.comparisonGrid article header { display: grid; gap: 0.35rem; }
+.comparisonGrid article header strong { color: var(--sb-text-primary); font-size: 1rem; }
+.comparisonGrid article header small { color: var(--sb-text-muted); font-size: 0.78rem; }
+.comparisonGrid dl { display: grid; gap: 1px; margin: 0; overflow: hidden; border: 1px solid var(--sb-border); border-radius: 8px; background: var(--sb-border); }
+.comparisonGrid dl > div { padding: 0.75rem; background: var(--sb-surface-subtle); }
+.comparisonGrid dt { color: var(--sb-text-muted); font-size: 0.67rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+.comparisonGrid dd { margin: 0.28rem 0 0; color: var(--sb-text-primary); font-size: 0.84rem; font-weight: 700; }
+.comparisonGrid article section { display: grid; gap: 0.35rem; padding: 0.85rem; border-left: 3px solid #ff675d; background: color-mix(in srgb, #ff675d 6%, var(--sb-surface)); }
+.comparisonGrid article section p { margin: 0; color: var(--sb-text-secondary); font-size: 0.8rem; line-height: 1.5; }
+
+.card { position: relative; }
+.compareToggle { position: absolute; z-index: 1; top: 1rem; right: 1rem; min-height: 34px; padding: 0 0.75rem; }
+.compareToggle[aria-pressed="true"] { border-color: #10213f; background: #10213f; color: #fff; box-shadow: 3px 3px 0 #c5f36a; }
+
+.card {
+  padding: clamp(1.25rem, 3vw, 2.4rem);
 }
 
 .cardHeader {
@@ -53,6 +135,98 @@
 .cardHeader h2 { margin-top: 0.35rem; color: var(--sb-text-primary); font-size: clamp(1.25rem, 2vw, 1.55rem); }
 .cardHeader p { color: var(--sb-text-muted); font-size: 0.875rem; }
 .details { display: grid; gap: var(--sb-space-4); }
+
+.passportStage {
+  display: grid;
+  grid-template-columns: minmax(11rem, 0.38fr) minmax(0, 1fr);
+  gap: clamp(1rem, 3vw, 2.5rem);
+  align-items: stretch;
+  padding-bottom: clamp(1.4rem, 3vw, 2.4rem);
+  border-bottom: 1px solid var(--sb-border);
+}
+
+.recordMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  padding: 1.1rem 0;
+}
+.recordMeta > span,
+.nextStep > span {
+  color: var(--sb-text-muted);
+  font-size: 0.67rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.recordMeta strong { margin-top: 0.8rem; color: var(--sb-text-primary); font-size: clamp(1.05rem, 1.65vw, 1.35rem); line-height: 1.18; }
+.recordMeta p { margin: 0.7rem 0 1.2rem; color: var(--sb-text-secondary); font-size: 0.86rem; line-height: 1.55; }
+.recordMeta > div { display: grid; gap: 0.6rem; }
+.recordMeta > div > span { color: var(--sb-text-muted); font-size: 0.73rem; }
+
+.quickCheck {
+  padding: clamp(1.15rem, 2vw, 1.5rem);
+  border: 1px solid color-mix(in srgb, #10213f 22%, var(--sb-border));
+  border-radius: 12px;
+  background: color-mix(in srgb, #eaf1ff 42%, var(--sb-surface));
+}
+
+.quickCheck > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.quickCheck > header span {
+  display: block;
+  color: var(--sb-text-muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.quickCheck h3 { margin: 0.25rem 0 0; color: var(--sb-text-primary); font-size: 1.1rem; }
+.quickCheck > header > svg { color: #10213f; }
+.quickCheck dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin: 1rem 0;
+  overflow: hidden;
+  border: 1px solid var(--sb-border);
+  border-radius: 8px;
+  background: var(--sb-border);
+}
+.quickCheck dl > div { padding: 0.82rem; background: color-mix(in srgb, var(--sb-surface) 94%, transparent); }
+.quickCheck dt { color: var(--sb-text-muted); font-size: 0.68rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+.quickCheck dd { margin: 0.3rem 0 0; color: var(--sb-text-primary); font-size: 0.78rem; line-height: 1.45; }
+.quickCheck p { display: flex; align-items: flex-start; gap: 0.45rem; margin: 0; color: var(--sb-text-secondary); font-size: 0.76rem; line-height: 1.5; }
+.quickCheck p svg { flex: 0 0 auto; margin-top: 0.1rem; color: var(--sb-status-verified); }
+
+.reviewGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(13.5rem, 0.34fr);
+  gap: var(--sb-space-4);
+  align-items: stretch;
+}
+
+.nextStep {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: clamp(1.25rem, 2vw, 1.6rem);
+  border: 1px solid rgb(197 243 106 / 0.72);
+  border-radius: 12px;
+  background: #10213f;
+  color: #fff;
+}
+.nextStep > span { color: #c5f36a; }
+.nextStep strong { margin-top: 0.75rem; color: #fff; font-size: 1.08rem; line-height: 1.25; }
+.nextStep p { margin: 0.7rem 0 1.2rem; color: rgb(255 255 255 / 0.7); font-size: 0.82rem; line-height: 1.55; }
+.nextStep svg { margin-top: auto; color: #c5f36a; }
 .lifecycle { padding: 1rem; border: 1px solid var(--sb-border); border-radius: 10px; background: var(--sb-surface-subtle); }
 .lifecycle header { display: grid; gap: 0.2rem; }
 .lifecycle h3, .lifecycle p { margin: 0; }
@@ -69,4 +243,12 @@
   .heading,
   .cardHeader { display: grid; }
   .card { padding: var(--sb-space-4); }
+  .passportStage,
+  .reviewGrid { grid-template-columns: 1fr; }
+  .recordMeta { padding: 0; }
+  .quickCheck dl { grid-template-columns: 1fr; }
+  .comparisonIntro,
+  .comparison > header { align-items: stretch; flex-direction: column; }
+  .comparisonGrid { grid-template-columns: 1fr; }
+  .compareToggle { position: static; width: 100%; margin-bottom: 1rem; }
 }

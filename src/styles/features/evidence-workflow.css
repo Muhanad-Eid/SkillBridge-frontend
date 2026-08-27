@@ -264,6 +264,91 @@
   line-height: 1.5;
 }
 
+.contribution-confidence {
+  --contribution-navy: #10213f;
+  --contribution-lime: #c5f36a;
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid var(--sb-border);
+  border-top: 3px solid var(--contribution-navy);
+  border-radius: 12px;
+  background:
+    linear-gradient(120deg, color-mix(in srgb, var(--contribution-lime) 9%, transparent), transparent 42%),
+    var(--sb-surface-subtle);
+  box-shadow: 0 16px 32px color-mix(in srgb, var(--contribution-navy) 8%, transparent);
+}
+
+.contribution-confidence > header {
+  display: grid;
+  gap: 3px;
+}
+
+.contribution-confidence > header span {
+  color: var(--sb-text-muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.contribution-confidence > header strong { color: var(--sb-text-primary); font-size: 1rem; }
+
+.contribution-confidence > div {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--sb-border);
+  border-radius: 8px;
+  background: var(--sb-border);
+}
+
+.contribution-confidence article {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 12px;
+  border-top: 3px solid transparent;
+  background: var(--sb-surface);
+}
+
+.contribution-confidence article > span {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--sb-surface-raised);
+  color: var(--sb-text-secondary);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.contribution-confidence article.complete > span {
+  background: color-mix(in srgb, var(--sb-status-verified) 15%, var(--sb-surface));
+  color: var(--sb-status-verified);
+}
+
+.contribution-confidence article.complete { border-top-color: var(--sb-status-verified); }
+.contribution-confidence article.pending { border-top-color: var(--sb-status-pending); }
+.contribution-confidence article.disputed { border-top-color: var(--sb-status-error); }
+.contribution-confidence article.disputed > span {
+  background: color-mix(in srgb, var(--sb-status-error) 13%, var(--sb-surface));
+  color: var(--sb-status-error);
+}
+.contribution-confidence[data-resolution="2"] { border-top-color: var(--sb-status-error); }
+
+.contribution-confidence article strong { color: var(--sb-text-primary); font-size: 0.8rem; }
+.contribution-confidence article small { color: var(--sb-text-muted); font-size: 0.73rem; line-height: 1.4; }
+
+[data-theme="dark"] .contribution-confidence {
+  --contribution-navy: #bdcdea;
+  background:
+    linear-gradient(120deg, color-mix(in srgb, var(--contribution-lime) 7%, transparent), transparent 42%),
+    var(--sb-surface-subtle);
+}
+
 .work-final-unavailable {
   display: grid;
   gap: 4px;
@@ -391,5 +476,7 @@
   .work-next-action button {
     width: 100%;
   }
+
+  .contribution-confidence > div { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 

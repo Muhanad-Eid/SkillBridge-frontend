@@ -1,3 +1,4 @@
+import { CheckCircle2, ShieldAlert } from "lucide-react";
 import type { ClaimBoundary } from "../domain/evidenceTypes";
 import styles from "./EvidenceViews.module.scss";
 
@@ -7,9 +8,13 @@ export default function ClaimBoundaryPanel({
   boundary: ClaimBoundary;
 }) {
   return (
-    <section className={styles.panel} aria-labelledby="claim-boundary-title">
+    <section
+      className={`${styles.panel} ${styles.claimBoundaryPanel}`}
+      aria-labelledby="claim-boundary-title"
+    >
       <header className={styles.panelHeader}>
         <div>
+          <span className={styles.boundaryKicker}>Evidence interpretation</span>
           <h3 id="claim-boundary-title">Claim Boundary</h3>
           <p>What this evaluated work supports, and where the claim stops.</p>
         </div>
@@ -22,7 +27,7 @@ export default function ClaimBoundaryPanel({
       </div>
       <div className={styles.boundaryLists}>
         <div className={`${styles.boundaryGroup} ${styles.boundaryGroupSupported}`}>
-          <h4>Supported by this evidence</h4>
+          <h4><CheckCircle2 size={16} aria-hidden="true" /> Supported by this evidence</h4>
           <ul>
             {boundary.supportedCriteria.map((criterion) => (
               <li key={criterion}>{criterion}</li>
@@ -31,7 +36,7 @@ export default function ClaimBoundaryPanel({
         </div>
         {boundary.unsupportedOptionalCriteria.length > 0 ? (
           <div className={`${styles.boundaryGroup} ${styles.boundaryGroupUnsupported}`}>
-            <h4>Evaluated but not supported</h4>
+            <h4><ShieldAlert size={16} aria-hidden="true" /> Evaluated but not supported</h4>
             <ul>
               {boundary.unsupportedOptionalCriteria.map((criterion) => (
                 <li key={criterion}>{criterion}</li>
@@ -40,7 +45,13 @@ export default function ClaimBoundaryPanel({
           </div>
         ) : null}
       </div>
-      <p className={styles.limitation}>{boundary.limitation}</p>
+      <div className={styles.limitation}>
+        <ShieldAlert size={17} aria-hidden="true" />
+        <div>
+          <strong>Claim limit</strong>
+          <p>{boundary.limitation}</p>
+        </div>
+      </div>
     </section>
   );
 }

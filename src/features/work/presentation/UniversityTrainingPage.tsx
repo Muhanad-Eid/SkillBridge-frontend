@@ -12,6 +12,7 @@ import {
   BookOpenCheck,
   Building2,
   CheckCircle2,
+  CircleDashed,
   Clock3,
   ExternalLink,
   FileDown,
@@ -270,6 +271,28 @@ export default function UniversityTrainingPage() {
     setFeedback("");
   }
 
+  function resolveReadinessCondition(code: string) {
+    const targetByCode: Record<string, string> = {
+      FinalSubmissionMissing: "training-reports",
+      WorkIncomplete: "training-reports",
+      CriterionEvaluationMissing: "approval-route",
+      RequiredCriterionUnsatisfied: "approval-route",
+      CompanyApprovalMissing: "approval-route",
+      UniversityApprovalMissing: "university-approval",
+    };
+    const target = targetByCode[code];
+    if (target) {
+      document.getElementById(target)?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+      return;
+    }
+    setReadinessError(
+      "This condition is governed by the accepted Evidence Contract or the protected issuance policy.",
+    );
+  }
+
   async function runAction(action: string, callback: () => Promise<unknown>) {
     setBusyAction(action);
     setError("");
@@ -320,9 +343,9 @@ export default function UniversityTrainingPage() {
   return (
     <section className="page university-training-page">
       <PageHeader
-        title="Supervised training"
+        title="University Training Passport"
         eyebrow="Academic oversight"
-        description="Monitor approved hours and learning outcomes, then complete the university stage of the evidence route."
+        description="Keep workplace evidence and academic approval connected in one supervised training record."
         actions={
           record ? (
             <div className="page-header-actions">
@@ -451,9 +474,9 @@ export default function UniversityTrainingPage() {
           <main className="university-training-record">
             <header>
               <div>
-                <span>Training record #{record.applicationId}</span>
+                <span>University Training Passport #{record.applicationId}</span>
                 <h2>{record.projectTitle}</h2>
-                <p>{record.jobSeekerName}</p>
+                <p>{record.jobSeekerName} · {record.companyName}</p>
               </div>
               <StatusBadge
                 tone={
@@ -465,6 +488,108 @@ export default function UniversityTrainingPage() {
                 {getWorkSubmissionStatusLabel(record.workStatus)}
               </StatusBadge>
             </header>
+
+            <section className="training-passport-summary" aria-label="Training passport summary">
+              <div className="training-passport-summary-heading">
+                <span>Passport progress</span>
+                <strong>{hoursPercent}%</strong>
+                <small>
+                  {completedHours} of {requiredHours || "?"} required hours approved
+                </small>
+              </div>
+              <div className="training-passport-stages">
+                <button
+                  type="button"
+                  className={selectedPendingReportCount > 0 ? "needs-attention" : "complete"}
+                  data-passport-stage="reports"
+                  onClick={() =>
+                    document
+                      .getElementById("training-reports")
+                      ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                  }
+                >
+                  {selectedPendingReportCount > 0 ? (
+                    <Clock3 size={17} aria-hidden="true" />
+                  ) : (
+                    <CheckCircle2 size={17} aria-hidden="true" />
+                  )}
+                  <span>
+                    <strong>Reports</strong>
+                    <small>
+                      {selectedPendingReportCount > 0
+                        ? `${selectedPendingReportCount} awaiting company review`
+                        : `${record.trainingReports.length} recorded`}
+                    </small>
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className={companyApprovalComplete ? "complete" : "needs-attention"}
+                  data-passport-stage="company"
+                  onClick={() =>
+                    document
+                      .getElementById("approval-route")
+                      ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                  }
+                >
+                  {companyApprovalComplete ? (
+                    <CheckCircle2 size={17} aria-hidden="true" />
+                  ) : (
+                    <CircleDashed size={17} aria-hidden="true" />
+                  )}
+                  <span>
+                    <strong>Company stage</strong>
+                    <small>{companyApprovalComplete ? "Completed" : "Awaiting final approval"}</small>
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className={universityApprovalComplete ? "complete" : record.workStatus === WorkSubmissionStatuses.AwaitingUniversityApproval ? "ready" : "locked"}
+                  data-passport-stage="university"
+                  onClick={() =>
+                    document
+                      .getElementById("university-approval")
+                      ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                  }
+                >
+                  {universityApprovalComplete ? (
+                    <CheckCircle2 size={17} aria-hidden="true" />
+                  ) : (
+                    <GraduationCap size={17} aria-hidden="true" />
+                  )}
+                  <span>
+                    <strong>University stage</strong>
+                    <small>
+                      {universityApprovalComplete
+                        ? "Completed"
+                        : record.workStatus === WorkSubmissionStatuses.AwaitingUniversityApproval
+                          ? "Ready for academic decision"
+                          : "Unlocks after company approval"}
+                    </small>
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className={record.hasEvidenceCard ? "complete" : "locked"}
+                  data-passport-stage="issuance"
+                  onClick={() =>
+                    document
+                      .getElementById("evidence-readiness")
+                      ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                  }
+                >
+                  {record.hasEvidenceCard ? (
+                    <CheckCircle2 size={17} aria-hidden="true" />
+                  ) : (
+                    <ShieldCheck size={17} aria-hidden="true" />
+                  )}
+                  <span>
+                    <strong>Evidence status</strong>
+                    <small>{record.hasEvidenceCard ? "Card issued" : "Readiness checks required"}</small>
+                  </span>
+                </button>
+              </div>
+            </section>
 
             {nextAction ? (
               <section
@@ -845,7 +970,12 @@ export default function UniversityTrainingPage() {
                 <h3>Issuance readiness</h3>
                 <p>The card can be created only when the complete training lineage and both approvals satisfy the protocol.</p>
               </header>
-              {readiness ? <EvidenceReadinessPanel readiness={readiness} /> : null}
+              {readiness ? (
+                <EvidenceReadinessPanel
+                  readiness={readiness}
+                  onResolveCondition={resolveReadinessCondition}
+                />
+              ) : null}
               {readinessError ? (
                 <div className="notice notice-error">{readinessError}</div>
               ) : null}
