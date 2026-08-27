@@ -35,6 +35,14 @@ import { getMyWorkAsync } from "../infrastructure/workApi";
 
 type WorkView = "all" | "active" | "attention" | "review" | "completed";
 
+function isAvailableWorkRecord(record: WorkRecord) {
+  return (
+    record.projectStatus === ProjectStatuses.Open ||
+    record.projectStatus === ProjectStatuses.InProgress ||
+    record.projectStatus === ProjectStatuses.Completed
+  );
+}
+
 const workViews: Array<{ label: string; value: WorkView }> = [
   { label: "All", value: "all" },
   { label: "Active", value: "active" },
@@ -236,10 +244,12 @@ export default function WorkOverviewPage({
 
   const scopedRecords = useMemo(
     () =>
-      records.filter((record) =>
-        isFreelanceView
-          ? record.opportunityType === OpportunityTypes.FreelanceTask
-          : record.opportunityType !== OpportunityTypes.FreelanceTask,
+      records.filter(
+        (record) =>
+          isAvailableWorkRecord(record) &&
+          (isFreelanceView
+            ? record.opportunityType === OpportunityTypes.FreelanceTask
+            : record.opportunityType !== OpportunityTypes.FreelanceTask),
       ),
     [isFreelanceView, records],
   );

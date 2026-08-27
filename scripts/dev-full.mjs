@@ -36,6 +36,15 @@ async function waitForApi() {
   throw new Error("SkillBridge API did not become ready within 45 seconds.");
 }
 
+async function isApiReady() {
+  try {
+    const response = await fetch("http://127.0.0.1:8081/health/ready");
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
 function shutdown(exitCode = 0) {
   if (stopping) return;
   stopping = true;
@@ -48,19 +57,30 @@ process.on("SIGINT", () => shutdown());
 process.on("SIGTERM", () => shutdown());
 
 try {
-  start(
-    "dotnet",
-    ["run", "--project", "SkillBridge.API", "--launch-profile", "http"],
-    { cwd: backendDirectory },
-  );
-  await waitForApi();
+  if (await isApiReady()) {
+    console.log("\nUsing the healthy SkillBridge API already running on port 8081.");
+  } else {
+    start(
+      "dotnet",
+      ["run", "--project", "SkillBridge.API", "--launch-profile", "http"],
+      { cwd: backendDirectory },
+    );
+    await waitForApi();
+  }
+
   console.log("\nSkillBridge API is ready. Starting Vite...\n");
   if (process.platform === "win32") {
-    start(process.env.ComSpec ?? "cmd.exe", ["/d", "/s", "/c", "npm run dev"], {
-      cwd: process.cwd(),
-    });
+    start(
+      process.env.ComSpec ?? "cmd.exe",
+      ["/d", "/s", "/c", "npm run dev -- --host 127.0.0.1 --port 5173 --strictPort"],
+      { cwd: process.cwd() },
+    );
   } else {
-    start("npm", ["run", "dev"], { cwd: process.cwd() });
+    start(
+      "npm",
+      ["run", "dev", "--", "--host", "127.0.0.1", "--port", "5173", "--strictPort"],
+      { cwd: process.cwd() },
+    );
   }
 } catch (error) {
   console.error(error instanceof Error ? error.message : error);
