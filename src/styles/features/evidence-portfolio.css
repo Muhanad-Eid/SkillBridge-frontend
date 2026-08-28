@@ -1094,3 +1094,59 @@
     width: min(calc(100% - 20px), 980px);
   }
 }
+
+/* Evidence Review Requests: an external verification workflow, not a generic comment box. */
+.portfolio-review-requests {
+  margin: 18px 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.portfolio-review-requests > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.portfolio-review-requests header span {
+  display: block;
+  margin-bottom: 0.2rem;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.portfolio-review-requests h2 { margin: 0; font-size: 1.05rem; }
+.portfolio-review-requests header small { color: var(--muted); }
+.portfolio-review-requests > div { display: grid; }
+.portfolio-review-requests article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 1rem;
+  min-height: 68px;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+.portfolio-review-requests article:last-child { border-bottom: 0; }
+.portfolio-review-requests article strong,
+.portfolio-review-requests article span { display: block; }
+.portfolio-review-requests article strong { color: var(--text); font-size: 0.9rem; }
+.portfolio-review-requests article div span { margin-top: 0.2rem; color: var(--muted); font-size: 0.78rem; }
+
+.evidence-review-request-dialog { max-width: 620px; }
+.evidence-review-request-dialog .portfolio-record-lock strong { color: var(--text); }
+.evidence-review-request-dialog textarea { min-height: 92px; }
+
+@media (max-width: 640px) {
+  .portfolio-review-requests > header { align-items: flex-start; flex-direction: column; }
+  .portfolio-review-requests article { grid-template-columns: minmax(0, 1fr) auto; }
+  .portfolio-review-requests article .button { grid-column: 2; }
+}

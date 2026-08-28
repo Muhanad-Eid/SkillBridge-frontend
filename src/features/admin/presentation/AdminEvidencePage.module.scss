@@ -56,3 +56,25 @@
 @media (max-width: 900px) {
   .layout { grid-template-columns: 1fr; }
 }
+.proofLaunch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin: 0 0 20px;
+  padding: 16px 18px;
+  border: 1px solid #cfdded;
+  border-left: 3px solid #ff655c;
+  border-radius: 7px;
+  background: #f5f8fd;
+
+  strong,
+  span { display: block; }
+  strong { color: #102544; font-size: 14px; }
+  span { margin-top: 4px; color: #697d95; font-size: 12px; }
+  a { flex: 0 0 auto; text-decoration: none; }
+}
+
+@media (max-width: 720px) {
+  .proofLaunch { align-items: stretch; flex-direction: column; }
+}

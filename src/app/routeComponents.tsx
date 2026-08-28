@@ -102,7 +102,16 @@ export const PublicPortfolioPage = lazy(
   () => import("../features/portfolio/presentation/PublicPortfolioPage"),
 );
 export const PublicEvidenceSharePage = lazy(
-  () => import("../features/evidence/presentation/PublicEvidenceSharePage"),
+  () => import("../features/evidence/presentation/PublicEvidenceProofRoomPage"),
+);
+export const PublicEvidenceReviewRequestPage = lazy(
+  () => import("../features/evidence/presentation/PublicEvidenceReviewRequestPage"),
+);
+export const ProofEnginePage = lazy(
+  () => import("../features/evidence/presentation/ProofEnginePage"),
+);
+export const EvidenceRequestWorkspacePage = lazy(
+  () => import("../features/evidence/presentation/EvidenceRequestWorkspacePage"),
 );
 export const CompanyProfilePage = lazy(
   () => import("../features/profiles/presentation/CompanyProfilePage"),

@@ -1,9 +1,11 @@
 import { useCallback, useState } from "react";
 import {
   Bell,
+  ClipboardCheck,
   GraduationCap,
   KeyRound,
   MessageSquare,
+  Workflow,
 } from "lucide-react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../../shared/auth/AuthContext";
@@ -15,6 +17,16 @@ const navItems = [
     label: "Supervised training",
     to: "/university/training",
     icon: GraduationCap,
+  },
+  {
+    label: "Proof Engine",
+    to: "/university/proof-engine",
+    icon: Workflow,
+  },
+  {
+    label: "Evidence requests",
+    to: "/university/evidence-requests",
+    icon: ClipboardCheck,
   },
   {
     label: "Messages",

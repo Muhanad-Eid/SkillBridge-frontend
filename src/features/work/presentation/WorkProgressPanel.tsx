@@ -12,6 +12,7 @@ import {
   Send,
   UserRoundCheck,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import StatusBadge from "../../../shared/components/StatusBadge";
@@ -534,6 +535,17 @@ export default function WorkProgressPanel({
       </section>
 
       <div id="evidence-readiness">
+        <div className="work-proof-engine-launch">
+          <div>
+            <span>SkillBridge Proof Engine</span>
+            <strong>Inspect the complete evidence lineage</strong>
+            <p>Run an immutable preflight and open every exact issuance blocker.</p>
+          </div>
+          <Link className="button button-secondary" to={`/${isCompany ? "company" : "job-seeker"}/proof-engine/${record.applicationId}`}>
+            Open in Proof Engine
+            <ExternalLink size={15} aria-hidden="true" />
+          </Link>
+        </div>
         {readiness?.applicationId === record.applicationId ? (
           <EvidenceReadinessPanel
             readiness={readiness}

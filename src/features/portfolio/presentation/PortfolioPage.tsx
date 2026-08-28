@@ -12,8 +12,10 @@ import {
   Search,
   Share2,
   ShieldCheck,
+  Send,
   Star,
   Unlink,
+  Workflow,
   X,
 } from "lucide-react";
 import Button from "../../../shared/components/Button";
@@ -24,11 +26,13 @@ import {
   getOpportunityTypeLabel,
   OpportunityTypes,
 } from "../../projects/domain/projectTypes";
-import type { PublicShareSummary } from "../../evidence/domain/evidenceTypes";
+import type { EvidenceReviewRequest, PublicShareSummary } from "../../evidence/domain/evidenceTypes";
 import {
+  createEvidenceReviewRequestAsync,
   createPublicEvidenceShareAsync,
   disablePublicEvidenceShareAsync,
   getCriterionEvidenceCoverageAsync,
+  getEvidenceReviewRequestsAsync,
   getPublicEvidenceSharesAsync,
 } from "../../evidence/infrastructure/evidenceApi";
 import type { CriterionEvidenceCoverage } from "../../evidence/domain/evidenceTypes";
@@ -94,6 +98,7 @@ async function copyText(value: string) {
 export default function PortfolioPage() {
   const [items, setItems] = useState<PortfolioItem[]>([]);
   const [shares, setShares] = useState<PublicShareSummary[]>([]);
+  const [reviewRequests, setReviewRequests] = useState<EvidenceReviewRequest[]>([]);
   const [publicPath, setPublicPath] = useState("");
   const [search, setSearch] = useState("");
   const [visibility, setVisibility] = useState("all");
@@ -107,6 +112,11 @@ export default function PortfolioPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [busyItemId, setBusyItemId] = useState<number | null>(null);
   const [isCreatingShare, setIsCreatingShare] = useState(false);
+  const [reviewingItem, setReviewingItem] = useState<PortfolioItem | null>(null);
+  const [reviewPurpose, setReviewPurpose] = useState("");
+  const [reviewQuestions, setReviewQuestions] = useState("");
+  const [reviewExpiry, setReviewExpiry] = useState("");
+  const [isCreatingReview, setIsCreatingReview] = useState(false);
   const [comparisonProjects, setComparisonProjects] = useState<Project[]>([]);
   const [comparisonProjectId, setComparisonProjectId] = useState("");
   const [criterionCoverage, setCriterionCoverage] =
@@ -120,12 +130,14 @@ export default function PortfolioPage() {
     setIsLoading(true);
     setError("");
     try {
-      const [portfolio, publicShares] = await Promise.all([
+      const [portfolio, publicShares, requests] = await Promise.all([
         getMyPortfolioAsync(),
         getPublicEvidenceSharesAsync(),
+        getEvidenceReviewRequestsAsync(),
       ]);
       setItems(portfolio);
       setShares(publicShares);
+      setReviewRequests(requests);
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -422,12 +434,64 @@ export default function PortfolioPage() {
     }
   }
 
+  function openReviewRequest(item: PortfolioItem) {
+    setReviewingItem(item);
+    setReviewPurpose(`Please review this evidence for ${item.projectTitle}.`);
+    setReviewQuestions("Does the claim boundary accurately describe the work?\nIs the evidence clear enough to verify the stated contribution?");
+    setReviewExpiry("");
+    setError("");
+  }
+
+  async function createReviewRequest(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!reviewingItem) return;
+
+    const questions = reviewQuestions
+      .split("\n")
+      .map((question) => question.trim())
+      .filter(Boolean);
+    if (questions.length === 0) {
+      setError("Add at least one question for the reviewer.");
+      return;
+    }
+
+    setIsCreatingReview(true);
+    setError("");
+    try {
+      const request = await createEvidenceReviewRequestAsync({
+        cardId: reviewingItem.id,
+        purpose: reviewPurpose.trim(),
+        questions,
+        expiresAt: reviewExpiry ? new Date(`${reviewExpiry}T23:59:59`).toISOString() : null,
+      });
+      const reviewerUrl = new URL(request.publicPath, window.location.origin).toString();
+      const copied = await copyText(reviewerUrl);
+      setReviewRequests((current) => [request, ...current]);
+      setMessage(copied ? "Reviewer link created and copied." : "Reviewer link created. Copy it from Review requests below.");
+      setReviewingItem(null);
+    } catch (caughtError) {
+      setError(caughtError instanceof Error ? caughtError.message : "Unable to create the reviewer link.");
+    } finally {
+      setIsCreatingReview(false);
+    }
+  }
+
+  async function copyReviewRequest(request: EvidenceReviewRequest) {
+    if (!request.publicPath) return;
+    const copied = await copyText(new URL(request.publicPath, window.location.origin).toString());
+    setMessage(copied ? "Reviewer link copied." : "Copy the reviewer URL from this page.");
+  }
+
   return (
     <section className="page portfolio-page portfolio-manager-page">
       <PageHeader
         title="Evidence Portfolio"
         actions={
           <div className="portfolio-header-actions">
+            <Button to="/job-seeker/proof-engine" variant="secondary">
+              <Workflow size={16} aria-hidden="true" />
+              Open Proof Engine
+            </Button>
             {publicPath ? (
               <Button to={publicPath} variant="secondary">
                 <Eye size={16} aria-hidden="true" />
@@ -529,6 +593,34 @@ export default function PortfolioPage() {
                     onClick={() => void disableShare(share.id)}
                   >
                     <Unlink size={17} aria-hidden="true" />
+                  </Button>
+                ) : null}
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {reviewRequests.length > 0 ? (
+        <section className="portfolio-review-requests" aria-labelledby="review-requests-title">
+          <header>
+            <div>
+              <span>External validation</span>
+              <h2 id="review-requests-title">Evidence review requests</h2>
+            </div>
+            <small>Each reviewer link is restricted to one active evidence card.</small>
+          </header>
+          <div>
+            {reviewRequests.slice(0, 5).map((request) => (
+              <article key={request.id}>
+                <div>
+                  <strong>{request.opportunityTitle}</strong>
+                  <span>{request.status === "Completed" ? `${request.outcome ?? "Completed"} by ${request.reviewerName ?? "reviewer"}` : "Awaiting reviewer response"}</span>
+                </div>
+                <StatusBadge tone={request.status === "Completed" ? "green" : "amber"}>{request.status}</StatusBadge>
+                {request.status === "Pending" ? (
+                  <Button type="button" variant="ghost" title="Copy reviewer link" aria-label={`Copy reviewer link for ${request.opportunityTitle}`} onClick={() => void copyReviewRequest(request)}>
+                    <Copy size={17} aria-hidden="true" />
                   </Button>
                 ) : null}
               </article>
@@ -715,6 +807,18 @@ export default function PortfolioPage() {
             </div>
 
             <div className="portfolio-manager-actions">
+              {item.isEvidenceCard && item.evidenceStatus === 0 ? (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  aria-label={`Request an external review for ${item.projectTitle}`}
+                  title="Request external review"
+                  onClick={() => openReviewRequest(item)}
+                >
+                  <Send size={17} aria-hidden="true" />
+                  Request review
+                </Button>
+              ) : null}
               <Button
                 type="button"
                 variant="ghost"
@@ -872,6 +976,45 @@ export default function PortfolioPage() {
               <Button type="button" variant="secondary" onClick={closeEditor}>
                 Cancel
               </Button>
+            </footer>
+          </form>
+        </div>
+      ) : null}
+
+      {reviewingItem ? (
+        <div className="evidence-dialog-backdrop" role="presentation" onMouseDown={(event) => {
+          if (event.target === event.currentTarget) setReviewingItem(null);
+        }}>
+          <form className="portfolio-edit-dialog evidence-review-request-dialog" aria-labelledby="evidence-review-request-title" aria-modal="true" role="dialog" onSubmit={createReviewRequest}>
+            <header>
+              <div>
+                <span>Evidence Review Request</span>
+                <h2 id="evidence-review-request-title">Invite an independent reviewer</h2>
+              </div>
+              <Button type="button" variant="ghost" autoFocus aria-label="Close review request" title="Close" onClick={() => setReviewingItem(null)}>
+                <X size={19} aria-hidden="true" />
+              </Button>
+            </header>
+            <div className="portfolio-record-lock">
+              <ShieldCheck size={18} aria-hidden="true" />
+              <span>The reviewer sees the approved claim boundary and proof receipt for <strong>{reviewingItem.projectTitle}</strong>. Files, private notes, and internal audit data remain protected.</span>
+            </div>
+            <label className="field">
+              <span>What do you need reviewed?</span>
+              <textarea value={reviewPurpose} minLength={10} maxLength={600} required onChange={(event) => setReviewPurpose(event.target.value)} />
+            </label>
+            <label className="field">
+              <span>Reviewer questions</span>
+              <textarea value={reviewQuestions} minLength={3} maxLength={1000} required placeholder="One question per line" onChange={(event) => setReviewQuestions(event.target.value)} />
+              <small>One question per line, up to five questions.</small>
+            </label>
+            <label className="field">
+              <span>Expiry date (optional)</span>
+              <input type="date" value={reviewExpiry} min={new Date().toISOString().slice(0, 10)} onChange={(event) => setReviewExpiry(event.target.value)} />
+            </label>
+            <footer>
+              <Button type="button" variant="secondary" onClick={() => setReviewingItem(null)}>Cancel</Button>
+              <Button type="submit" isLoading={isCreatingReview}><Send size={16} aria-hidden="true" /> Create reviewer link</Button>
             </footer>
           </form>
         </div>

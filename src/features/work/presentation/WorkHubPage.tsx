@@ -702,6 +702,13 @@ export default function WorkHubPage() {
                               >
                                 View profile
                               </Button>
+                              <Button
+                                to={`/company/evidence-requests?applicationId=${application.id}`}
+                                variant="secondary"
+                              >
+                                <FileCheck2 size={16} aria-hidden="true" />
+                                Request evidence
+                              </Button>
                               {profile ? (
                                 <Button
                                   to={buildConversationUrl(

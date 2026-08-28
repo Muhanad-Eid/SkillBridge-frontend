@@ -10,6 +10,7 @@ import {
   ListChecks,
   MessageSquare,
   ShieldCheck,
+  Workflow,
   UserRoundSearch,
   type LucideIcon,
 } from "lucide-react";
@@ -46,6 +47,8 @@ const companyNavItems: CompanyNavItem[] = [
   { label: "Freelance", to: "/company/freelance", icon: CircleDollarSign },
   { label: "Applications", to: "/company/applications", icon: ClipboardList },
   { label: "Work", to: "/company/work", icon: ListChecks },
+  { label: "Proof Engine", to: "/company/proof-engine", icon: Workflow },
+  { label: "Evidence requests", to: "/company/evidence-requests", icon: ClipboardList },
   { label: "Find talent", to: "/company/talent", icon: UserRoundSearch },
   {
     label: "Messages",

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ClipboardList, History, RefreshCw, ShieldAlert } from "lucide-react";
+import { Link } from "react-router-dom";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
@@ -99,6 +100,17 @@ export default function AdminEvidencePage() {
   return (
     <section className="page">
       <PageHeader title="Evidence controls" />
+      {selected ? (
+        <div className={styles.proofLaunch}>
+          <div>
+            <strong>Inspect this card in the Proof Engine</strong>
+            <span>Replay its immutable issuance checks and exact evidence lineage.</span>
+          </div>
+          <Link className="button button-secondary" to={`/admin/proof-engine/${selected.applicationId}`}>
+            Open Proof Engine
+          </Link>
+        </div>
+      ) : null}
       {message ? <div className="notice notice-success">{message}</div> : null}
       <DataState
         isLoading={isLoading}

@@ -44,6 +44,36 @@ export type EvidenceReadiness = {
   criteria: EvidenceCriterionOutcome[];
 };
 
+export type EvidenceProofReceipt = {
+  runId: number;
+  runAt: string;
+  fingerprint: string;
+  verifiedCheckpoints: number;
+  totalCheckpoints: number;
+  contractVersionId: number | null;
+  contractVersionNumber: number | null;
+  submissionRevision: number;
+};
+
+export type EvidenceProofRun = {
+  runId: number;
+  applicationId: number;
+  projectId: number;
+  opportunityTitle: string;
+  participantName: string;
+  providerName: string;
+  opportunityType: OpportunityType;
+  triggeredByName: string;
+  triggeredByRole: string;
+  triggeredAt: string;
+  ready: boolean;
+  isIssuanceRun: boolean;
+  cardId: number | null;
+  fingerprint: string;
+  readiness: EvidenceReadiness;
+  claimBoundary: ClaimBoundary;
+};
+
 export type EvidenceTraceEntry = {
   sourceType: string;
   sourceReference: string;
@@ -95,6 +125,7 @@ export type EvidenceDetails = {
   claimBoundary: ClaimBoundary;
   trace: EvidenceTraceEntry[];
   statusHistory: PublicEvidenceStatusEvent[];
+  proofReceipt?: EvidenceProofReceipt | null;
 };
 
 export type EvidenceCardSummary = {
@@ -139,6 +170,7 @@ export type PublicEvidenceCard = {
   claimBoundary: ClaimBoundary;
   trace: EvidenceTraceEntry[];
   statusHistory: EvidenceStatusEvent[];
+  proofReceipt?: EvidenceProofReceipt | null;
 };
 
 export type PublicEvidenceShare = {
@@ -146,6 +178,88 @@ export type PublicEvidenceShare = {
   createdAt: string;
   expiresAt: string | null;
   cards: PublicEvidenceCard[];
+};
+
+export type EvidenceReviewOutcome =
+  | "Verified"
+  | "NeedsClarification"
+  | "InsufficientEvidence";
+
+export type EvidenceReviewCard = {
+  cardId: number;
+  opportunityTitle: string;
+  providerName: string;
+  opportunityType: OpportunityType;
+  status: EvidenceCardStatus;
+  issuedAt: string | null;
+  claimBoundary: ClaimBoundary;
+  trace: EvidenceTraceEntry[];
+  proofReceipt?: EvidenceProofReceipt | null;
+};
+
+export type EvidenceReviewRequest = {
+  id: number;
+  cardId: number;
+  opportunityTitle: string;
+  token: string;
+  publicPath: string;
+  purpose: string;
+  questions: string[];
+  answers: EvidenceReviewAnswer[];
+  status: "Pending" | "Completed";
+  reviewerName: string | null;
+  outcome: EvidenceReviewOutcome | null;
+  response: string | null;
+  createdAt: string;
+  expiresAt: string | null;
+  respondedAt: string | null;
+  card: EvidenceReviewCard;
+};
+
+export type EvidenceReviewAnswer = {
+  question: string;
+  answer: string;
+};
+
+export type CreateEvidenceReviewRequest = {
+  cardId: number;
+  purpose: string;
+  questions: string[];
+  expiresAt?: string | null;
+};
+
+export type SubmitEvidenceReview = {
+  reviewerName: string;
+  outcome: EvidenceReviewOutcome;
+  response: string;
+  answers: EvidenceReviewAnswer[];
+};
+
+export type EvidenceActionRequest = {
+  id: number;
+  applicationId: number;
+  projectId: number;
+  opportunityTitle: string;
+  participantName: string;
+  requesterName: string;
+  requestType: "FinalSubmission" | "EvidenceClarification" | "TrainingReport" | "ContributionDeclaration";
+  title: string;
+  instructions: string;
+  status: "Open" | "Responded" | "Resolved";
+  createdAt: string;
+  dueAt: string | null;
+  respondedAt: string | null;
+  response: string | null;
+  resolvedAt: string | null;
+  resolutionNote: string | null;
+  recipientActionPath: string;
+};
+
+export type CreateEvidenceActionRequest = {
+  requestType: EvidenceActionRequest["requestType"];
+  title: string;
+  instructions: string;
+  dueAt?: string | null;
 };
 
 export type CriterionCoverageItem = {

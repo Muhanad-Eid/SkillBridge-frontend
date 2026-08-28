@@ -22,6 +22,7 @@ import {
   RotateCcw,
   Search,
   ShieldCheck,
+  Workflow,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Button from "../../../shared/components/Button";
@@ -349,6 +350,13 @@ export default function UniversityTrainingPage() {
         actions={
           record ? (
             <div className="page-header-actions">
+              <Button
+                to={`/university/proof-engine/${record.applicationId}`}
+                variant="secondary"
+              >
+                <Workflow size={17} aria-hidden="true" />
+                Open Proof Engine
+              </Button>
               <Button
                 type="button"
                 variant="secondary"

@@ -5,14 +5,39 @@ import type {
   CriterionEvidenceCoverage,
   EvidenceDetails,
   EvidenceReadiness,
+  EvidenceProofRun,
   PublicEvidenceShare,
   PublicShareCreated,
   PublicShareSummary,
+  CreateEvidenceReviewRequest,
+  EvidenceReviewRequest,
+  SubmitEvidenceReview,
+  EvidenceActionRequest,
+  CreateEvidenceActionRequest,
 } from "../domain/evidenceTypes";
 
 export function getEvidenceReadinessAsync(applicationId: number) {
   return httpClient<EvidenceReadiness>(
     `/api/evidence/applications/${applicationId}/readiness`,
+  );
+}
+
+export function createEvidenceProofRunAsync(applicationId: number) {
+  return httpClient<EvidenceProofRun>(
+    `/api/evidence/applications/${applicationId}/proof-runs`,
+    { method: "POST" },
+  );
+}
+
+export function getEvidenceProofRunsAsync(applicationId: number) {
+  return httpClient<EvidenceProofRun[]>(
+    `/api/evidence/applications/${applicationId}/proof-runs`,
+  );
+}
+
+export function getEvidenceProofRunAsync(proofRunId: number) {
+  return httpClient<EvidenceProofRun>(
+    `/api/evidence/proof-runs/${proofRunId}`,
   );
 }
 
@@ -74,5 +99,57 @@ export function getPublicEvidenceSharesAsync() {
 export function getPublicEvidenceShareAsync(token: string) {
   return httpClient<PublicEvidenceShare>(`/api/evidence/public/${token}`, {
     skipAuth: true,
+  });
+}
+
+export function createEvidenceReviewRequestAsync(
+  input: CreateEvidenceReviewRequest,
+) {
+  return httpClient<EvidenceReviewRequest>("/api/evidence/review-requests", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export function getEvidenceReviewRequestsAsync() {
+  return httpClient<EvidenceReviewRequest[]>("/api/evidence/review-requests");
+}
+
+export function getPublicEvidenceReviewRequestAsync(token: string) {
+  return httpClient<EvidenceReviewRequest>(
+    `/api/evidence/public/review-requests/${token}`,
+    { skipAuth: true },
+  );
+}
+
+export function submitPublicEvidenceReviewAsync(
+  token: string,
+  input: SubmitEvidenceReview,
+) {
+  return httpClient<EvidenceReviewRequest>(
+    `/api/evidence/public/review-requests/${token}`,
+    { method: "POST", body: JSON.stringify(input), skipAuth: true },
+  );
+}
+
+export function getEvidenceActionRequestsAsync() {
+  return httpClient<EvidenceActionRequest[]>("/api/evidence/action-requests");
+}
+
+export function createEvidenceActionRequestAsync(applicationId: number, input: CreateEvidenceActionRequest) {
+  return httpClient<EvidenceActionRequest>(`/api/evidence/applications/${applicationId}/action-requests`, {
+    method: "POST", body: JSON.stringify(input),
+  });
+}
+
+export function respondToEvidenceActionRequestAsync(requestId: number, response: string) {
+  return httpClient<EvidenceActionRequest>(`/api/evidence/action-requests/${requestId}/respond`, {
+    method: "POST", body: JSON.stringify({ response }),
+  });
+}
+
+export function resolveEvidenceActionRequestAsync(requestId: number, isResolved: boolean, note: string) {
+  return httpClient<EvidenceActionRequest>(`/api/evidence/action-requests/${requestId}/resolve`, {
+    method: "POST", body: JSON.stringify({ isResolved, note }),
   });
 }

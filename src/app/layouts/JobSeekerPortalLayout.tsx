@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   Bell,
+  ClipboardCheck,
   CircleDollarSign,
   FileCheck2,
   FolderKanban,
@@ -11,6 +12,7 @@ import {
   Search,
   Star,
   UserRound,
+  Workflow,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -45,6 +47,8 @@ const jobSeekerNavItems: JobSeekerNavItem[] = [
   { label: "Freelance", to: "/job-seeker/freelance", icon: CircleDollarSign },
   { label: "Applications", to: "/job-seeker/applications", icon: FileCheck2 },
   { label: "Work", to: "/job-seeker/work", icon: ListChecks },
+  { label: "Proof Engine", to: "/job-seeker/proof-engine", icon: Workflow },
+  { label: "Evidence requests", to: "/job-seeker/evidence-requests", icon: ClipboardCheck },
   { label: "Portfolio", to: "/job-seeker/portfolio", icon: FolderKanban },
   { label: "Reviews", to: "/job-seeker/reviews", icon: Star },
   {
