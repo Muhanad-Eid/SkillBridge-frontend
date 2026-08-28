@@ -38,6 +38,15 @@ export function applyToProjectAsync(
       String(request.proposedDeliveryDays),
     );
   }
+  if (request.proofBrief) {
+    formData.append("proofBrief.proofBriefVersionId", String(request.proofBrief.proofBriefVersionId));
+    formData.append("proofBrief.proofBriefApproach", request.proofBrief.proofBriefApproach);
+    formData.append("proofBrief.proofBriefTradeoffs", request.proofBrief.proofBriefTradeoffs);
+    formData.append("proofBrief.proofBriefReflection", request.proofBrief.proofBriefReflection);
+    if (request.proofBrief.proofBriefArtifactUrl) {
+      formData.append("proofBrief.proofBriefArtifactUrl", request.proofBrief.proofBriefArtifactUrl);
+    }
+  }
   if (cvFile) {
     formData.append("cv", cvFile, cvFile.name);
   }

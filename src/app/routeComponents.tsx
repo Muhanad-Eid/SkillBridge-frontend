@@ -71,6 +71,9 @@ export const CompanyProjectApplicationsPage = lazy(
       "../features/applications/presentation/CompanyProjectApplicationsPage"
     ),
 );
+export const DecisionRoomPage = lazy(
+  () => import("../features/applications/presentation/DecisionRoomPage"),
+);
 export const MyApplicationsPage = lazy(
   () => import("../features/applications/presentation/MyApplicationsPage"),
 );
@@ -103,6 +106,9 @@ export const PublicPortfolioPage = lazy(
 );
 export const PublicEvidenceSharePage = lazy(
   () => import("../features/evidence/presentation/PublicEvidenceProofRoomPage"),
+);
+export const ProofBriefWorkspacePage = lazy(
+  () => import("../features/proof-briefs/presentation/ProofBriefWorkspacePage"),
 );
 export const PublicEvidenceReviewRequestPage = lazy(
   () => import("../features/evidence/presentation/PublicEvidenceReviewRequestPage"),

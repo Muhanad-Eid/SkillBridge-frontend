@@ -124,6 +124,7 @@ export type Project = {
   currentEvidenceContractVersionNumber: number | null;
   confidentialitySummary: string | null;
   evidenceCriteria: EvidenceCriterion[];
+  proofBrief?: import("../../proof-briefs/domain/proofBriefTypes").ProofBriefSummary | null;
   skills: ProjectSkill[];
   milestones: ProjectMilestone[];
 };

@@ -19,6 +19,7 @@ import {
   RotateCcw,
   Search,
   Star,
+  Sparkles,
   Trash2,
   UserRoundSearch,
   UsersRound,
@@ -484,6 +485,17 @@ export default function CompanyProjectApplicationsPage() {
               <StatusBadge tone={getProjectTone(project)}>
                 {getProjectDisplayStatusLabel(project)}
               </StatusBadge>
+              {(project.type === OpportunityTypes.ProfessionalProject ||
+                project.type === OpportunityTypes.FreelanceTask) ? (
+                <Button
+                  to={`/company/projects/${project.id}/proof-brief`}
+                  variant="secondary"
+                  className="button-with-icon"
+                >
+                  <Sparkles size={16} aria-hidden="true" />
+                  Proof Brief
+                </Button>
+              ) : null}
               {project.status === ProjectStatuses.Open ? (
                 <Button
                   type="button"
@@ -794,6 +806,15 @@ export default function CompanyProjectApplicationsPage() {
                           </>
                         ) : (
                           <>
+                            <Button
+                              to={`/company/projects/${project.id}/applications/${application.id}/decision`}
+                              variant="secondary"
+                              className="company-icon-action"
+                              aria-label={`Open Decision Room for ${application.jobSeekerName}`}
+                              title="Open Decision Room"
+                            >
+                              <Eye size={17} aria-hidden="true" />
+                            </Button>
                             <Button
                               type="button"
                               variant="secondary"

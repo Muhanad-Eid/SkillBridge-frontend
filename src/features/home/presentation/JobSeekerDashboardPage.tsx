@@ -25,6 +25,7 @@ import { ProjectStatuses, type Project } from "../../projects/domain/projectType
 import { getProjectsAsync } from "../../projects/infrastructure/projectApi";
 import type { Skill } from "../../skills/domain/skillTypes";
 import { getMySkillsAsync } from "../../skills/infrastructure/skillApi";
+import styles from "./JobSeekerDashboardPage.module.scss";
 
 export default function JobSeekerDashboardPage() {
   const [profile, setProfile] = useState<JobSeekerProfile | null>(null);
@@ -144,7 +145,7 @@ export default function JobSeekerDashboardPage() {
   const nextStep = readinessSteps.find((step) => !step.done);
   const recentApplications = applications.slice(0, 4);
   return (
-    <section className="page jobseeker-dashboard-page">
+    <section className={`page jobseeker-dashboard-page ${styles.root}`}>
       <PageHeader
         title="Overview"
         actions={
@@ -157,54 +158,60 @@ export default function JobSeekerDashboardPage() {
 
       {error ? <div className="notice notice-error">{error}</div> : null}
 
-      <div className="jobseeker-kpi-grid" aria-label="Career summary">
-        <article>
-          <span className="jobseeker-kpi-icon kpi-indigo">
-            <FileCheck2 size={19} aria-hidden="true" />
-          </span>
-          <div>
-            <span>Applications</span>
-            <strong>{isLoading ? "-" : stats.total}</strong>
-            <small>{stats.pending} awaiting a decision</small>
-          </div>
-        </article>
-        <article>
-          <span className="jobseeker-kpi-icon kpi-amber">
-            <CheckCircle2 size={19} aria-hidden="true" />
-          </span>
-          <div>
-            <span>Awaiting a decision</span>
-            <strong>{isLoading ? "-" : stats.pending}</strong>
-            <small>Applications still under provider review</small>
-          </div>
-        </article>
-        <article>
-          <span className="jobseeker-kpi-icon kpi-green">
-            <CheckCircle2 size={19} aria-hidden="true" />
-          </span>
-          <div>
-            <span>Active work</span>
-            <strong>{isLoading ? "-" : stats.accepted}</strong>
-            <small>Accepted work records to complete</small>
-          </div>
-        </article>
-        <article>
-          <span className="jobseeker-kpi-icon kpi-violet">
-            <FolderKanban size={19} aria-hidden="true" />
-          </span>
-          <div>
-            <span>Evidence Cards</span>
-            <strong>{isLoading ? "-" : portfolioItems.length}</strong>
-            <small>{portfolioItems.filter((item) => item.isVisible).length} shared</small>
-          </div>
-        </article>
-      </div>
+      <section className={styles.pulse} aria-label="Career pulse">
+        <header>
+          <h2>Career pulse</h2>
+          <span>Live workspace signals</span>
+        </header>
+        <div className="jobseeker-kpi-grid" aria-label="Career summary">
+          <article>
+            <span className="jobseeker-kpi-icon kpi-indigo">
+              <FileCheck2 size={19} aria-hidden="true" />
+            </span>
+            <div>
+              <span>Applications</span>
+              <strong>{isLoading ? "-" : stats.total}</strong>
+              <small>{stats.pending} awaiting a decision</small>
+            </div>
+          </article>
+          <article>
+            <span className="jobseeker-kpi-icon kpi-amber">
+              <CheckCircle2 size={19} aria-hidden="true" />
+            </span>
+            <div>
+              <span>Awaiting a decision</span>
+              <strong>{isLoading ? "-" : stats.pending}</strong>
+              <small>Applications still under provider review</small>
+            </div>
+          </article>
+          <article>
+            <span className="jobseeker-kpi-icon kpi-green">
+              <CheckCircle2 size={19} aria-hidden="true" />
+            </span>
+            <div>
+              <span>Active work</span>
+              <strong>{isLoading ? "-" : stats.accepted}</strong>
+              <small>Accepted work records to complete</small>
+            </div>
+          </article>
+          <article>
+            <span className="jobseeker-kpi-icon kpi-violet">
+              <FolderKanban size={19} aria-hidden="true" />
+            </span>
+            <div>
+              <span>Evidence Cards</span>
+              <strong>{isLoading ? "-" : portfolioItems.length}</strong>
+              <small>{portfolioItems.filter((item) => item.isVisible).length} shared</small>
+            </div>
+          </article>
+        </div>
+      </section>
 
       {nextStep ? (
         <div className="jobseeker-next-action">
           <span className="jobseeker-next-icon"><SparkIcon /></span>
           <div>
-            <span>Next step</span>
+            <span>Career signal to strengthen</span>
             <strong>{nextStep.label}</strong>
             <p>{nextStep.detail}. Complete this to strengthen what providers see.</p>
           </div>

@@ -1,16 +1,15 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
-  ChevronLeft,
-  ChevronRight,
+  ChevronDown,
   LogOut,
   Menu,
+  PanelsTopLeft,
   X,
   type LucideIcon,
 } from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import BrandIcon from "../components/BrandIcon";
 import ThemeToggle from "../components/ThemeToggle";
-import useSidebarPreference from "../hooks/useSidebarPreference";
 import styles from "./PortalShell.module.scss";
 
 export type PortalRole = "admin" | "company" | "job-seeker" | "university";
@@ -60,8 +59,7 @@ export default function PortalShell({
   onLogout,
 }: PortalShellProps) {
   const location = useLocation();
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useSidebarPreference(role);
+  const [isNavigationOpen, setIsNavigationOpen] = useState(false);
   const activeItem = useMemo(
     () =>
       [...navItems]
@@ -75,155 +73,40 @@ export default function PortalShell({
   );
 
   useEffect(() => {
-    if (!isMobileOpen) return;
+    if (!isNavigationOpen) return;
 
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") setIsMobileOpen(false);
+      if (event.key === "Escape") setIsNavigationOpen(false);
     }
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isMobileOpen]);
+  }, [isNavigationOpen]);
+
+  const primaryNavItems = navItems.slice(0, 6);
+  const activeItemIsPrimary = primaryNavItems.some((item) => item.to === activeItem?.to);
 
   return (
-    <div
-      className={`${styles.shell} ${isCollapsed ? styles.collapsed : ""}`}
-      data-portal-role={role}
-    >
-      <aside
-        id={`${role}-portal-navigation`}
-        className={`${styles.sidebar} ${isMobileOpen ? styles.mobileOpen : ""}`}
-      >
-        <div className={styles.brandRow}>
-          <Link className={styles.brand} to={homePath} title="SkillBridge">
-            <BrandIcon className={styles.brandIcon} />
-            <span className={styles.brandText}>
-              <strong>SkillBridge</strong>
-              <small>{portalLabel}</small>
-            </span>
-          </Link>
-          <button
-            className={`${styles.iconButton} ${styles.sidebarCollapse}`}
-            type="button"
-            aria-label={isCollapsed ? "Expand navigation" : "Collapse navigation"}
-            title={isCollapsed ? "Expand navigation" : "Collapse navigation"}
-            onClick={() => setIsCollapsed((value) => !value)}
-          >
-            {isCollapsed ? (
-              <ChevronRight size={18} aria-hidden="true" />
-            ) : (
-              <ChevronLeft size={18} aria-hidden="true" />
-            )}
-          </button>
-          <button
-            className={styles.mobileClose}
-            type="button"
-            aria-label="Close navigation"
-            onClick={() => setIsMobileOpen(false)}
-          >
-            <X size={20} aria-hidden="true" />
-          </button>
-        </div>
-
-        <nav className={styles.navigation} aria-label={`${portalLabel} navigation`}>
-          <span className={styles.navLabel}>Workspace</span>
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <NavLink
-                key={item.to}
-                className={({ isActive }) =>
-                  `${styles.navItem} ${isActive ? styles.navItemActive : ""}`
-                }
-                to={item.to}
-                title={isCollapsed ? item.label : undefined}
-                onClick={() => setIsMobileOpen(false)}
-              >
-                <Icon size={19} strokeWidth={1.9} aria-hidden="true" />
-                <span className={styles.navText}>{item.label}</span>
-                {item.badgeCount && item.badgeCount > 0 ? (
-                  <strong className={styles.badge}>{item.badgeCount}</strong>
-                ) : null}
-              </NavLink>
-            );
-          })}
+    <div className={styles.shell} data-portal-role={role}>
+      <header className={styles.topbar}>
+        <Link className={styles.brand} to={homePath} title="SkillBridge home">
+          <BrandIcon className={styles.brandIcon} />
+          <span className={styles.brandText}><strong>SkillBridge</strong><small>{portalLabel}</small></span>
+        </Link>
+        <nav className={styles.primaryNavigation} aria-label={`${portalLabel} primary navigation`}>
+          {primaryNavItems.map((item) => <NavLink key={item.to} className={({ isActive }) => `${styles.primaryNavItem} ${isActive ? styles.primaryNavItemActive : ""}`} to={item.to}>{item.label}{item.badgeCount && item.badgeCount > 0 ? <strong className={styles.badge}>{item.badgeCount}</strong> : null}</NavLink>)}
         </nav>
-
-        <div className={styles.sidebarFooter}>
-          {profilePath ? (
-            <Link
-              className={`${styles.user} ${styles.userLink}`}
-              to={profilePath}
-              aria-label={`Open ${userName || "your"} profile`}
-              title={isCollapsed ? "Open profile" : undefined}
-              onClick={() => setIsMobileOpen(false)}
-            >
-              <span className={styles.avatar} aria-hidden="true">
-                {getInitials(userName)}
-              </span>
-              <span className={styles.userText}>
-                <strong>{userName || "SkillBridge user"}</strong>
-                <small>{userEmail}</small>
-              </span>
-            </Link>
-          ) : (
-            <div className={styles.user} title={isCollapsed ? userName : undefined}>
-              <span className={styles.avatar} aria-hidden="true">
-                {getInitials(userName)}
-              </span>
-              <span className={styles.userText}>
-                <strong>{userName || "SkillBridge user"}</strong>
-                <small>{userEmail}</small>
-              </span>
-            </div>
-          )}
-          <div className={styles.footerActions}>
-            <ThemeToggle className={styles.iconButton} />
-            <button
-              className={styles.iconButton}
-              type="button"
-              aria-label="Log out"
-              title="Log out"
-              onClick={onLogout}
-            >
-              <LogOut size={18} aria-hidden="true" />
-            </button>
-          </div>
+        <div className={styles.topbarActions}>
+          <button className={`${styles.allSpacesButton} ${!activeItemIsPrimary ? styles.allSpacesButtonActive : ""}`} type="button" aria-expanded={isNavigationOpen} aria-controls={`${role}-bridge-deck`} onClick={() => setIsNavigationOpen((value) => !value)}><PanelsTopLeft size={17} aria-hidden="true" /><span>All spaces</span><ChevronDown size={15} aria-hidden="true" /></button>
+          <button className={`${styles.iconButton} ${styles.mobileMenu}`} type="button" aria-label="Open all spaces" onClick={() => setIsNavigationOpen(true)}><Menu size={20} aria-hidden="true" /></button>
+          <ThemeToggle className={styles.iconButton} />
+          {profilePath ? <Link className={styles.userLink} to={profilePath} aria-label={`Open ${userName || "your"} profile`} title={userEmail || "Open profile"}><span className={styles.avatar} aria-hidden="true">{getInitials(userName)}</span><span className={styles.userText}><strong>{userName || "Account"}</strong><small>Profile & settings</small></span></Link> : <div className={styles.userLink} title={userEmail}><span className={styles.avatar} aria-hidden="true">{getInitials(userName)}</span></div>}
+          <button className={styles.iconButton} type="button" aria-label="Log out" title="Log out" onClick={onLogout}><LogOut size={18} aria-hidden="true" /></button>
         </div>
-      </aside>
+      </header>
 
-      {isMobileOpen ? (
-        <button
-          className={styles.backdrop}
-          type="button"
-          aria-label="Close navigation"
-          onClick={() => setIsMobileOpen(false)}
-        />
-      ) : null}
-
-      <div className={styles.workspace}>
-        <header className={styles.topbar}>
-          <div className={styles.topbarStart}>
-            <button
-              className={`${styles.iconButton} ${styles.mobileMenu}`}
-              type="button"
-              aria-label="Open navigation"
-              aria-controls={`${role}-portal-navigation`}
-              aria-expanded={isMobileOpen}
-              onClick={() => setIsMobileOpen(true)}
-            >
-              <Menu size={20} aria-hidden="true" />
-            </button>
-            <div className={styles.pageIdentity}>
-              <small>{portalLabel}</small>
-              <strong>{activeItem?.label || "Workspace"}</strong>
-            </div>
-          </div>
-        </header>
-
-        {banner ? <div className={styles.banner}>{banner}</div> : null}
-        <main className={styles.content}>{children}</main>
-      </div>
+      {isNavigationOpen ? <><button className={styles.backdrop} type="button" aria-label="Close all spaces" onClick={() => setIsNavigationOpen(false)} /><section id={`${role}-bridge-deck`} className={styles.bridgeDeck} aria-label="All workspace spaces"><header><div><span>SkillBridge spaces</span><strong>{portalLabel}</strong></div><button className={styles.deckClose} type="button" aria-label="Close all spaces" onClick={() => setIsNavigationOpen(false)}><X size={20} aria-hidden="true" /></button></header><nav>{navItems.map((item) => { const Icon = item.icon; return <NavLink key={item.to} className={({ isActive }) => `${styles.deckItem} ${isActive ? styles.deckItemActive : ""}`} to={item.to} onClick={() => setIsNavigationOpen(false)}><Icon size={19} strokeWidth={1.8} aria-hidden="true" /><span>{item.label}</span>{item.badgeCount && item.badgeCount > 0 ? <strong className={styles.badge}>{item.badgeCount}</strong> : null}</NavLink>; })}</nav></section></> : null}
+      <div className={styles.workspace}>{banner ? <div className={styles.banner}>{banner}</div> : null}<main className={styles.content}>{children}</main></div>
     </div>
   );
 }

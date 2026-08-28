@@ -46,6 +46,7 @@ export type CreateApplicationRequest = {
   shortTaskResponse?: string;
   proposedBudget?: number;
   proposedDeliveryDays?: number;
+  proofBrief?: import("../../proof-briefs/domain/proofBriefTypes").ProofBriefSubmissionInput;
 };
 
 export const WorkSubmissionStatuses = {

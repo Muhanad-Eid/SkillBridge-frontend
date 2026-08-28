@@ -52,6 +52,9 @@ import {
 } from "../domain/projectTypes";
 import { getProjectAsync, getProjectsAsync } from "../infrastructure/projectApi";
 import EvidenceContractPanel from "./EvidenceContractPanel";
+import type { ProofBrief } from "../../proof-briefs/domain/proofBriefTypes";
+import { getProofBriefAsync } from "../../proof-briefs/infrastructure/proofBriefApi";
+import ProofBriefPack from "../../proof-briefs/presentation/ProofBriefPack";
 
 const MAX_CV_SIZE = 5 * 1024 * 1024;
 
@@ -65,6 +68,12 @@ export default function ProjectDetailsPage() {
   const [existingApplication, setExistingApplication] = useState<Application | null>(null);
   const [criterionCoverage, setCriterionCoverage] =
     useState<CriterionEvidenceCoverage | null>(null);
+  const [proofBrief, setProofBrief] = useState<ProofBrief | null>(null);
+  const [includeProofBrief, setIncludeProofBrief] = useState(false);
+  const [proofBriefApproach, setProofBriefApproach] = useState("");
+  const [proofBriefTradeoffs, setProofBriefTradeoffs] = useState("");
+  const [proofBriefReflection, setProofBriefReflection] = useState("");
+  const [proofBriefArtifactUrl, setProofBriefArtifactUrl] = useState("");
   const [coverLetter, setCoverLetter] = useState("");
   const [workSampleUrl, setWorkSampleUrl] = useState("");
   const [shortTaskResponse, setShortTaskResponse] = useState("");
@@ -92,12 +101,15 @@ export default function ProjectDetailsPage() {
     async function loadProject() {
       try {
         const projectData = await getProjectAsync(Number(projectId));
-        const [companyData, applicationData, projectDataList, coverageData] = await Promise.all([
+        const [companyData, applicationData, projectDataList, coverageData, proofBriefData] = await Promise.all([
           getPublicCompanyProfileAsync(projectData.companyProfileId),
           isJobSeeker ? getMyApplicationsAsync() : Promise.resolve(null),
           getProjectsAsync({ pageSize: 12 }).catch(() => null),
           isJobSeeker
             ? getCriterionEvidenceCoverageAsync(projectData.id).catch(() => null)
+            : Promise.resolve(null),
+          projectData.proofBrief?.isAvailable
+            ? getProofBriefAsync(projectData.id).catch(() => null)
             : Promise.resolve(null),
         ]);
 
@@ -110,6 +122,7 @@ export default function ProjectDetailsPage() {
             ) ?? null,
           );
           setCriterionCoverage(coverageData);
+          setProofBrief(proofBriefData);
           const otherOpenProjects = (projectDataList?.items ?? []).filter(
             (candidate) =>
               candidate.id !== projectData.id &&
@@ -208,8 +221,13 @@ export default function ProjectDetailsPage() {
       return;
     }
 
-    if (!workSampleUrl.trim() && !shortTaskResponse.trim()) {
-      setMessage("Add a work sample or complete the short application task.");
+    if (!workSampleUrl.trim() && !shortTaskResponse.trim() && !includeProofBrief) {
+      setMessage("Add a work sample, complete the short application task, or include the available Proof Brief.");
+      return;
+    }
+
+    if (includeProofBrief && (!proofBrief || proofBriefApproach.trim().length < 30 || proofBriefTradeoffs.trim().length < 30 || proofBriefReflection.trim().length < 20)) {
+      setMessage("Complete the Proof Brief approach, trade-offs, and reflection before applying.");
       return;
     }
 
@@ -244,6 +262,15 @@ export default function ProjectDetailsPage() {
             project.type === OpportunityTypes.FreelanceTask
               ? proposalDeliveryDays
               : undefined,
+          proofBrief: includeProofBrief && proofBrief
+            ? {
+                proofBriefVersionId: proofBrief.currentVersionId!,
+                proofBriefApproach: proofBriefApproach.trim(),
+                proofBriefTradeoffs: proofBriefTradeoffs.trim(),
+                proofBriefReflection: proofBriefReflection.trim(),
+                proofBriefArtifactUrl: proofBriefArtifactUrl.trim() || undefined,
+              }
+            : undefined,
         },
         cvFile,
       );
@@ -253,6 +280,11 @@ export default function ProjectDetailsPage() {
       setShortTaskResponse("");
       setProposedBudget("");
       setProposedDeliveryDays("");
+      setIncludeProofBrief(false);
+      setProofBriefApproach("");
+      setProofBriefTradeoffs("");
+      setProofBriefReflection("");
+      setProofBriefArtifactUrl("");
       setCvFile(null);
       if (cvInputRef.current) {
         cvInputRef.current.value = "";
@@ -748,6 +780,21 @@ export default function ProjectDetailsPage() {
                       need both.
                     </small>
                   </label>
+                  {proofBrief ? (
+                    <ProofBriefPack
+                      brief={proofBrief}
+                      enabled={includeProofBrief}
+                      approach={proofBriefApproach}
+                      tradeoffs={proofBriefTradeoffs}
+                      reflection={proofBriefReflection}
+                      artifactUrl={proofBriefArtifactUrl}
+                      onEnabledChange={setIncludeProofBrief}
+                      onApproachChange={setProofBriefApproach}
+                      onTradeoffsChange={setProofBriefTradeoffs}
+                      onReflectionChange={setProofBriefReflection}
+                      onArtifactUrlChange={setProofBriefArtifactUrl}
+                    />
+                  ) : null}
                   {message ? <div className="notice">{message}</div> : null}
                   {project.type === OpportunityTypes.FreelanceTask &&
                   proposedBudget &&

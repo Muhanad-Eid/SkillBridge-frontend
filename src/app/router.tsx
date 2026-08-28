@@ -19,6 +19,7 @@ import {
   CompanyPortalLayout,
   CompanyProfilePage,
   CompanyProjectApplicationsPage,
+  DecisionRoomPage,
   CompanyProjectsPage,
   ForgotPasswordPage,
   HomePage,
@@ -41,6 +42,7 @@ import {
   PublicEvidenceReviewRequestPage,
   PublicPortfolioPage,
   ProofEnginePage,
+  ProofBriefWorkspacePage,
   EvidenceRequestWorkspacePage,
   RegisterPage,
   ResetPasswordPage,
@@ -155,6 +157,14 @@ export const router = createBrowserRouter([
       {
         path: "projects/:projectId/applications",
         element: <CompanyProjectApplicationsPage />,
+      },
+      {
+        path: "projects/:projectId/applications/:applicationId/decision",
+        element: <DecisionRoomPage />,
+      },
+      {
+        path: "projects/:projectId/proof-brief",
+        element: <ProofBriefWorkspacePage />,
       },
       { path: "projects/:projectId/work", element: <WorkHubPage /> },
       { path: "applications", element: <CompanyApplicationsPage /> },
