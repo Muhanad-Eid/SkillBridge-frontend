@@ -596,7 +596,7 @@
 
 [data-portal-role="university"] .university-training-page .university-training-kpis,
 [data-portal-role="university"] .university-training-page .training-report-overview {
-  border-top: 3px solid #8b5cf6;
+  border-top: 1px solid var(--sb-color-border);
 }
 
 [data-portal-role="university"] .university-training-page .university-training-kpis article:first-child svg,
@@ -604,9 +604,9 @@
 
 [data-portal-role="university"] .university-training-page .training-academic-confirmation {
   padding: 1rem;
-  border: 1px solid #ddd6fe;
-  border-radius: 10px;
-  background: #faf5ff;
+  border: 1px solid var(--sb-color-border);
+  border-radius: 6px;
+  background: var(--sb-color-surface-subtle);
 }
 
 .evidence-contract-panel {

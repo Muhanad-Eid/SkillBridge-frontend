@@ -761,9 +761,16 @@ tbody tr:hover {
   }
 
   .public-shell .site-nav-freelance,
-  .public-shell .site-nav-opportunities,
-  .public-shell .public-theme-toggle {
+  .public-shell .site-nav-opportunities {
     display: none;
+  }
+
+  .public-shell .public-theme-toggle {
+    display: inline-grid;
+    width: 36px;
+    min-width: 36px;
+    height: 36px;
+    margin: 0;
   }
 
   .public-shell .site-nav .site-register-link {
@@ -776,6 +783,10 @@ tbody tr:hover {
 @media (max-width: 420px) {
   .public-shell .site-nav {
     gap: 0.55rem;
+  }
+
+  .public-shell .brand strong {
+    font-size: 0.8125rem;
   }
 
   .public-shell .site-nav a {

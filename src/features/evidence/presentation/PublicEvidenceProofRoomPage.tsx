@@ -62,7 +62,7 @@ export default function PublicEvidenceProofRoomPage() {
 
   if (isLoading) {
     return (
-      <main className={styles.page}>
+      <div className={styles.page}>
         <DataState
           isLoading
           error=""
@@ -70,13 +70,13 @@ export default function PublicEvidenceProofRoomPage() {
           emptyTitle=""
           emptyDescription=""
         />
-      </main>
+      </div>
     );
   }
 
   if (error || !share) {
     return (
-      <main className={`${styles.page} ${styles.unavailablePage}`}>
+      <div className={`${styles.page} ${styles.unavailablePage}`}>
         <section className={styles.unavailable} aria-labelledby="evidence-unavailable-title">
           <div className={styles.unavailableMark} aria-hidden="true"><FileWarning size={30} /></div>
           <div>
@@ -89,7 +89,7 @@ export default function PublicEvidenceProofRoomPage() {
             <Link to="/">Return to SkillBridge</Link>
           </div>
         </section>
-      </main>
+      </div>
     );
   }
 
@@ -127,7 +127,7 @@ export default function PublicEvidenceProofRoomPage() {
   }
 
   return (
-    <main className={styles.page}>
+    <div className={styles.page}>
       <header className={styles.heading}>
         <div>
           <span className={styles.kicker}>SkillBridge Proof Room</span>
@@ -256,6 +256,6 @@ export default function PublicEvidenceProofRoomPage() {
         <small>{share.expiresAt ? `Share expires ${new Date(share.expiresAt).toLocaleDateString()}` : "Owner-controlled public share"}</small>
       </footer>
       <p className="sr-only"><FileWarning /> Protected source files are not included.</p>
-    </main>
+    </div>
   );
 }

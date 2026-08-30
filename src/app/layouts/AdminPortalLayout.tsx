@@ -113,6 +113,7 @@ export default function AdminPortalLayout() {
         title="Log out?"
         description="You will need to sign in again to access the admin portal."
         confirmLabel="Log out"
+        variant="logout"
         onCancel={closeLogoutDialog}
         onConfirm={confirmLogout}
       />

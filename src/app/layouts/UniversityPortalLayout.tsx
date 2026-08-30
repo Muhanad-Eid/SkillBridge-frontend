@@ -121,6 +121,7 @@ export default function UniversityPortalLayout() {
         title="Log out?"
         description="You will need to sign in again to access supervised training."
         confirmLabel="Log out"
+        variant="logout"
         onCancel={closeLogout}
         onConfirm={confirmLogout}
       />

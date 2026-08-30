@@ -17,6 +17,9 @@
   --sb-color-action-active: #080f22;
   --sb-color-action-soft: #f1f5fd;
   --sb-color-focus: #2563eb;
+  --sb-color-brand-coral: #ff655c;
+  --sb-color-brand-lime: #c7f26a;
+  --sb-color-brand-coral-soft: #fff0ee;
   --sb-radius-card: 8px;
   --sb-radius-control: 8px;
   --sb-radius-dialog: 10px;
@@ -40,6 +43,9 @@
   --sb-color-action-active: #b9cdf1;
   --sb-color-action-soft: #243b61;
   --sb-color-on-action: #111a31;
+  --sb-color-brand-coral: #ff756d;
+  --sb-color-brand-lime: #c7f26a;
+  --sb-color-brand-coral-soft: #40282d;
 }
 
 html,
@@ -1116,9 +1122,6 @@ body {
 }
 
 /* Landing page: faithful structure based on the supplied landing reference. */
-.site-header-landing .public-theme-toggle {
-  display: none;
-}
 
 @media (max-width: 640px) {
   .public-shell .site-header .brand > span {
@@ -1131,6 +1134,21 @@ body {
 
   .public-shell .site-header .brand strong {
     font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .public-shell .site-header .brand > span {
+    display: none;
+  }
+
+  .public-shell .site-header {
+    gap: 0.5rem;
+    padding-inline: 0.75rem;
+  }
+
+  .public-shell .site-nav {
+    gap: 0.45rem;
   }
 }
 

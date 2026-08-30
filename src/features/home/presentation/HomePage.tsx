@@ -61,7 +61,7 @@ export default function HomePage() {
   const accountPath = user ? getRoleHomePath(user.role) : "/register";
 
   return (
-    <main className={styles.page}>
+    <div className={styles.page}>
       <section className={styles.heroWrap} aria-labelledby="landing-title">
         <div className={styles.hero}>
           <div>
@@ -214,6 +214,6 @@ export default function HomePage() {
           <Link className={`${styles.button} ${styles.primary}`} to="/opportunities">Browse opportunities<ArrowRight size={17} aria-hidden="true" /></Link>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

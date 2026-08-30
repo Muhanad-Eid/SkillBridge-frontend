@@ -493,6 +493,7 @@ export default function CompaniesPage() {
             : "This restores the company account and allows the provider to sign in again."
         }
         confirmLabel={statusDecision?.isActive ? "Deactivate" : "Reactivate"}
+        variant={statusDecision?.isActive ? "danger" : "neutral"}
         onCancel={() => setStatusDecision(null)}
         onConfirm={() => void applyStatusDecision()}
       />

@@ -68,7 +68,10 @@ export default function EvidenceCaseNavigator({
     record.opportunityType === OpportunityTypes.UniversityTraining;
   const companyApprovalComplete =
     Boolean(record.companyApprovedAt) && !record.approvalIsStale;
-  const universityApprovalComplete = Boolean(record.universityApprovedAt);
+  const universityApprovalComplete =
+    Boolean(record.universityApprovedAt) && !record.approvalIsStale;
+  const universityApprovalAvailable =
+    companyApprovalComplete && !universityApprovalComplete;
 
   return (
     <section className={styles.caseNavigator} aria-labelledby="evidence-case-title">
@@ -135,7 +138,15 @@ export default function EvidenceCaseNavigator({
             <li data-complete={universityApprovalComplete}>
               <button
                 type="button"
-                onClick={() => onNavigate("training-record")}
+                onClick={() =>
+                  onNavigate(
+                    universityApprovalAvailable
+                      ? "university-approval"
+                      : universityApprovalComplete
+                        ? "evidence-readiness"
+                        : "academic-monitoring",
+                  )
+                }
               >
                 <span>02</span>
                 <span>
@@ -147,7 +158,13 @@ export default function EvidenceCaseNavigator({
                 ) : (
                   <BadgeCheck aria-hidden="true" size={18} />
                 )}
-                <em>{universityApprovalComplete ? "Approved" : "Required"}</em>
+                <em>
+                  {universityApprovalComplete
+                    ? "Approved"
+                    : universityApprovalAvailable
+                      ? "Ready for review"
+                      : "Locked until step 01"}
+                </em>
               </button>
             </li>
           </ol>

@@ -227,6 +227,7 @@ export default function CompanyPortalLayout() {
         title="Log out?"
         description="You will need to sign in again to access your portal."
         confirmLabel="Log out"
+        variant="logout"
         onCancel={closeLogoutDialog}
         onConfirm={confirmLogout}
       />

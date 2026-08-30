@@ -6,13 +6,10 @@ import {
   ClipboardCheck,
   FileCheck2,
   Fingerprint,
-  ShieldCheck,
   Waypoints,
 } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
-import BrandIcon from "../../../shared/components/BrandIcon";
+import { useParams } from "react-router-dom";
 import DataState from "../../../shared/components/DataState";
-import ThemeToggle from "../../../shared/components/ThemeToggle";
 import type { EvidenceReviewOutcome, EvidenceReviewRequest } from "../domain/evidenceTypes";
 import {
   getPublicEvidenceReviewRequestAsync,
@@ -96,18 +93,7 @@ export default function PublicEvidenceReviewRequestPage() {
     : "Issued evidence";
 
   return (
-    <main className="public-review-page">
-      <header className="public-review-topbar">
-        <Link to="/" className="public-review-brand">
-          <BrandIcon />
-          <span><strong>SkillBridge</strong><small>Evidence review</small></span>
-        </Link>
-        <div className="public-review-topbar-actions">
-          <span><ShieldCheck size={16} aria-hidden="true" /> Secure external review</span>
-          <ThemeToggle className="public-review-theme-toggle" />
-        </div>
-      </header>
-
+    <div className="public-review-page">
       <section className="public-review-hero">
         <div>
           <p>Evidence Review Request</p>
@@ -149,7 +135,7 @@ export default function PublicEvidenceReviewRequestPage() {
 
           <section className="public-review-trace">
             <header><Waypoints size={20} aria-hidden="true" /><div><span>Evidence Trace</span><h2>What was verified before this card issued</h2></div></header>
-            <ol>{request.card.trace.length ? request.card.trace.map((entry) => <li key={`${entry.sortOrder}-${entry.sourceType}`}><span>{entry.sortOrder}</span><div><strong>{entry.sourceType}</strong><small>{entry.sourceReference} · {entry.status}</small></div></li>) : <li className="public-review-trace-empty">The issued evidence record has no public trace entries.</li>}</ol>
+            <ol>{request.card.trace.length ? request.card.trace.map((entry, index) => <li key={`${entry.sortOrder}-${entry.sourceType}`}><span>{String(index + 1).padStart(2, "0")}</span><div><strong>{entry.sourceType}</strong><small>{entry.sourceReference} · {entry.status}</small></div></li>) : <li className="public-review-trace-empty">The issued evidence record has no public trace entries.</li>}</ol>
             <footer>
               <Fingerprint size={18} aria-hidden="true" />
               <div><span>Proof receipt</span><code>{receipt?.fingerprint ?? "Verified evidence record"}</code></div>
@@ -182,6 +168,6 @@ export default function PublicEvidenceReviewRequestPage() {
           )}
         </aside>
       </section>
-    </main>
+    </div>
   );
 }

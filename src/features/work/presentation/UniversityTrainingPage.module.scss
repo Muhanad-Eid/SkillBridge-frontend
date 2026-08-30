@@ -1,38 +1,38 @@
 .root {
-  --passport-navy: #102442;
-  --passport-ink: #14233c;
+  --passport-navy: var(--sb-color-navy-900, #102442);
+  --passport-ink: var(--sb-color-text);
   --passport-purple: #7653bd;
-  --passport-purple-soft: #f4f0ff;
-  --passport-blue: #eef5ff;
-  --passport-line: #d7e2ef;
-  --passport-muted: #65758d;
+  --passport-purple-soft: color-mix(in srgb, #7653bd 8%, var(--sb-color-surface));
+  --passport-blue: var(--sb-color-info-soft);
+  --passport-line: var(--sb-color-border);
+  --passport-muted: var(--sb-color-text-muted);
   display: grid;
   gap: 20px;
 
   :global(.page-header) {
-    min-height: 160px;
+    min-height: 142px;
     margin: 0;
-    padding: 28px 32px;
+    padding: 24px 28px;
     border: 1px solid var(--passport-line);
     border-right: 0;
     border-left: 0;
     border-radius: 0;
-    background: var(--passport-purple-soft);
+    background: color-mix(in srgb, var(--sb-color-info-soft) 70%, var(--sb-color-surface));
     box-shadow: none;
   }
 
   :global(.page-header-eyebrow) { color: var(--passport-purple); font-weight: 800; letter-spacing: 0.13em; }
-  :global(.page-header h1) { color: var(--passport-ink); font-size: clamp(2rem, 3vw, 3.05rem); letter-spacing: 0; }
+  :global(.page-header h1) { color: var(--passport-ink); font-size: clamp(2rem, 2.6vw, 2.65rem); letter-spacing: 0; }
   :global(.page-header p) { max-width: 650px; color: var(--passport-muted); }
   :global(.page-header-actions) { align-items: center; }
   :global(.page-header-actions .button:first-child) { border-color: var(--passport-navy); background: var(--passport-navy); color: #fff; }
 
   :global(.university-training-kpis) {
     overflow: hidden;
-    grid-template-columns: minmax(220px, 1.3fr) repeat(3, minmax(150px, 1fr));
+    grid-template-columns: minmax(220px, 1.3fr) repeat(4, minmax(130px, 1fr));
     margin: 0;
     border: 1px solid var(--passport-line);
-    border-top: 0;
+    border-top: 1px solid var(--passport-line);
     border-radius: 6px;
     background: var(--sb-color-surface, #fff);
     box-shadow: none;
@@ -62,6 +62,9 @@
 
   :global(.university-training-toolbar) {
     min-height: 48px;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
     margin: 0;
     padding: 0 14px;
     border: 1px solid var(--passport-line);
@@ -69,7 +72,20 @@
     background: var(--sb-color-surface, #fff);
     box-shadow: none;
   }
-  :global(.university-training-toolbar input) { color: var(--passport-ink); }
+  :global(.university-training-toolbar > svg) {
+    flex: 0 0 auto;
+    color: var(--sb-color-text-muted);
+  }
+  :global(.university-training-toolbar input) {
+    min-width: 0;
+    flex: 1 1 auto;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    color: var(--passport-ink);
+    background: transparent;
+    box-shadow: none;
+  }
 
   :global(.university-training-layout) { gap: 16px; align-items: start; }
   :global(.university-training-list) {
@@ -81,12 +97,12 @@
     box-shadow: none;
   }
   :global(.university-training-list button) { min-height: 112px; padding: 18px; border-left: 4px solid transparent; background: transparent; }
-  :global(.university-training-list button.active) { border-left-color: var(--passport-purple); background: #f7f4ff; }
-  :global(.university-training-list button:hover) { background: #f6f9fe; }
+  :global(.university-training-list button.active) { border-left-color: var(--sb-color-info); background: var(--sb-color-info-soft); }
+  :global(.university-training-list button:hover) { background: var(--sb-color-surface-subtle); }
   :global(.university-training-list-heading strong) { color: var(--passport-ink); }
-  :global(.university-training-list > button > span:not(.university-training-list-heading)) { color: #45617e; }
-  :global(.university-training-list-progress) { background: #e3eaf2; }
-  :global(.university-training-list-progress i) { background: var(--passport-purple); }
+  :global(.university-training-list > button > span:not(.university-training-list-heading)) { color: var(--sb-color-text-secondary); }
+  :global(.university-training-list-progress) { background: var(--sb-color-neutral-soft); }
+  :global(.university-training-list-progress i) { background: var(--sb-color-approved); }
 
   :global(.university-training-record) {
     gap: 22px;
@@ -97,10 +113,17 @@
     background: var(--sb-color-surface, #fff);
     box-shadow: none;
   }
-  :global(.university-training-record > header) { padding: 24px 26px 20px; border-bottom: 1px solid var(--passport-line); background: #fbfcff; }
+  :global(.university-training-record > header) { padding: 24px 26px 20px; border-bottom: 1px solid var(--passport-line); background: var(--sb-color-surface-subtle); }
   :global(.university-training-record > header > div > span),
   :global(.university-readiness-section > header > span) { color: var(--passport-purple); font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
-  :global(.university-training-record h2), :global(.university-training-record h3) { color: var(--passport-ink); }
+  :global(.university-training-record > header h2),
+  :global(.university-training-overview h3),
+  :global(.university-milestone-summary h3),
+  :global(.university-progress-form h3),
+  :global(.university-final-review h3),
+  :global(.university-approval-form h3),
+  :global(.university-readiness-section > header h3),
+  :global(.university-training-requirements h3) { color: var(--passport-ink); }
   :global(.university-training-record p) { color: var(--passport-muted); }
 
   :global(.university-case-meta) {
@@ -142,7 +165,7 @@
 
   :global(.university-next-action) {
     margin: 0 26px;
-    border: 1px solid #d3e1f2;
+    border: 1px solid var(--sb-color-border-strong);
     border-radius: 6px;
     box-shadow: none;
   }
@@ -227,35 +250,31 @@
   :global(.university-training-requirements) { margin: 0 26px; }
 
   :global(.university-training-overview) { gap: 16px; }
-  :global(.university-hours-progress), :global(.university-training-identity) { border-color: var(--passport-line); border-radius: 6px; background: #fbfdff; box-shadow: none; }
-  :global(.university-hours-track) { background: #dee7f0; }
-  :global(.university-hours-track > span) { background: var(--passport-purple); }
+  :global(.university-hours-progress), :global(.university-training-identity) { border-color: var(--passport-line); border-radius: 6px; background: var(--sb-color-surface-subtle); box-shadow: none; }
+  :global(.university-hours-track) { background: var(--sb-color-neutral-soft); }
+  :global(.university-hours-track > span) { background: var(--sb-color-approved); }
 
   :global(.university-milestone-summary),
   :global(.university-progress-form),
   :global(.university-final-review),
   :global(.university-approval-form),
   :global(.university-readiness-section),
-  :global(.university-training-requirements) { padding: 22px 24px; border: 1px solid var(--passport-line); border-radius: 6px; background: #fff; box-shadow: none; }
+  :global(.university-training-requirements) { padding: 22px 24px; border: 1px solid var(--passport-line); border-radius: 6px; background: var(--sb-color-surface); box-shadow: none; }
   :global(.university-readiness-section) { margin-bottom: 26px; border-top: 4px solid var(--passport-navy); }
-  :global(.university-approval-form) { border-top: 4px solid var(--passport-purple); background: #fbfaff; }
-  :global(.university-progress-form) { background: #fbfdff; }
+  :global(.university-approval-form) { border-top: 4px solid var(--sb-color-pending); background: var(--sb-color-pending-soft); }
+  :global(.university-progress-form) { background: var(--sb-color-surface-subtle); }
   :global(.university-training-contact-actions) { margin: 0 26px; }
 }
 
 [data-theme="dark"] .root {
-  --passport-ink: #e8effa;
-  --passport-purple-soft: #221d38;
-  --passport-line: #354861;
-  --passport-muted: #afc0d4;
-  :global(.page-header), :global(.university-training-record > header), :global(.university-training-list button.active) { background: #1b2940; }
-  :global(.university-training-kpis), :global(.university-training-toolbar), :global(.university-training-list), :global(.university-training-record), :global(.university-hours-progress), :global(.university-training-identity), :global(.university-milestone-summary), :global(.university-progress-form), :global(.university-final-review), :global(.university-approval-form), :global(.university-readiness-section), :global(.university-training-requirements) { background: #111e31; }
+  --passport-purple-soft: color-mix(in srgb, #9b7bd6 10%, var(--sb-color-surface));
 }
 
 @media (max-width: 1050px) {
   .root {
     :global(.university-training-kpis) { grid-template-columns: 1fr 1fr; }
     :global(.university-training-kpis)::before { grid-column: 1 / -1; border-right: 0; border-bottom: 1px solid var(--passport-line); }
+    :global(.university-training-kpis article:nth-of-type(2n)) { border-right: 0; }
   }
 }
 
@@ -263,6 +282,16 @@
   .root {
     gap: 16px;
     :global(.page-header) { padding: 22px 18px; }
+    :global(.page-header-actions) {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+    }
+    :global(.page-header-actions .button) {
+      width: 100%;
+      justify-content: center;
+    }
     :global(.university-training-kpis) { grid-template-columns: 1fr; }
     :global(.university-training-kpis article) { border-right: 0; border-bottom: 1px solid var(--passport-line); }
     :global(.university-training-layout) { display: grid; }

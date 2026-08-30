@@ -64,7 +64,7 @@ export default function PublicEvidenceSharePage() {
 
   if (isLoading) {
     return (
-      <main className={styles.page}>
+      <div className={styles.page}>
         <DataState
           isLoading
           error=""
@@ -72,13 +72,13 @@ export default function PublicEvidenceSharePage() {
           emptyTitle=""
           emptyDescription=""
         />
-      </main>
+      </div>
     );
   }
 
   if (error || !share) {
     return (
-      <main className={`${styles.page} ${styles.unavailablePage}`}>
+      <div className={`${styles.page} ${styles.unavailablePage}`}>
         <section className={styles.unavailable} aria-labelledby="evidence-unavailable-title">
           <div className={styles.unavailableMark} aria-hidden="true"><FileWarning size={30} /></div>
           <div>
@@ -91,7 +91,7 @@ export default function PublicEvidenceSharePage() {
             <Link to="/">Return to SkillBridge</Link>
           </div>
         </section>
-      </main>
+      </div>
     );
   }
 
@@ -107,7 +107,7 @@ export default function PublicEvidenceSharePage() {
   };
 
   return (
-    <main className={styles.page}>
+    <div className={styles.page}>
       <header className={styles.heading}>
         <div>
           <span className={styles.kicker}>Share-safe evidence record</span>
@@ -284,6 +284,6 @@ export default function PublicEvidenceSharePage() {
         </div>
       )}
       <p className="sr-only"><FileWarning /> <CheckCircle2 /> <UserRoundCheck /> Protected source files are not included.</p>
-    </main>
+    </div>
   );
 }

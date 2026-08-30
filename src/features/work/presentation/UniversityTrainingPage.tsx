@@ -484,7 +484,7 @@ export default function UniversityTrainingPage() {
             ) : null}
           </aside>
 
-          <main className="university-training-record">
+          <div className="university-training-record">
             <header>
               <div>
                 <span>University Training Passport #{record.applicationId}</span>
@@ -920,7 +920,7 @@ export default function UniversityTrainingPage() {
                 <div className="notice notice-error">{readinessError}</div>
               ) : null}
             </section>
-          </main>
+          </div>
         </div>
         </>
       ) : null}
