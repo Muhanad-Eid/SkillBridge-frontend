@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
+  ArrowRight,
   BadgeCheck,
   Check,
   ClipboardCopy,
@@ -9,7 +10,7 @@ import {
   Scale,
   ShieldCheck,
 } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import DataState from "../../../shared/components/DataState";
 import SbBadge from "../../../shared/components/primitives/SbBadge/SbBadge";
 import type { PublicEvidenceShare } from "../domain/evidenceTypes";
@@ -59,16 +60,35 @@ export default function PublicEvidenceProofRoomPage() {
     return () => window.clearTimeout(timeout);
   }, [copyState]);
 
-  if (isLoading || error || !share) {
+  if (isLoading) {
     return (
       <main className={styles.page}>
         <DataState
-          isLoading={isLoading}
-          error={error}
-          empty={!isLoading && !error && !share}
-          emptyTitle="Evidence share unavailable"
-          emptyDescription="Ask the owner to create a new share link."
+          isLoading
+          error=""
+          empty={false}
+          emptyTitle=""
+          emptyDescription=""
         />
+      </main>
+    );
+  }
+
+  if (error || !share) {
+    return (
+      <main className={`${styles.page} ${styles.unavailablePage}`}>
+        <section className={styles.unavailable} aria-labelledby="evidence-unavailable-title">
+          <div className={styles.unavailableMark} aria-hidden="true"><FileWarning size={30} /></div>
+          <div>
+            <span>Evidence verification</span>
+            <h1 id="evidence-unavailable-title">This evidence link is not available.</h1>
+            <p>It may have been disabled by its owner, replaced after a correction, revoked, or copied incompletely. Protected source files remain private.</p>
+          </div>
+          <div className={styles.unavailableActions}>
+            <Link to="/opportunities">Browse opportunities <ArrowRight size={16} aria-hidden="true" /></Link>
+            <Link to="/">Return to SkillBridge</Link>
+          </div>
+        </section>
       </main>
     );
   }

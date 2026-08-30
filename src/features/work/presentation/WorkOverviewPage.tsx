@@ -7,6 +7,8 @@ import {
   Clock3,
   GraduationCap,
   MessageSquare,
+  Plus,
+  RotateCcw,
   Search,
   UsersRound,
 } from "lucide-react";
@@ -375,7 +377,11 @@ export default function WorkOverviewPage({
   if (isCompanyVerificationRequired) {
     return (
       <section className="page work-overview-page">
-        <PageHeader title={isFreelanceView ? "Freelance contracts" : "Work"} />
+        <PageHeader
+          eyebrow={isFreelanceView ? "Delivery workspace" : "Accepted work"}
+          title={isFreelanceView ? "Freelance contracts" : "Work"}
+          description="Track delivery, reviews, and evidence progress from one workspace."
+        />
         <DataState
           isLoading={false}
           error=""
@@ -389,7 +395,15 @@ export default function WorkOverviewPage({
 
   return (
     <section className="page work-overview-page">
-      <PageHeader title={isFreelanceView ? "Freelance contracts" : "Work"} />
+      <PageHeader
+        eyebrow={isFreelanceView ? "Delivery workspace" : "Accepted work"}
+        title={isFreelanceView ? "Freelance contracts" : "Work"}
+        description={
+          isCompany
+            ? "Review delivery, resolve blockers, and move accepted work toward evidence issuance."
+            : "Continue delivery, respond to feedback, and follow every approval toward evidence issuance."
+        }
+      />
 
       {isFreelanceView ? <FreelanceWorkspaceNav /> : null}
 
@@ -467,7 +481,7 @@ export default function WorkOverviewPage({
         </article>
       </div>
 
-      <div className="work-overview-controls">
+      {scopedRecords.length > 0 ? <div className="work-overview-controls">
         <div className="work-overview-tabs" role="tablist" aria-label="Work status">
           {workViews.map((item) => {
             const count =
@@ -523,7 +537,7 @@ export default function WorkOverviewPage({
             </select>
           ) : null}
         </div>
-      </div>
+      </div> : null}
 
       <DataState
         isLoading={isLoading}
@@ -546,6 +560,34 @@ export default function WorkOverviewPage({
                 ? "Accepted proposals will appear here with delivery progress and approval."
                 : "Accepted opportunities will appear here with their milestones and approvals."
             : "Change the status, type, or search filter."
+        }
+        emptyAction={
+          scopedRecords.length === 0 ? (
+            isCompany ? (
+              <Button to="/company/projects" variant="secondary">
+                <Plus size={16} aria-hidden="true" />
+                View opportunities
+              </Button>
+            ) : (
+              <Button to="/job-seeker/opportunities" variant="secondary">
+                <Search size={16} aria-hidden="true" />
+                Explore opportunities
+              </Button>
+            )
+          ) : (
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                setView("all");
+                setTypeFilter("all");
+                setSearch("");
+              }}
+            >
+              <RotateCcw size={16} aria-hidden="true" />
+              Clear filters
+            </Button>
+          )
         }
       />
 

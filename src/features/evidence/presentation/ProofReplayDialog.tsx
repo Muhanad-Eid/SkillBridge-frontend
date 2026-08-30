@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
   BadgeCheck,
@@ -47,17 +47,50 @@ export default function ProofReplayDialog({
 }: ProofReplayDialogProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const dialogRef = useRef<HTMLElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const selected = circuit[selectedIndex] ?? circuit[0];
   const verifiedCount = useMemo(() => circuit.filter((stage) => stage.state === "Complete").length, [circuit]);
   const supportedCriteria = readiness.criteria.filter((criterion) => criterion.isSupported);
   const unsupportedCriteria = readiness.criteria.filter((criterion) => !criterion.isSupported);
 
   useEffect(() => {
+    const previouslyFocusedElement = document.activeElement as HTMLElement | null;
+    const previousOverflow = document.body.style.overflow;
+    const focusTimeout = window.setTimeout(() => closeButtonRef.current?.focus(), 0);
+
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") {
+        onClose();
+        return;
+      }
+
+      if (event.key !== "Tab" || !dialogRef.current) return;
+      const focusableElements = Array.from(
+        dialogRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])',
+        ),
+      );
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements.at(-1);
+      if (!firstElement || !lastElement) return;
+
+      if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+      }
     }
+    document.body.style.overflow = "hidden";
     document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
+    return () => {
+      window.clearTimeout(focusTimeout);
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKeyDown);
+      previouslyFocusedElement?.focus();
+    };
   }, [onClose]);
 
   useEffect(() => {
@@ -84,7 +117,7 @@ export default function ProofReplayDialog({
 
   return (
     <div className={styles.backdrop} role="presentation" onMouseDown={onClose}>
-      <section className={styles.dialog} role="dialog" aria-modal="true" aria-labelledby="proof-replay-title" onMouseDown={(event) => event.stopPropagation()}>
+      <section ref={dialogRef} className={styles.dialog} role="dialog" aria-modal="true" aria-labelledby="proof-replay-title" onMouseDown={(event) => event.stopPropagation()}>
         <header className={styles.header}>
           <div>
             <span>SkillBridge Proof Engine</span>
@@ -95,7 +128,7 @@ export default function ProofReplayDialog({
             <button type="button" className={styles.playButton} onClick={() => { setSelectedIndex(0); setIsPlaying(true); }} disabled={isPlaying}>
               <ArrowRight size={16} aria-hidden="true" /> {isPlaying ? "Replaying proof" : "Replay proof"}
             </button>
-            <button type="button" className={styles.closeButton} aria-label="Close Proof Replay" onClick={onClose}><X size={19} /></button>
+            <button ref={closeButtonRef} type="button" className={styles.closeButton} aria-label="Close Proof Replay" onClick={onClose}><X size={19} /></button>
           </div>
         </header>
 

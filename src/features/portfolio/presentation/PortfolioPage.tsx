@@ -39,6 +39,7 @@ import type { CriterionEvidenceCoverage } from "../../evidence/domain/evidenceTy
 import { getProjectsAsync } from "../../projects/infrastructure/projectApi";
 import { ProjectStatuses, type Project } from "../../projects/domain/projectTypes";
 import type { PortfolioItem } from "../domain/portfolioTypes";
+import styles from "./PortfolioPage.module.scss";
 import {
   getMyPortfolioAsync,
   updatePortfolioItemAsync,
@@ -483,7 +484,7 @@ export default function PortfolioPage() {
   }
 
   return (
-    <section className="page portfolio-page portfolio-manager-page">
+    <section className={`page portfolio-page portfolio-manager-page ${styles.root}`}>
       <PageHeader
         title="Evidence Portfolio"
         actions={

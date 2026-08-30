@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { FileCheck2, LockKeyhole, ShieldCheck } from "lucide-react";
 import type { EvidenceContractVersion } from "../domain/projectTypes";
 import { getEvidenceContractVersionsAsync } from "../infrastructure/projectApi";
+import styles from "./EvidenceContractPanel.module.scss";
 
 type EvidenceContractPanelProps = {
   projectId: number;
@@ -42,7 +43,7 @@ export default function EvidenceContractPanel({
   );
   return (
     <section
-      className={`evidence-contract-panel ${className ?? ""}`}
+      className={`evidence-contract-panel ${styles.root} ${className ?? ""}`}
       aria-labelledby="evidence-contract-title"
     >
       <header>

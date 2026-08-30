@@ -168,7 +168,9 @@ export default function CompanyProfilePage() {
   return (
     <section className="page company-profile-page-v2">
       <PageHeader
+        eyebrow="Public identity"
         title="Company profile"
+        description="Keep the verified identity and public context behind every opportunity accurate."
         actions={
           profile ? (
             <>

@@ -3,6 +3,7 @@ import { Edit3, Search, Star, Trash2 } from "lucide-react";
 import { useOutletContext, useSearchParams } from "react-router-dom";
 import type { AdminPortalOutletContext } from "../../../app/layouts/AdminPortalLayout";
 import Button from "../../../shared/components/Button";
+import { useConfirmation } from "../../../shared/components/ConfirmationContext";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
 import Pagination from "../../../shared/components/Pagination";
@@ -15,6 +16,7 @@ import {
 } from "../infrastructure/adminApi";
 
 export default function AdminReviewsPage() {
+  const confirmAction = useConfirmation();
   const { refreshQueues } = useOutletContext<AdminPortalOutletContext>();
   const [searchParams] = useSearchParams();
   const [reviews, setReviews] = useState<AdminReview[]>([]);
@@ -125,7 +127,12 @@ export default function AdminReviewsPage() {
   }
 
   async function handleDelete(review: AdminReview) {
-    if (!window.confirm(`Delete review for "${review.projectTitle}" by ${review.companyName}?`)) {
+    if (!(await confirmAction({
+      title: "Delete this review?",
+      description: `The review for "${review.projectTitle}" by ${review.companyName} will be permanently removed.`,
+      confirmLabel: "Delete review",
+      variant: "danger",
+    }))) {
       return;
     }
 

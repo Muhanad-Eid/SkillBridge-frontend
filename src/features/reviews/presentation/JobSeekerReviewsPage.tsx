@@ -62,7 +62,9 @@ export default function JobSeekerReviewsPage() {
   return (
     <section className="page jobseeker-reviews-page">
       <PageHeader
+        eyebrow="Professional reputation"
         title="Reviews"
+        description="See the feedback attached to completed work and the evidence it supports."
         actions={
           <Button to="/job-seeker/portfolio" variant="secondary">
             View portfolio

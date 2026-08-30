@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Bell,
   ClipboardCheck,
@@ -8,11 +8,22 @@ import {
   Workflow,
 } from "lucide-react";
 import { Outlet, useNavigate } from "react-router-dom";
+import { getUnreadMessageCountAsync } from "../../features/messages/infrastructure/messageApi";
+import { getUnreadNotificationCountAsync } from "../../features/notifications/infrastructure/notificationApi";
 import { useAuth } from "../../shared/auth/AuthContext";
 import ConfirmDialog from "../../shared/components/ConfirmDialog";
+import { subscribeToPortalBadgeChanges } from "../../shared/events/portalEvents";
+import useVisibilityPolling from "../../shared/hooks/useVisibilityPolling";
 import PortalShell from "../../shared/layout/PortalShell";
 
-const navItems = [
+type UniversityNavItem = {
+  label: string;
+  to: string;
+  icon: typeof GraduationCap;
+  badge?: "messages" | "notifications";
+};
+
+const universityNavItems: UniversityNavItem[] = [
   {
     label: "Supervised training",
     to: "/university/training",
@@ -32,11 +43,13 @@ const navItems = [
     label: "Messages",
     to: "/university/messages",
     icon: MessageSquare,
+    badge: "messages",
   },
   {
     label: "Notifications",
     to: "/university/notifications",
     icon: Bell,
+    badge: "notifications",
   },
   {
     label: "Change password",
@@ -49,7 +62,31 @@ export default function UniversityPortalLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   const closeLogout = useCallback(() => setIsLogoutOpen(false), []);
+
+  const refreshBadges = useCallback(async () => {
+    const [messageResult, notificationResult] = await Promise.allSettled([
+      getUnreadMessageCountAsync(user?.userId),
+      getUnreadNotificationCountAsync(),
+    ]);
+
+    if (messageResult.status === "fulfilled") {
+      setUnreadMessages(messageResult.value);
+    }
+
+    if (notificationResult.status === "fulfilled") {
+      setUnreadNotifications(notificationResult.value);
+    }
+  }, [user?.userId]);
+
+  useVisibilityPolling(refreshBadges, 30000, { runImmediately: true });
+
+  useEffect(
+    () => subscribeToPortalBadgeChanges(() => void refreshBadges()),
+    [refreshBadges],
+  );
 
   function confirmLogout() {
     closeLogout();
@@ -62,7 +99,17 @@ export default function UniversityPortalLayout() {
       role="university"
       portalLabel="University portal"
       homePath="/university/training"
-      navItems={navItems}
+      navItems={universityNavItems.map((item) => ({
+        label: item.label,
+        to: item.to,
+        icon: item.icon,
+        badgeCount:
+          item.badge === "messages"
+            ? unreadMessages
+            : item.badge === "notifications"
+              ? unreadNotifications
+              : undefined,
+      }))}
       userName={user?.fullName}
       userEmail={user?.email}
       onLogout={() => setIsLogoutOpen(true)}

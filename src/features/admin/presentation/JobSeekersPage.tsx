@@ -1,6 +1,7 @@
 import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { BriefcaseBusiness, Plus, X } from "lucide-react";
 import Button from "../../../shared/components/Button";
+import { useConfirmation } from "../../../shared/components/ConfirmationContext";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
 import Pagination from "../../../shared/components/Pagination";
@@ -19,6 +20,7 @@ import {
 } from "../infrastructure/adminApi";
 
 export default function JobSeekersPage() {
+  const confirmAction = useConfirmation();
   const [jobSeekers, setJobSeekers] = useState<AdminJobSeeker[]>([]);
   const [search, setSearch] = useState("");
   const [profileFilter, setProfileFilter] = useState("All");
@@ -157,9 +159,12 @@ export default function JobSeekersPage() {
   }
 
   async function handleDelete(jobSeeker: AdminJobSeeker) {
-    const confirmed = window.confirm(
-      `Delete job seeker account for ${jobSeeker.fullName}?`,
-    );
+    const confirmed = await confirmAction({
+      title: "Delete this participant account?",
+      description: `${jobSeeker.fullName}'s account will be removed where no protected evidence lineage prevents deletion.`,
+      confirmLabel: "Delete participant",
+      variant: "danger",
+    });
 
     if (!confirmed) {
       return;
@@ -203,7 +208,9 @@ export default function JobSeekersPage() {
   return (
     <section className="page admin-list-page">
       <PageHeader
+        eyebrow="Participant records"
         title="Job seekers"
+        description="Manage participant accounts and inspect the profiles behind active work."
         actions={
           <Button to="/admin/users?action=create&role=JobSeeker" variant="primary">
             <Plus size={16} aria-hidden="true" />Add job seeker

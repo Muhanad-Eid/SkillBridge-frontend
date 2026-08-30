@@ -6,6 +6,7 @@ import {
   FileCheck2,
   FolderKanban,
   Search,
+  Sparkles,
   Wrench,
 } from "lucide-react";
 import Button from "../../../shared/components/Button";
@@ -144,16 +145,35 @@ export default function JobSeekerDashboardPage() {
 
   const nextStep = readinessSteps.find((step) => !step.done);
   const recentApplications = applications.slice(0, 4);
+  const focusApplication =
+    applications.find((application) => application.status === ApplicationStatuses.Accepted) ??
+    applications.find((application) => application.status === ApplicationStatuses.Pending);
+  const focusIsWork = focusApplication?.status === ApplicationStatuses.Accepted;
+  const focusPath = focusApplication
+    ? focusIsWork
+      ? `/job-seeker/work/${focusApplication.projectId}`
+      : `/job-seeker/applications`
+    : "/job-seeker/opportunities";
+  const overviewDescription = isLoading
+    ? "Bringing your work and evidence into view."
+    : stats.accepted > 0
+      ? `${stats.accepted} active work record${stats.accepted === 1 ? " is" : "s are"} ready for your attention.`
+      : stats.pending > 0
+        ? `${stats.pending} application${stats.pending === 1 ? " is" : "s are"} waiting for a provider decision.`
+        : "Find practical work and build evidence that travels with you.";
+
   return (
     <section className={`page jobseeker-dashboard-page ${styles.root}`}>
       <PageHeader
+        eyebrow="Job seeker workspace"
         title="Overview"
-        actions={
+        description={overviewDescription}
+        actions={(
           <Button to="/job-seeker/opportunities" variant="primary">
             <Search size={17} aria-hidden="true" />
             Find opportunities
           </Button>
-        }
+        )}
       />
 
       {error ? <div className="notice notice-error">{error}</div> : null}
@@ -205,6 +225,30 @@ export default function JobSeekerDashboardPage() {
             </div>
           </article>
         </div>
+      </section>
+
+      <section className={styles.focus} aria-label="Priority work">
+        <div className={styles.focusSignal} aria-hidden="true"><Sparkles size={20} /></div>
+        <div className={styles.focusCopy}>
+          <span>{focusApplication ? (focusIsWork ? "Priority work record" : "Application in progress") : "Your next opportunity"}</span>
+          <h2>{focusApplication?.projectTitle || "Find a practical opportunity"}</h2>
+          <p>
+            {focusApplication
+              ? focusIsWork
+                ? "Open the Work Hub to submit evidence, track requirements, and move this record toward approval."
+                : "This application is still with the provider. Keep your profile and portfolio ready while you wait."
+              : "Browse verified opportunities and begin building your first evidence-backed work record."}
+          </p>
+        </div>
+        {focusApplication ? (
+          <StatusBadge tone={focusIsWork ? "green" : "amber"}>
+            {focusIsWork ? "Active work" : "Awaiting decision"}
+          </StatusBadge>
+        ) : null}
+        <Button to={focusPath} variant="primary">
+          {focusApplication ? (focusIsWork ? "Open Work Hub" : "View application") : "Discover work"}
+          <ArrowRight size={16} aria-hidden="true" />
+        </Button>
       </section>
 
       {nextStep ? (

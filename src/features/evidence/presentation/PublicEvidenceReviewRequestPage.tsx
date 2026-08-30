@@ -1,7 +1,18 @@
 import { type FormEvent, useEffect, useState } from "react";
-import { CheckCircle2, ClipboardCheck, FileCheck2, ShieldCheck, Waypoints } from "lucide-react";
+import {
+  BadgeCheck,
+  CalendarClock,
+  CheckCircle2,
+  ClipboardCheck,
+  FileCheck2,
+  Fingerprint,
+  ShieldCheck,
+  Waypoints,
+} from "lucide-react";
 import { Link, useParams } from "react-router-dom";
+import BrandIcon from "../../../shared/components/BrandIcon";
 import DataState from "../../../shared/components/DataState";
+import ThemeToggle from "../../../shared/components/ThemeToggle";
 import type { EvidenceReviewOutcome, EvidenceReviewRequest } from "../domain/evidenceTypes";
 import {
   getPublicEvidenceReviewRequestAsync,
@@ -68,25 +79,54 @@ export default function PublicEvidenceReviewRequestPage() {
   }
 
   const boundary = request.card.claimBoundary;
+  const receipt = request.card.proofReceipt;
+  const expiresLabel = request.expiresAt
+    ? new Date(request.expiresAt).toLocaleDateString(undefined, {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      })
+    : "No expiry";
+  const issuedLabel = request.card.issuedAt
+    ? new Date(request.card.issuedAt).toLocaleDateString(undefined, {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      })
+    : "Issued evidence";
 
   return (
     <main className="public-review-page">
       <header className="public-review-topbar">
-        <Link to="/" className="public-review-brand"><span>SB</span> SkillBridge</Link>
-        <div><ShieldCheck size={16} aria-hidden="true" /> External evidence review</div>
+        <Link to="/" className="public-review-brand">
+          <BrandIcon />
+          <span><strong>SkillBridge</strong><small>Evidence review</small></span>
+        </Link>
+        <div className="public-review-topbar-actions">
+          <span><ShieldCheck size={16} aria-hidden="true" /> Secure external review</span>
+          <ThemeToggle className="public-review-theme-toggle" />
+        </div>
       </header>
 
       <section className="public-review-hero">
         <div>
           <p>Evidence Review Request</p>
-          <h1>Review a bounded work claim.</h1>
-          <span>Requested for {request.card.opportunityTitle} by {request.card.providerName}.</span>
+          <h1>Review the proof, not a profile.</h1>
+          <span>Assess a specific, bounded claim from <strong>{request.card.opportunityTitle}</strong>, issued through {request.card.providerName}.</span>
         </div>
-        <aside>
-          <span>Proof receipt</span>
-          <strong>{request.card.proofReceipt?.fingerprint ?? "Verified evidence record"}</strong>
-          <small>{request.card.proofReceipt ? `${request.card.proofReceipt.verifiedCheckpoints}/${request.card.proofReceipt.totalCheckpoints} checkpoints verified` : "Issued evidence"}</small>
+        <aside aria-label="Review request status">
+          <div><BadgeCheck size={20} aria-hidden="true" /><span>Request status</span><strong>{request.status}</strong></div>
+          <dl>
+            <div><dt>Evidence issued</dt><dd>{issuedLabel}</dd></div>
+            <div><dt>Review expires</dt><dd>{expiresLabel}</dd></div>
+          </dl>
         </aside>
+      </section>
+
+      <section className="public-review-guide" aria-label="Review process">
+        <div><span>01</span><strong>Read the brief</strong><small>Understand the decision being requested.</small></div>
+        <div><span>02</span><strong>Inspect the proof</strong><small>Check the boundary, trace, and receipt.</small></div>
+        <div><span>03</span><strong>Record a view</strong><small>Respond only to what this evidence supports.</small></div>
       </section>
 
       <section className="public-review-layout">
@@ -110,6 +150,11 @@ export default function PublicEvidenceReviewRequestPage() {
           <section className="public-review-trace">
             <header><Waypoints size={20} aria-hidden="true" /><div><span>Evidence Trace</span><h2>What was verified before this card issued</h2></div></header>
             <ol>{request.card.trace.length ? request.card.trace.map((entry) => <li key={`${entry.sortOrder}-${entry.sourceType}`}><span>{entry.sortOrder}</span><div><strong>{entry.sourceType}</strong><small>{entry.sourceReference} · {entry.status}</small></div></li>) : <li className="public-review-trace-empty">The issued evidence record has no public trace entries.</li>}</ol>
+            <footer>
+              <Fingerprint size={18} aria-hidden="true" />
+              <div><span>Proof receipt</span><code>{receipt?.fingerprint ?? "Verified evidence record"}</code></div>
+              <strong>{receipt ? `${receipt.verifiedCheckpoints}/${receipt.totalCheckpoints} checkpoints` : "Issued record"}</strong>
+            </footer>
           </section>
         </div>
 
@@ -131,7 +176,8 @@ export default function PublicEvidenceReviewRequestPage() {
               <div className="public-review-questionnaire"><span>Requested questions</span>{request.questions.map((question, index) => <label key={question}><strong>{index + 1}. {question}</strong><textarea value={answers[question] ?? ""} required minLength={3} maxLength={1000} onChange={(event) => setAnswers((current) => ({ ...current, [question]: event.target.value }))} placeholder="Record your evidence-based answer." /></label>)}</div>
               <label><span>Review notes</span><textarea value={response} required minLength={10} maxLength={1500} onChange={(event) => setResponse(event.target.value)} placeholder="Explain what the evidence does or does not establish." /></label>
               {submitError ? <p className="public-review-error">{submitError}</p> : null}
-              <button type="submit" disabled={isSubmitting}>{isSubmitting ? "Recording review..." : "Submit review"}</button>
+              <button type="submit" disabled={isSubmitting}><ClipboardCheck size={17} aria-hidden="true" />{isSubmitting ? "Recording review..." : "Submit independent review"}</button>
+              <small className="public-review-submit-note"><CalendarClock size={14} aria-hidden="true" /> Your response is retained with this review request.</small>
             </form>
           )}
         </aside>

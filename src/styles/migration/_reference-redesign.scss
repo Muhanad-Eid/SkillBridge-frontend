@@ -1120,6 +1120,20 @@ body {
   display: none;
 }
 
+@media (max-width: 640px) {
+  .public-shell .site-header .brand > span {
+    display: block;
+  }
+
+  .public-shell .site-header .brand small {
+    display: none;
+  }
+
+  .public-shell .site-header .brand strong {
+    font-size: 0.875rem;
+  }
+}
+
 .landing-page-reference {
   --landing-reference-ink: #0f172a;
   --landing-reference-secondary: #475569;

@@ -77,7 +77,9 @@ export default function ChangePasswordPage() {
   return (
     <section className="page account-security-page">
       <PageHeader
+        eyebrow="Account security"
         title="Change password"
+        description="Update your password without changing any workspace records or active evidence."
         actions={
           !isEditing ? (
             <Button

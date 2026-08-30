@@ -99,7 +99,11 @@ export default function AdminEvidencePage() {
 
   return (
     <section className="page">
-      <PageHeader title="Evidence controls" />
+      <PageHeader
+        eyebrow="Evidence lifecycle"
+        title="Evidence controls"
+        description="Audit issued records, lineage integrity, sharing state, revocation, and supersession."
+      />
       {selected ? (
         <div className={styles.proofLaunch}>
           <div>

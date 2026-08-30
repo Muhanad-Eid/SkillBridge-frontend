@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 import Button from "../../../shared/components/Button";
+import PageHeader from "../../../shared/components/PageHeader";
 import StatusBadge from "../../../shared/components/StatusBadge";
 import {
   ApplicationStatuses,
@@ -122,14 +123,11 @@ export default function CompanyDashboardPage() {
 
   return (
     <section className={`${styles.root} ${styles.companyDashboardRoot}`}>
-      <header className={styles.top}>
-        <div className={styles.topCopy}>
-          <p className={styles.eyebrow}>Company workspace</p>
-          <h1>Overview</h1>
-          <p>Manage practical opportunities, review applicants, and keep every work outcome moving forward.</p>
-        </div>
-        <div>
-          {isCompanyVerified ? (
+      <PageHeader
+        eyebrow="Company workspace"
+        title="Overview"
+        description="Manage practical opportunities, review applicants, and keep every work outcome moving forward."
+        actions={isCompanyVerified ? (
             <Button
               to="/company/projects?create=1"
               variant="primary"
@@ -150,8 +148,7 @@ export default function CompanyDashboardPage() {
               New opportunity
             </Button>
           )}
-        </div>
-      </header>
+      />
 
       {isLoading ? (
         <section className={styles.loading} role="status">
@@ -261,14 +258,14 @@ export default function CompanyDashboardPage() {
               <div className={styles.actionList}>
               {isCompanyVerified ? (
                 <Button
-                  to="/company/projects?create=1"
+                  to="/company/work"
                   variant="secondary"
                   className={styles.action}
                 >
-                  <span className={styles.actionIcon}><Plus size={18} aria-hidden="true" /></span>
+                  <span className={styles.actionIcon}><BriefcaseBusiness size={18} aria-hidden="true" /></span>
                   <span className={styles.actionCopy}>
-                    <strong>Create opportunity</strong>
-                    <small>Publish a new listing</small>
+                    <strong>Open active work</strong>
+                    <small>Manage delivery and reviews</small>
                   </span>
                   <ArrowRight size={17} aria-hidden="true" />
                 </Button>

@@ -28,6 +28,7 @@ import {
   updateMyJobSeekerProfileAsync,
 } from "../infrastructure/profileApi";
 import SkillsPage from "../../skills/presentation/SkillsPage";
+import styles from "./JobSeekerProfilePage.module.scss";
 
 type JobSeekerPortalContext = {
   refreshProfileCompletion?: () => Promise<void>;
@@ -209,9 +210,15 @@ export default function JobSeekerProfilePage() {
   }
 
   return (
-    <section className="page jobseeker-profile-page">
+    <section className={`page jobseeker-profile-page ${styles.root}`}>
       <PageHeader
+        eyebrow="Professional identity"
         title={isRequiredFlow ? "Complete your profile" : "Profile"}
+        description={
+          isRequiredFlow
+            ? "Add the identity and professional context required to enter the workspace."
+            : "Manage the profile, skills, and public context that travel with your evidence."
+        }
         actions={
           activeTab === "details" && profile && !isEditing ? (
             <>

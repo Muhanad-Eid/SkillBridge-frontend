@@ -1,0 +1,187 @@
+.root {
+  :global(.page-header) {
+    min-height: 118px;
+    align-items: end;
+    margin-bottom: 1.45rem;
+    padding: 1.45rem 1.65rem;
+    border: 1px solid #c8e0fa;
+    border-radius: 8px;
+    background: #eef6ff;
+  }
+
+  :global(.page-header h1) {
+    color: var(--sb-color-text);
+    font-size: clamp(2.1rem, 3.2vw, 2.9rem);
+    line-height: 1.05;
+  }
+
+  :global(.jobseeker-profile-tabs) {
+    gap: .25rem;
+    margin-bottom: 1.4rem;
+    padding: .3rem;
+    border: 1px solid var(--sb-color-border);
+    border-radius: 8px;
+    background: var(--sb-color-surface);
+  }
+
+  :global(.jobseeker-profile-tabs button) {
+    min-height: 40px;
+    border-radius: 6px;
+  }
+
+  :global(.jobseeker-profile-tabs button.active) {
+    background: var(--sb-color-action-soft);
+    color: var(--sb-color-action);
+  }
+
+  :global(.jobseeker-profile-layout) {
+    grid-template-columns: minmax(270px, .72fr) minmax(0, 1.5fr);
+    gap: 1.5rem;
+  }
+
+  :global(.jobseeker-profile-summary) {
+    position: sticky;
+    top: 84px;
+    align-self: start;
+    overflow: hidden;
+    border: 1px solid #203b63;
+    border-top: 0;
+    border-radius: 8px;
+    background: #11294a;
+    color: #fff;
+    box-shadow: none;
+  }
+
+  :global(.jobseeker-profile-summary::before) {
+    display: block;
+    height: 4px;
+    background: #c7f26a;
+    content: "";
+  }
+
+  :global(.jobseeker-profile-summary h2) {
+    color: #fff;
+  }
+
+  :global(.jobseeker-profile-summary > span),
+  :global(.jobseeker-profile-summary > p) {
+    color: #d6e0ed;
+  }
+
+  :global(.jobseeker-profile-avatar) {
+    border-radius: 10px;
+    background: var(--sb-color-action);
+    box-shadow: 4px 4px 0 #c7f26a;
+  }
+
+  :global(.jobseeker-profile-strength) {
+    border-color: rgba(255, 255, 255, .16);
+  }
+
+  :global(.jobseeker-profile-strength span),
+  :global(.jobseeker-profile-strength strong),
+  :global(.jobseeker-profile-signals span),
+  :global(.jobseeker-profile-signals strong),
+  :global(.jobseeker-profile-checklist span) {
+    color: #fff;
+  }
+
+  :global(.jobseeker-profile-strength > div:last-child) {
+    background: rgba(255, 255, 255, .18);
+  }
+
+  :global(.jobseeker-profile-strength b) {
+    background: #c7f26a;
+  }
+
+  :global(.jobseeker-profile-signals),
+  :global(.jobseeker-profile-checklist) {
+    border-color: rgba(255, 255, 255, .16);
+  }
+
+  :global(.jobseeker-profile-checklist > div) {
+    border-color: rgba(255, 255, 255, .12);
+  }
+
+  :global(.jobseeker-profile-checklist .done) {
+    color: #c7f26a;
+  }
+
+  :global(.jobseeker-profile-form-panel) {
+    border-color: var(--sb-color-border);
+    border-radius: 8px;
+    box-shadow: none;
+  }
+
+  :global(.jobseeker-profile-form-panel > header) {
+    min-height: 78px;
+    padding: 1rem 1.25rem;
+    border-color: var(--sb-color-border);
+  }
+
+  :global(.jobseeker-profile-form-panel > header span) {
+    color: var(--sb-color-text-muted);
+    font-size: .67rem;
+    letter-spacing: .08em;
+  }
+
+  :global(.jobseeker-profile-form-panel > header h2) {
+    color: var(--sb-color-text);
+    font-size: 1.08rem;
+  }
+
+  :global(.profile-edit-form) {
+    padding: 1.25rem;
+  }
+
+  :global(.profile-edit-form.is-read-only textarea),
+  :global(.profile-edit-form.is-read-only input) {
+    border-color: transparent;
+    background: var(--sb-color-surface-subtle);
+  }
+
+  :global(.jobseeker-profile-actions .button-primary) {
+    box-shadow: 4px 4px 0 #c7f26a;
+  }
+}
+
+@media (max-width: 960px) {
+  .root {
+    :global(.jobseeker-profile-layout) {
+      grid-template-columns: 1fr;
+    }
+
+    :global(.jobseeker-profile-summary) {
+      position: static;
+    }
+  }
+}
+
+@media (max-width: 720px) {
+  .root {
+    :global(.page-header) {
+      align-items: stretch;
+      flex-direction: column;
+      padding: 1.25rem;
+    }
+
+    :global(.page-header .button) {
+      width: 100%;
+    }
+  }
+}
+
+[data-theme="dark"] .root {
+  :global(.page-header) {
+    border-color: #31577f;
+    background: #132c4d;
+  }
+
+  :global(.page-header h1) {
+    color: #fff;
+  }
+
+  :global(.jobseeker-profile-summary) {
+    border-color: #31577f;
+  }
+}

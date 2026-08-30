@@ -27,8 +27,8 @@ import {
 import { useParams } from "react-router-dom";
 import { useAuth } from "../../../shared/auth/AuthContext";
 import Button from "../../../shared/components/Button";
+import { useConfirmation } from "../../../shared/components/ConfirmationContext";
 import DataState from "../../../shared/components/DataState";
-import PageHeader from "../../../shared/components/PageHeader";
 import StatusBadge from "../../../shared/components/StatusBadge";
 import {
   ApplicationStatuses,
@@ -74,6 +74,7 @@ import {
   getMyCompanyReviewsAsync,
 } from "../../reviews/infrastructure/reviewApi";
 import WorkProgressPanel from "./WorkProgressPanel";
+import styles from "./WorkHubPage.module.scss";
 
 type WorkerRecord = {
   application: Application;
@@ -119,6 +120,7 @@ function buildConversationUrl(
 }
 
 export default function WorkHubPage() {
+  const confirmAction = useConfirmation();
   const { projectId } = useParams();
   const { user } = useAuth();
   const numericProjectId = Number(projectId);
@@ -425,9 +427,12 @@ export default function WorkHubPage() {
 
     if (
       status === ProjectStatuses.Completed &&
-      !window.confirm(
-        `Mark "${project.title}" complete? Final work is already approved, and reviews can be added next.`,
-      )
+      !(await confirmAction({
+        title: "Complete this opportunity?",
+        description: `Final work for "${project.title}" is approved. Completing it closes active delivery and unlocks the review stage.`,
+        confirmLabel: "Complete opportunity",
+        variant: "warning",
+      }))
     ) {
       return;
     }
@@ -460,22 +465,30 @@ export default function WorkHubPage() {
       : "/job-seeker/work";
 
   return (
-    <section className="page work-hub-page">
+    <section className={`page work-hub-page ${styles.root}`}>
       <Button to={backPath} variant="ghost" className="work-hub-back">
         <ArrowLeft size={17} aria-hidden="true" />
         {isFreelanceContract ? "Freelance contracts" : "Work"}
       </Button>
 
-      <PageHeader
-        title={project?.title ?? "Opportunity work"}
-        actions={
-          project ? (
-            <StatusBadge tone={getProjectTone(project)}>
-              {getProjectDisplayStatusLabel(project)}
-            </StatusBadge>
-          ) : null
-        }
-      />
+      <header className={styles.masthead}>
+        <div>
+          <span>Work hub</span>
+          <h1>{project?.title ?? "Opportunity work"}</h1>
+          <p>
+            {project
+              ? isCompany
+                ? "Keep the delivery, approvals, and evidence route moving from one place."
+                : "Complete the delivery and follow the evidence route from submission to approval."
+              : "Loading the delivery workspace."}
+          </p>
+        </div>
+        {project ? (
+          <StatusBadge tone={getProjectTone(project)}>
+            {getProjectDisplayStatusLabel(project)}
+          </StatusBadge>
+        ) : null}
+      </header>
 
       {message ? <div className="notice notice-success">{message}</div> : null}
 

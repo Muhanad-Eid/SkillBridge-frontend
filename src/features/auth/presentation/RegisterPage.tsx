@@ -2,6 +2,7 @@ import { type FormEvent, useState } from "react";
 import { ArrowLeft, ArrowRight, Box, Check, Eye, EyeOff, LockKeyhole, Mail, UserRound } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { getRoleHomePath, useAuth } from "../../../shared/auth/AuthContext";
+import ThemeToggle from "../../../shared/components/ThemeToggle";
 import styles from "./AuthPage.module.scss";
 import { ProviderTypes, RegisterRoles, type ProviderType, type RegisterRole } from "../domain/authTypes";
 import { registerAsync } from "../infrastructure/authApi";
@@ -47,6 +48,7 @@ export default function RegisterPage() {
 
   return (
     <section className={styles.page}>
+      <ThemeToggle className={styles.themeToggle} />
       <form className={styles.card} onSubmit={handleSubmit}>
         <header className={styles.header}>
           <span className={styles.mark}><Check size={27} strokeWidth={2.5} aria-hidden="true" /></span>

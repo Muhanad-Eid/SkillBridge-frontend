@@ -41,6 +41,7 @@ import {
 } from "../domain/projectTypes";
 import { getProjectsAsync } from "../infrastructure/projectApi";
 import FreelanceWorkspaceNav from "./FreelanceWorkspaceNav";
+import styles from "./ProjectsPage.module.scss";
 
 type ProjectsPageProps = {
   mode?: "opportunities" | "freelance";
@@ -308,10 +309,18 @@ export default function ProjectsPage({
     <section
       className={`page marketplace-page ${
         isJobSeeker ? "jobseeker-discovery-page" : ""
-      } ${isFreelanceView ? "freelance-marketplace-page" : ""}`}
+      } ${isFreelanceView ? "freelance-marketplace-page" : ""} ${
+        isJobSeeker ? styles.discovery : styles.marketplace
+      }`}
     >
       <PageHeader
+        eyebrow={isFreelanceView ? "Focused paid work" : "Verified opportunities"}
         title={isFreelanceView ? "Industry micro-tasks" : "Opportunities"}
+        description={
+          isFreelanceView
+            ? "Find bounded tasks with clear delivery terms and evidence expectations."
+            : "Explore work with defined outcomes, evaluation criteria, and verified providers."
+        }
         actions={
           isJobSeeker ? (
             <Button
@@ -335,37 +344,36 @@ export default function ProjectsPage({
       ) : null}
 
       {isJobSeeker ? (
-        <div className="jobseeker-discovery-summary">
-          <article>
-            {isFreelanceView ? (
-              <CircleDollarSign size={19} aria-hidden="true" />
-            ) : (
-              <BriefcaseBusiness size={19} aria-hidden="true" />
-            )}
+        <section className={styles.discoverySignal} aria-label="Discovery summary">
+          <header>
             <div>
-              <strong>{openCount}</strong>
-              <span>{isFreelanceView ? "Open tasks" : "Open opportunities"}</span>
+              <h2>{isFreelanceView ? "Find a useful task" : "Find work worth proving"}</h2>
+              <p>
+                {openCount > 0
+                  ? `${openCount} verified ${isFreelanceView ? (openCount === 1 ? "task is" : "tasks are") : (openCount === 1 ? "opportunity is" : "opportunities are")} available in this result set.`
+                  : "New verified work appears here as providers publish it."}
+              </p>
             </div>
-          </article>
-          <article>
-            <ShieldCheck size={19} aria-hidden="true" />
-            <div><strong>Verified</strong><span>Providers shown here</span></div>
-          </article>
-          <article>
-            <FileApplicationCount
-              count={
-                applications.filter((application) =>
-                  isFreelanceView
-                    ? application.opportunityType ===
-                      OpportunityTypes.FreelanceTask
-                    : application.opportunityType !==
-                      OpportunityTypes.FreelanceTask,
-                ).length
-              }
-            />
-            <div>
-              <strong>
-                {
+          </header>
+          <div className="jobseeker-discovery-summary">
+            <article>
+              {isFreelanceView ? (
+                <CircleDollarSign size={19} aria-hidden="true" />
+              ) : (
+                <BriefcaseBusiness size={19} aria-hidden="true" />
+              )}
+              <div>
+                <strong>{openCount}</strong>
+                <span>{isFreelanceView ? "Open tasks" : "Open opportunities"}</span>
+              </div>
+            </article>
+            <article>
+              <ShieldCheck size={19} aria-hidden="true" />
+              <div><strong>Verified</strong><span>Providers shown here</span></div>
+            </article>
+            <article>
+              <FileApplicationCount
+                count={
                   applications.filter((application) =>
                     isFreelanceView
                       ? application.opportunityType ===
@@ -374,11 +382,24 @@ export default function ProjectsPage({
                         OpportunityTypes.FreelanceTask,
                   ).length
                 }
-              </strong>
-              <span>{isFreelanceView ? "Your proposals" : "Your applications"}</span>
-            </div>
-          </article>
-        </div>
+              />
+              <div>
+                <strong>
+                  {
+                    applications.filter((application) =>
+                      isFreelanceView
+                        ? application.opportunityType ===
+                          OpportunityTypes.FreelanceTask
+                        : application.opportunityType !==
+                          OpportunityTypes.FreelanceTask,
+                    ).length
+                  }
+                </strong>
+                <span>{isFreelanceView ? "Your proposals" : "Your applications"}</span>
+              </div>
+            </article>
+          </div>
+        </section>
       ) : null}
 
       <div className="jobseeker-discovery-filter-area" ref={filterControlRef}>

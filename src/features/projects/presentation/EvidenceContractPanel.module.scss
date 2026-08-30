@@ -1,0 +1,80 @@
+.root {
+  --contract-navy: #102442;
+  --contract-line: #d5e1ee;
+  --contract-muted: #65758c;
+  --contract-coral: #ff685c;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--contract-line);
+  border-radius: 6px;
+  background: var(--sb-color-surface, #fff);
+  box-shadow: none;
+
+  > header {
+    align-items: center;
+    gap: 14px;
+    padding: 20px 22px;
+    border-bottom: 1px solid var(--contract-line);
+    background: #f2f7ff;
+  }
+
+  :global(.evidence-contract-icon) { border-radius: 5px; background: var(--contract-navy); color: #c9ef71; }
+  h2 { color: var(--contract-navy); font-size: 1.18rem; }
+  > header p { color: var(--contract-muted); }
+
+  :global(.evidence-contract-summary) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+    gap: 0;
+    margin: 0;
+    border: 0;
+    border-bottom: 1px solid var(--contract-line);
+    border-radius: 0;
+    background: transparent;
+  }
+  :global(.evidence-contract-summary article) { min-height: 86px; padding: 17px 22px; border-right: 1px solid var(--contract-line); background: transparent; }
+  :global(.evidence-contract-summary article:last-child) { border-right: 0; }
+  :global(.evidence-contract-summary span), :global(.evidence-contract-detail > header span), :global(.evidence-contract-approvals > span), :global(.evidence-contract-criteria > span) { color: var(--contract-muted); font-weight: 800; letter-spacing: 0.1em; }
+  :global(.evidence-contract-summary strong) { color: var(--contract-navy); font-size: 1.45rem; }
+
+  :global(.evidence-contract-pin) { margin: 18px 22px 0; padding: 12px 14px; border-left: 3px solid var(--contract-coral); background: #fff6f4; color: #7e342f; }
+  :global(.evidence-contract-history) { margin: 18px 22px 0; gap: 0; border: 1px solid var(--contract-line); border-radius: 5px; overflow: hidden; }
+  :global(.evidence-contract-history button) { min-height: 50px; border: 0; border-right: 1px solid var(--contract-line); border-radius: 0; background: #fff; }
+  :global(.evidence-contract-history button:last-child) { border-right: 0; }
+  :global(.evidence-contract-history button:hover), :global(.evidence-contract-history button.is-selected) { background: #eef5ff; color: var(--contract-navy); box-shadow: inset 0 -3px 0 var(--contract-coral); }
+  :global(.evidence-contract-history svg) { color: #3176bb; }
+
+  :global(.evidence-contract-detail) { gap: 16px; margin: 18px 22px 22px; padding-top: 0; border-top: 0; }
+  :global(.evidence-contract-detail h3) { color: var(--contract-navy); font-size: 1.1rem; }
+  :global(.evidence-contract-detail dl) { gap: 1px; border: 1px solid var(--contract-line); border-radius: 5px; overflow: hidden; background: var(--contract-line); }
+  :global(.evidence-contract-detail dl > div) { padding: 15px; border-radius: 0; background: #fbfdff; }
+  :global(.evidence-contract-detail dt) { color: var(--contract-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+  :global(.evidence-contract-detail dd) { color: #27425d; }
+  :global(.evidence-contract-approvals) { padding: 14px 15px; border-color: #bad6c7; border-radius: 5px; background: #f3faef; }
+  :global(.evidence-contract-approvals strong) { color: #1b6b4c; }
+  :global(.evidence-contract-criteria ul) { gap: 0; border: 1px solid var(--contract-line); border-radius: 5px; overflow: hidden; }
+  :global(.evidence-contract-criteria li) { min-height: 48px; padding: 12px 14px; border: 0; border-bottom: 1px solid var(--contract-line); border-radius: 0; }
+  :global(.evidence-contract-criteria li:last-child) { border-bottom: 0; }
+  :global(.evidence-contract-criteria li strong) { color: var(--contract-navy); }
+
+  @media (max-width: 640px) {
+    :global(.evidence-contract-summary) { grid-template-columns: 1fr; }
+    :global(.evidence-contract-summary article) { border-right: 0; border-bottom: 1px solid var(--contract-line); }
+    :global(.evidence-contract-history) { display: grid; grid-template-columns: 1fr 1fr; }
+    :global(.evidence-contract-history button) { border-bottom: 1px solid var(--contract-line); }
+  }
+}
+
+[data-theme="dark"] .root {
+  --contract-navy: #e7f0fb;
+  --contract-line: #354961;
+  --contract-muted: #adc0d5;
+  background: #111e31;
+  > header { background: #172940; }
+  :global(.evidence-contract-summary article), :global(.evidence-contract-history button) { background: #111e31; }
+  :global(.evidence-contract-history button:hover), :global(.evidence-contract-history button.is-selected) { background: #1a304b; }
+  :global(.evidence-contract-detail dl > div) { background: #14243a; }
+  :global(.evidence-contract-detail dd) { color: #d4e1f0; }
+  :global(.evidence-contract-pin) { background: #3a231f; color: #f4b9ae; }
+  :global(.evidence-contract-approvals) { background: #142b21; border-color: #3d7652; }
+  :global(.evidence-contract-criteria li) { background: #111e31; }
+}

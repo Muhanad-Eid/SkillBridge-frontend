@@ -264,7 +264,11 @@ export default function CompanyApplicationsPage() {
   if (!isCompanyVerified) {
     return (
       <section className="page company-pipeline-page">
-        <PageHeader title="Applications" />
+        <PageHeader
+          eyebrow="Hiring pipeline"
+          title="Applications"
+          description="Review candidates against the opportunity context and record a clear decision."
+        />
         <DataState
           isLoading={false}
           error=""
@@ -279,12 +283,15 @@ export default function CompanyApplicationsPage() {
   return (
     <section className="page company-pipeline-page">
       <PageHeader
+        eyebrow="Hiring pipeline"
         title="Applications"
+        description="Review candidates against the opportunity context and record a clear decision."
       />
 
       {actionMessage ? <div className="notice notice-success">{actionMessage}</div> : null}
       {error ? <div className="notice notice-error">{error}</div> : null}
 
+      <div className="company-pipeline-controls">
       <div className="company-pipeline-tabs" role="tablist" aria-label="Application status">
         {pipelineTabs.map((tab) => (
           <button
@@ -329,6 +336,7 @@ export default function CompanyApplicationsPage() {
             <option key={project.id} value={project.id}>{project.title}</option>
           ))}
         </select>
+      </div>
       </div>
 
       <DataState

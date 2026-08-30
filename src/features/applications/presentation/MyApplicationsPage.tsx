@@ -11,6 +11,7 @@ import {
   XCircle,
 } from "lucide-react";
 import Button from "../../../shared/components/Button";
+import { useConfirmation } from "../../../shared/components/ConfirmationContext";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
 import StatusBadge from "../../../shared/components/StatusBadge";
@@ -32,6 +33,7 @@ import {
   getMyApplicationsAsync,
   withdrawApplicationAsync,
 } from "../infrastructure/applicationApi";
+import styles from "./MyApplicationsPage.module.scss";
 
 const statusTabs = [
   { label: "All", value: "all" },
@@ -55,6 +57,7 @@ type MyApplicationsPageProps = {
 export default function MyApplicationsPage({
   mode = "applications",
 }: MyApplicationsPageProps) {
+  const confirmAction = useConfirmation();
   const [applications, setApplications] = useState<Application[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [search, setSearch] = useState("");
@@ -143,15 +146,18 @@ export default function MyApplicationsPage({
     }),
     [scopedApplications],
   );
+  const activeApplication = scopedApplications.find(
+    (application) => application.status === ApplicationStatuses.Accepted,
+  );
 
   async function handleWithdraw(application: Application) {
-    if (
-      !window.confirm(
-        `Withdraw your ${
-          isFreelanceView ? "proposal" : "application"
-        } for "${application.projectTitle}"?`,
-      )
-    ) {
+    const submissionLabel = isFreelanceView ? "proposal" : "application";
+    if (!(await confirmAction({
+      title: `Withdraw this ${submissionLabel}?`,
+      description: `Your ${submissionLabel} for "${application.projectTitle}" will leave the provider's active review queue.`,
+      confirmLabel: `Withdraw ${submissionLabel}`,
+      variant: "warning",
+    }))) {
       return;
     }
 
@@ -195,10 +201,16 @@ export default function MyApplicationsPage({
     <section
       className={`page jobseeker-applications-page ${
         isFreelanceView ? "freelance-proposals-page" : ""
-      }`}
+      } ${styles.root}`}
     >
       <PageHeader
+        eyebrow={isFreelanceView ? "Proposal pipeline" : "Opportunity pipeline"}
         title={isFreelanceView ? "Freelance proposals" : "Applications"}
+        description={
+          isFreelanceView
+            ? "Track every proposal from provider review through contract handoff."
+            : "Follow each application from decision through accepted work and evidence."
+        }
         actions={
           <Button
             to={
@@ -230,6 +242,24 @@ export default function MyApplicationsPage({
         </article>
         <article><span>Rejected / withdrawn</span><strong>{stats.closed}</strong></article>
       </div>
+
+      {activeApplication ? (
+        <section className={styles.activeHandoff} aria-label="Active work handoff">
+          <span className={styles.activeHandoffIcon}><FolderKanban size={20} aria-hidden="true" /></span>
+          <div>
+            <span>Accepted record</span>
+            <h2>{activeApplication.projectTitle}</h2>
+            <p>
+              Your application is accepted. Continue in the Work Hub to manage delivery, evidence, and approval.
+            </p>
+          </div>
+          <StatusBadge tone="green">Active work</StatusBadge>
+          <Button to={`/job-seeker/work/${activeApplication.projectId}`} variant="primary">
+            Open Work Hub
+            <ArrowRight size={16} aria-hidden="true" />
+          </Button>
+        </section>
+      ) : null}
 
       <div className="jobseeker-application-controls">
         <div

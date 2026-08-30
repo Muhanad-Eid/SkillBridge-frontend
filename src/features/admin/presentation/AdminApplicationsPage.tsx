@@ -3,6 +3,7 @@ import { Check, X } from "lucide-react";
 import { useOutletContext, useSearchParams } from "react-router-dom";
 import type { AdminPortalOutletContext } from "../../../app/layouts/AdminPortalLayout";
 import Button from "../../../shared/components/Button";
+import { useConfirmation } from "../../../shared/components/ConfirmationContext";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
 import Pagination from "../../../shared/components/Pagination";
@@ -27,6 +28,7 @@ function getApplicationTone(status: ApplicationStatus) {
 }
 
 export default function AdminApplicationsPage() {
+  const confirmAction = useConfirmation();
   const { refreshQueues } = useOutletContext<AdminPortalOutletContext>();
   const [searchParams] = useSearchParams();
   const [applications, setApplications] = useState<AdminApplication[]>([]);
@@ -117,9 +119,12 @@ export default function AdminApplicationsPage() {
   }, [applications]);
 
   async function handleDelete(application: AdminApplication) {
-    const confirmed = window.confirm(
-      `Delete ${application.jobSeekerName}'s application for "${application.projectTitle}"?`,
-    );
+    const confirmed = await confirmAction({
+      title: "Delete this application?",
+      description: `${application.jobSeekerName}'s application for "${application.projectTitle}" will be permanently removed.`,
+      confirmLabel: "Delete application",
+      variant: "danger",
+    });
 
     if (!confirmed) {
       return;
@@ -183,7 +188,9 @@ export default function AdminApplicationsPage() {
   return (
     <section className="page admin-list-page">
       <PageHeader
+        eyebrow="Application governance"
         title="Applications"
+        description="Inspect participation decisions and their downstream work and evidence state."
       />
 
       <div className="toolbar admin-toolbar">

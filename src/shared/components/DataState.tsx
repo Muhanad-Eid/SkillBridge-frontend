@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import EmptyState from "./EmptyState";
 
 type DataStateProps = {
@@ -6,6 +7,7 @@ type DataStateProps = {
   empty: boolean;
   emptyTitle: string;
   emptyDescription: string;
+  emptyAction?: ReactNode;
 };
 
 export default function DataState({
@@ -14,6 +16,7 @@ export default function DataState({
   empty,
   emptyTitle,
   emptyDescription,
+  emptyAction,
 }: DataStateProps) {
   if (isLoading) {
     return <div className="notice">Loading...</div>;
@@ -25,7 +28,11 @@ export default function DataState({
 
   if (empty) {
     return (
-      <EmptyState title={emptyTitle} description={emptyDescription} />
+      <EmptyState
+        title={emptyTitle}
+        description={emptyDescription}
+        action={emptyAction}
+      />
     );
   }
 

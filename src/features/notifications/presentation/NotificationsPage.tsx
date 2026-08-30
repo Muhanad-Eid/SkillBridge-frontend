@@ -162,7 +162,9 @@ export default function NotificationsPage() {
   return (
     <section className="page portal-notifications-page">
       <PageHeader
+        eyebrow="Workspace attention"
         title="Notifications"
+        description="Follow decisions, approvals, messages, and evidence changes that require your attention."
         actions={
           <Button
             type="button"

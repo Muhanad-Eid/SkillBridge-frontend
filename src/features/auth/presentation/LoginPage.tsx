@@ -2,6 +2,7 @@ import { type FormEvent, useState } from "react";
 import { Check, Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { getRoleHomePath, useAuth } from "../../../shared/auth/AuthContext";
+import ThemeToggle from "../../../shared/components/ThemeToggle";
 import styles from "./AuthPage.module.scss";
 import { loginAsync } from "../infrastructure/authApi";
 
@@ -37,6 +38,7 @@ export default function LoginPage() {
 
   return (
     <section className={styles.page}>
+      <ThemeToggle className={styles.themeToggle} />
       <form className={styles.card} onSubmit={handleSubmit}>
         <header className={styles.header}>
           <span className={styles.mark}><Check size={27} strokeWidth={2.5} aria-hidden="true" /></span>
@@ -44,12 +46,6 @@ export default function LoginPage() {
           <p>Sign in to your SkillBridge account to continue.</p>
         </header>
 
-        <div className={styles.socials} aria-hidden="true">
-          <span className={`${styles.social} ${styles.google}`}>G</span>
-          <span className={`${styles.social} ${styles.github}`}>GH</span>
-          <span className={`${styles.social} ${styles.linkedin}`}>in</span>
-        </div>
-        <p className={styles.divider}>Or continue with email</p>
         {error ? <div className={`${styles.message} ${styles.error}`}>{error}</div> : null}
         {searchParams.get("passwordChanged") === "1" ? <div className={`${styles.message} ${styles.success}`}>Password changed successfully. Log in with your new password.</div> : null}
 

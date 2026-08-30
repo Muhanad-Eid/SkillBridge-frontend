@@ -414,6 +414,16 @@ input {
   color: #b42318;
 }
 
+.confirm-dialog-warning .confirm-dialog-icon {
+  background: var(--sb-color-warning-soft);
+  color: var(--sb-color-warning);
+}
+
+.confirm-dialog-neutral .confirm-dialog-icon {
+  background: var(--sb-color-action-soft);
+  color: var(--sb-color-action);
+}
+
 .confirm-dialog h2 {
   margin: 18px 0 7px;
   color: #101828;

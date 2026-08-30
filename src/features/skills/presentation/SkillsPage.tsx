@@ -150,7 +150,13 @@ export default function SkillsPage({
         embedded ? " is-embedded" : ""
       }`}
     >
-      {!embedded ? <PageHeader title="Skills" /> : null}
+      {!embedded ? (
+        <PageHeader
+          eyebrow="Evidence vocabulary"
+          title="Skills"
+          description="Maintain the skill definitions used across opportunities, profiles, and evidence records."
+        />
+      ) : null}
 
       <DataState
         isLoading={isLoading}

@@ -63,6 +63,7 @@ import {
   updateContributionResponsibilitiesAsync,
 } from "../infrastructure/workApi";
 import TrainingReportsPanel from "./TrainingReportsPanel";
+import EvidenceCaseNavigator from "./EvidenceCaseNavigator";
 
 type WorkProgressPanelProps = {
   isCompany: boolean;
@@ -499,7 +500,7 @@ export default function WorkProgressPanel({
       </div>
 
       {record.acceptedEvidenceContractVersionNumber ? (
-        <div className="workflow-policy-note" role="note">
+        <div id="evidence-contract" className="workflow-policy-note" role="note">
           <ClipboardCheck aria-hidden="true" />
           <span>
             This participation is governed by Evidence Contract version {" "}
@@ -533,6 +534,15 @@ export default function WorkProgressPanel({
           </Button>
         ) : null}
       </section>
+
+      <EvidenceCaseNavigator
+        record={record}
+        readiness={
+          readiness?.applicationId === record.applicationId ? readiness : null
+        }
+        isCompany={isCompany}
+        onNavigate={focusWorkSection}
+      />
 
       <div id="evidence-readiness">
         <div className="work-proof-engine-launch">

@@ -154,7 +154,9 @@ export default function AdminDashboard() {
   return (
     <section className="page admin-dashboard-page admin-dashboard-v2">
       <PageHeader
+        eyebrow="Platform operations"
         title="Overview"
+        description="Monitor account health, opportunity activity, and evidence operations across SkillBridge."
         actions={
           <>
             <Button to="/admin/users?action=create" variant="secondary">

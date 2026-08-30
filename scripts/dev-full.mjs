@@ -72,13 +72,13 @@ try {
   if (process.platform === "win32") {
     start(
       process.env.ComSpec ?? "cmd.exe",
-      ["/d", "/s", "/c", "npm run dev -- --host 127.0.0.1 --port 5173 --strictPort"],
+      ["/d", "/s", "/c", "npm run dev:client -- --host 127.0.0.1 --port 5173 --strictPort"],
       { cwd: process.cwd() },
     );
   } else {
     start(
       "npm",
-      ["run", "dev", "--", "--host", "127.0.0.1", "--port", "5173", "--strictPort"],
+      ["run", "dev:client", "--", "--host", "127.0.0.1", "--port", "5173", "--strictPort"],
       { cwd: process.cwd() },
     );
   }

@@ -12,8 +12,6 @@ import {
   BookOpenCheck,
   Building2,
   CheckCircle2,
-  CircleDashed,
-  Clock3,
   ExternalLink,
   FileDown,
   GraduationCap,
@@ -21,7 +19,6 @@ import {
   Printer,
   RotateCcw,
   Search,
-  ShieldCheck,
   Workflow,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -48,6 +45,8 @@ import {
   updateTrainingProgressAsync,
 } from "../infrastructure/workApi";
 import TrainingReportsPanel from "./TrainingReportsPanel";
+import EvidenceCaseNavigator from "./EvidenceCaseNavigator";
+import styles from "./UniversityTrainingPage.module.scss";
 
 export default function UniversityTrainingPage() {
   const navigate = useNavigate();
@@ -146,13 +145,6 @@ export default function UniversityTrainingPage() {
     record?.trainingReports.filter(
       (report) => report.status === TrainingReportStatuses.Submitted,
     ).length ?? 0;
-  const companyApprovalComplete = Boolean(
-    record?.companyApprovedAt && !record.approvalIsStale,
-  );
-  const universityApprovalComplete = Boolean(
-    record?.universityApprovedAt && !record.approvalIsStale,
-  );
-
   const nextAction = useMemo(() => {
     if (!record) return null;
 
@@ -208,7 +200,7 @@ export default function UniversityTrainingPage() {
         title: "Waiting for company approval",
         description:
           "The provider must evaluate and approve the final work before university approval becomes available.",
-        targetId: "approval-route",
+        targetId: "evidence-case-workspace",
         tone: "neutral",
       } as const;
     }
@@ -270,23 +262,35 @@ export default function UniversityTrainingPage() {
     setAcademicRequirementsMet(item.academicRequirementsMet);
     setEvaluation(item.universityEvaluation ?? "");
     setFeedback("");
+    setReadiness(null);
+    setReadinessError("");
+  }
+
+  function scrollToSection(targetId: string) {
+    const universityTarget =
+      targetId === "training-record"
+        ? "university-approval"
+        : targetId === "final-submission"
+          ? "training-reports"
+          : targetId;
+    const target =
+      document.getElementById(universityTarget) ??
+      document.getElementById("evidence-case-workspace");
+    target?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function resolveReadinessCondition(code: string) {
     const targetByCode: Record<string, string> = {
       FinalSubmissionMissing: "training-reports",
       WorkIncomplete: "training-reports",
-      CriterionEvaluationMissing: "approval-route",
-      RequiredCriterionUnsatisfied: "approval-route",
-      CompanyApprovalMissing: "approval-route",
+      CriterionEvaluationMissing: "evidence-case-workspace",
+      RequiredCriterionUnsatisfied: "evidence-case-workspace",
+      CompanyApprovalMissing: "evidence-case-workspace",
       UniversityApprovalMissing: "university-approval",
     };
     const target = targetByCode[code];
     if (target) {
-      document.getElementById(target)?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
+      scrollToSection(target);
       return;
     }
     setReadinessError(
@@ -301,6 +305,7 @@ export default function UniversityTrainingPage() {
     try {
       await callback();
       setMessage("Training record updated.");
+      setReadiness(null);
       await load();
     } catch (caughtError) {
       setError(
@@ -342,7 +347,7 @@ export default function UniversityTrainingPage() {
   }
 
   return (
-    <section className="page university-training-page">
+    <section className={`page university-training-page ${styles.root}`}>
       <PageHeader
         title="University Training Passport"
         eyebrow="Academic oversight"
@@ -484,7 +489,32 @@ export default function UniversityTrainingPage() {
               <div>
                 <span>University Training Passport #{record.applicationId}</span>
                 <h2>{record.projectTitle}</h2>
-                <p>{record.jobSeekerName} · {record.companyName}</p>
+                <dl className="university-case-meta">
+                  <div>
+                    <dt>Participant</dt>
+                    <dd>{record.jobSeekerName}</dd>
+                  </div>
+                  <div>
+                    <dt>Provider</dt>
+                    <dd>{record.companyName}</dd>
+                  </div>
+                  <div>
+                    <dt>Contract</dt>
+                    <dd>
+                      {record.acceptedEvidenceContractVersionNumber
+                        ? `Version ${record.acceptedEvidenceContractVersionNumber}`
+                        : "Not pinned"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Submission</dt>
+                    <dd>
+                      {record.finalSubmissionRevision
+                        ? `Revision ${record.finalSubmissionRevision}`
+                        : "Not submitted"}
+                    </dd>
+                  </div>
+                </dl>
               </div>
               <StatusBadge
                 tone={
@@ -497,107 +527,18 @@ export default function UniversityTrainingPage() {
               </StatusBadge>
             </header>
 
-            <section className="training-passport-summary" aria-label="Training passport summary">
-              <div className="training-passport-summary-heading">
-                <span>Passport progress</span>
-                <strong>{hoursPercent}%</strong>
-                <small>
-                  {completedHours} of {requiredHours || "?"} required hours approved
-                </small>
-              </div>
-              <div className="training-passport-stages">
-                <button
-                  type="button"
-                  className={selectedPendingReportCount > 0 ? "needs-attention" : "complete"}
-                  data-passport-stage="reports"
-                  onClick={() =>
-                    document
-                      .getElementById("training-reports")
-                      ?.scrollIntoView({ behavior: "smooth", block: "start" })
-                  }
-                >
-                  {selectedPendingReportCount > 0 ? (
-                    <Clock3 size={17} aria-hidden="true" />
-                  ) : (
-                    <CheckCircle2 size={17} aria-hidden="true" />
-                  )}
-                  <span>
-                    <strong>Reports</strong>
-                    <small>
-                      {selectedPendingReportCount > 0
-                        ? `${selectedPendingReportCount} awaiting company review`
-                        : `${record.trainingReports.length} recorded`}
-                    </small>
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  className={companyApprovalComplete ? "complete" : "needs-attention"}
-                  data-passport-stage="company"
-                  onClick={() =>
-                    document
-                      .getElementById("approval-route")
-                      ?.scrollIntoView({ behavior: "smooth", block: "start" })
-                  }
-                >
-                  {companyApprovalComplete ? (
-                    <CheckCircle2 size={17} aria-hidden="true" />
-                  ) : (
-                    <CircleDashed size={17} aria-hidden="true" />
-                  )}
-                  <span>
-                    <strong>Company stage</strong>
-                    <small>{companyApprovalComplete ? "Completed" : "Awaiting final approval"}</small>
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  className={universityApprovalComplete ? "complete" : record.workStatus === WorkSubmissionStatuses.AwaitingUniversityApproval ? "ready" : "locked"}
-                  data-passport-stage="university"
-                  onClick={() =>
-                    document
-                      .getElementById("university-approval")
-                      ?.scrollIntoView({ behavior: "smooth", block: "start" })
-                  }
-                >
-                  {universityApprovalComplete ? (
-                    <CheckCircle2 size={17} aria-hidden="true" />
-                  ) : (
-                    <GraduationCap size={17} aria-hidden="true" />
-                  )}
-                  <span>
-                    <strong>University stage</strong>
-                    <small>
-                      {universityApprovalComplete
-                        ? "Completed"
-                        : record.workStatus === WorkSubmissionStatuses.AwaitingUniversityApproval
-                          ? "Ready for academic decision"
-                          : "Unlocks after company approval"}
-                    </small>
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  className={record.hasEvidenceCard ? "complete" : "locked"}
-                  data-passport-stage="issuance"
-                  onClick={() =>
-                    document
-                      .getElementById("evidence-readiness")
-                      ?.scrollIntoView({ behavior: "smooth", block: "start" })
-                  }
-                >
-                  {record.hasEvidenceCard ? (
-                    <CheckCircle2 size={17} aria-hidden="true" />
-                  ) : (
-                    <ShieldCheck size={17} aria-hidden="true" />
-                  )}
-                  <span>
-                    <strong>Evidence status</strong>
-                    <small>{record.hasEvidenceCard ? "Card issued" : "Readiness checks required"}</small>
-                  </span>
-                </button>
-              </div>
-            </section>
+            <div
+              className="university-evidence-case"
+              id="evidence-case-workspace"
+            >
+              <EvidenceCaseNavigator
+                record={record}
+                readiness={readiness}
+                isCompany={false}
+                isUniversitySupervisor
+                onNavigate={scrollToSection}
+              />
+            </div>
 
             {nextAction ? (
               <section
@@ -611,11 +552,7 @@ export default function UniversityTrainingPage() {
                 <Button
                   type="button"
                   variant="secondary"
-                  onClick={() =>
-                    document
-                      .getElementById(nextAction.targetId)
-                      ?.scrollIntoView({ behavior: "smooth", block: "start" })
-                  }
+                  onClick={() => scrollToSection(nextAction.targetId)}
                 >
                   Review now
                   <ArrowRight size={16} aria-hidden="true" />
@@ -623,7 +560,29 @@ export default function UniversityTrainingPage() {
               </section>
             ) : null}
 
-            <section className="university-training-overview">
+            <nav
+              className="university-case-sections"
+              aria-label="Training case sections"
+            >
+              <span>Case sections</span>
+              <button type="button" onClick={() => scrollToSection("case-overview")}>
+                Overview
+              </button>
+              <button type="button" onClick={() => scrollToSection("training-reports")}>
+                Reports <small>{record.trainingReports.length}</small>
+              </button>
+              <button type="button" onClick={() => scrollToSection("academic-monitoring")}>
+                Academic monitoring
+              </button>
+              <button type="button" onClick={() => scrollToSection("university-approval")}>
+                Decision
+              </button>
+              <button type="button" onClick={() => scrollToSection("evidence-readiness")}>
+                Readiness
+              </button>
+            </nav>
+
+            <section className="university-training-overview" id="case-overview">
               <div className="university-hours-progress">
                 <header>
                   <div>
@@ -669,34 +628,7 @@ export default function UniversityTrainingPage() {
               </dl>
             </section>
 
-            <section className="university-approval-route" id="approval-route">
-              <header>
-                <span>Required approval route</span>
-                <h3>Company confirmation, then university approval</h3>
-                <p>Both accountable stages must complete before University Training evidence can be issued.</p>
-              </header>
-              <div>
-                <article className={companyApprovalComplete ? "complete" : "current"}>
-                  <span>1</span>
-                  <div>
-                    <strong>Company approval</strong>
-                    <small>{companyApprovalComplete ? "Provider evaluation recorded" : "Waiting for provider evaluation"}</small>
-                  </div>
-                  {companyApprovalComplete ? <CheckCircle2 size={20} aria-hidden="true" /> : <Clock3 size={20} aria-hidden="true" />}
-                </article>
-                <ArrowRight className="university-approval-route-arrow" size={20} aria-hidden="true" />
-                <article className={universityApprovalComplete ? "complete" : record.workStatus === WorkSubmissionStatuses.AwaitingUniversityApproval ? "current academic" : "locked"}>
-                  <span>2</span>
-                  <div>
-                    <strong>University approval</strong>
-                    <small>{universityApprovalComplete ? "Academic approval recorded" : record.workStatus === WorkSubmissionStatuses.AwaitingUniversityApproval ? "Ready for your review" : "Available after company approval"}</small>
-                  </div>
-                  {universityApprovalComplete ? <CheckCircle2 size={20} aria-hidden="true" /> : <ShieldCheck size={20} aria-hidden="true" />}
-                </article>
-              </div>
-            </section>
-
-            <div className="notice">
+            <div className="notice" id="evidence-contract">
               <strong>
                 Accepted Evidence Contract version{" "}
                 {record.acceptedEvidenceContractVersionNumber ?? "not pinned"}
@@ -724,7 +656,7 @@ export default function UniversityTrainingPage() {
               </section>
             ) : null}
 
-            <section className="university-milestone-summary">
+            <section className="university-milestone-summary" id="work-milestones">
               <header>
                 <div>
                   <span>Work progress</span>
@@ -873,7 +805,7 @@ export default function UniversityTrainingPage() {
             </form>
 
             {record.finalSubmissionNote ? (
-              <section className="university-final-review">
+              <section className="university-final-review" id="final-review">
                 <h3>Final training result</h3>
                 <p>{record.finalSubmissionNote}</p>
                 {record.finalDeliverableUrl ? (

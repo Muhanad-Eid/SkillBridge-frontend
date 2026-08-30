@@ -1,5 +1,6 @@
 import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import Button from "../../../shared/components/Button";
+import { useConfirmation } from "../../../shared/components/ConfirmationContext";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
 import Pagination from "../../../shared/components/Pagination";
@@ -14,6 +15,7 @@ import {
 type FormMode = "create" | "edit";
 
 export default function AdminSkillsPage() {
+  const confirmAction = useConfirmation();
   const [skills, setSkills] = useState<AdminSkill[]>([]);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -127,7 +129,12 @@ export default function AdminSkillsPage() {
   }
 
   async function handleDelete(skill: AdminSkill) {
-    const confirmed = window.confirm(`Delete skill "${skill.name}"?`);
+    const confirmed = await confirmAction({
+      title: "Delete this skill?",
+      description: `"${skill.name}" will be removed if it is not referenced by active evidence or opportunity records.`,
+      confirmLabel: "Delete skill",
+      variant: "danger",
+    });
 
     if (!confirmed) {
       return;

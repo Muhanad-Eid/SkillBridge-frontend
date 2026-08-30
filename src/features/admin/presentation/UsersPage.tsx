@@ -1,6 +1,7 @@
 import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import Button from "../../../shared/components/Button";
+import { useConfirmation } from "../../../shared/components/ConfirmationContext";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
 import Pagination from "../../../shared/components/Pagination";
@@ -47,6 +48,7 @@ const emptyForm: UserForm = {
 };
 
 export default function UsersPage() {
+  const confirmAction = useConfirmation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [search, setSearch] = useState("");
@@ -268,10 +270,12 @@ export default function UsersPage() {
   }
 
   async function handleDelete(user: AdminUser) {
-    const confirmed = window.confirm(
-      `Deactivate the account for ${user.firstName} ${user.lastName}? ` +
-        "They will be signed out and unable to sign in until reactivated.",
-    );
+    const confirmed = await confirmAction({
+      title: "Deactivate this account?",
+      description: `${user.firstName} ${user.lastName} will be signed out and unable to sign in until an administrator reactivates the account.`,
+      confirmLabel: "Deactivate account",
+      variant: "warning",
+    });
 
     if (!confirmed) {
       return;

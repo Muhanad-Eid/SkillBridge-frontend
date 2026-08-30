@@ -1,6 +1,7 @@
 import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import Button from "../../../shared/components/Button";
+import { useConfirmation } from "../../../shared/components/ConfirmationContext";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
 import Pagination from "../../../shared/components/Pagination";
@@ -59,6 +60,7 @@ const emptyProjectForm: ProjectForm = {
 };
 
 export default function AdminProjectsPage() {
+  const confirmAction = useConfirmation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [projects, setProjects] = useState<AdminProject[]>([]);
   const [companies, setCompanies] = useState<AdminCompany[]>([]);
@@ -313,7 +315,12 @@ export default function AdminProjectsPage() {
   }
 
   async function handleDelete(project: AdminProject) {
-    const confirmed = window.confirm(`Delete project "${project.title}"?`);
+    const confirmed = await confirmAction({
+      title: "Delete this opportunity?",
+      description: `"${project.title}" and its dependent workflow records will be permanently removed where permitted.`,
+      confirmLabel: "Delete opportunity",
+      variant: "danger",
+    });
 
     if (!confirmed) {
       return;
@@ -336,7 +343,9 @@ export default function AdminProjectsPage() {
   return (
     <section className="page admin-list-page">
       <PageHeader
+        eyebrow="Lifecycle administration"
         title="Projects"
+        description="Inspect opportunity records, ownership, participation, and delivery state across the platform."
         actions={
           <Button type="button" onClick={startCreate}>
             Add project

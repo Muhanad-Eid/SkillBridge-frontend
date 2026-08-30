@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { useParams } from "react-router-dom";
 import Button from "../../../shared/components/Button";
+import { useConfirmation } from "../../../shared/components/ConfirmationContext";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
 import StatusBadge from "../../../shared/components/StatusBadge";
@@ -97,6 +98,7 @@ function getProjectTone(
 }
 
 export default function CompanyProjectApplicationsPage() {
+  const confirmAction = useConfirmation();
   const { projectId } = useParams();
   const numericProjectId = Number(projectId);
   const [project, setProject] = useState<Project | null>(null);
@@ -388,7 +390,12 @@ export default function CompanyProjectApplicationsPage() {
 
     if (
       status === ProjectStatuses.Cancelled &&
-      !window.confirm(`Cancel "${project.title}"?`)
+      !(await confirmAction({
+        title: "Cancel this opportunity?",
+        description: `"${project.title}" will stop accepting applications while protected workflow history remains intact.`,
+        confirmLabel: "Cancel opportunity",
+        variant: "warning",
+      }))
     ) {
       return;
     }
@@ -452,7 +459,12 @@ export default function CompanyProjectApplicationsPage() {
   }
 
   async function removeReview(review: Review) {
-    if (!window.confirm(`Delete the review for ${review.jobSeekerName}?`)) return;
+    if (!(await confirmAction({
+      title: "Delete this review?",
+      description: `The review for ${review.jobSeekerName} will be permanently removed.`,
+      confirmLabel: "Delete review",
+      variant: "danger",
+    }))) return;
 
     setError("");
     try {

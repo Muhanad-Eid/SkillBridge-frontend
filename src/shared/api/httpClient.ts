@@ -3,10 +3,12 @@ import type { AuthResponse } from "../../features/auth/domain/authTypes";
 const CONFIGURED_API_URL =
   import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL;
 
-const API_BASE_URL = import.meta.env.DEV
+export const API_BASE_URL = import.meta.env.DEV
   ? ""
   : CONFIGURED_API_URL?.trim() ||
     `${window.location.protocol}//${window.location.hostname}:8080`;
+
+export const API_HEALTH_URL = `${API_BASE_URL.replace(/\/$/, "")}/health/ready`;
 const SESSION_LOST_STATUSES = new Set([401]);
 const API_UNAVAILABLE_STATUSES = new Set([502, 503, 504]);
 

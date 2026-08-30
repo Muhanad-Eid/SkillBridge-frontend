@@ -404,7 +404,9 @@ export default function MessagesPage() {
   return (
     <section className="page messages-page">
       <PageHeader
+        eyebrow="Workspace conversations"
         title="Messages"
+        description="Keep decisions and delivery conversations close to the work they affect."
       />
 
       <div className="messages-layout">

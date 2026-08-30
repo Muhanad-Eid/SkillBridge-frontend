@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useOutletContext, useSearchParams } from "react-router-dom";
 import Button from "../../../shared/components/Button";
+import { useConfirmation } from "../../../shared/components/ConfirmationContext";
 import DataState from "../../../shared/components/DataState";
 import Input from "../../../shared/components/Input";
 import PageHeader from "../../../shared/components/PageHeader";
@@ -283,6 +284,7 @@ function getStatusTone(
 export default function CompanyProjectsPage({
   mode: pageMode = "opportunities",
 }: CompanyProjectsPageProps) {
+  const confirmAction = useConfirmation();
   const { isCompanyVerified, isTrainingProvider } =
     useOutletContext<CompanyPortalContext>();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -774,7 +776,12 @@ export default function CompanyProjectsPage({
   async function updateStatus(project: Project, status: ProjectStatus) {
     if (
       status === ProjectStatuses.Cancelled &&
-      !window.confirm(`Cancel "${project.title}"?`)
+      !(await confirmAction({
+        title: "Cancel this opportunity?",
+        description: `"${project.title}" will stop accepting applications and cannot return to active delivery.`,
+        confirmLabel: "Cancel opportunity",
+        variant: "warning",
+      }))
     ) {
       return;
     }
@@ -799,7 +806,12 @@ export default function CompanyProjectsPage({
   }
 
   async function handleDelete(project: Project) {
-    if (!window.confirm(`Delete "${project.title}" permanently?`)) {
+    if (!(await confirmAction({
+      title: "Delete this opportunity?",
+      description: `"${project.title}" will be permanently removed. This is available only when no protected workflow records depend on it.`,
+      confirmLabel: "Delete opportunity",
+      variant: "danger",
+    }))) {
       return;
     }
 
@@ -880,7 +892,13 @@ export default function CompanyProjectsPage({
       }`}
     >
       <PageHeader
+        eyebrow={isFreelanceView ? "Flexible delivery" : "Opportunity management"}
         title={isFreelanceView ? "Industry micro-tasks" : "Opportunities"}
+        description={
+          isFreelanceView
+            ? "Create focused paid tasks, compare proposals, and manage the resulting contracts."
+            : "Publish structured work, monitor applications, and manage each opportunity through completion."
+        }
         actions={
           <Button
             type="button"
@@ -1011,6 +1029,32 @@ export default function CompanyProjectsPage({
               ? "Create your first freelance task after company verification."
               : "Create your first opportunity after company verification."
             : "Adjust the search or filters."
+        }
+        emptyAction={
+          scopedProjects.length === 0 ? (
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={!isCompanyVerified}
+              onClick={openCreateForm}
+            >
+              <Plus size={16} aria-hidden="true" />
+              {isFreelanceView ? "Create micro-task" : "Create opportunity"}
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                setSearch("");
+                setStatusFilter("All");
+                setTypeFilter("All");
+              }}
+            >
+              <RotateCcw size={16} aria-hidden="true" />
+              Clear filters
+            </Button>
+          )
         }
       />
 
@@ -1297,6 +1341,21 @@ export default function CompanyProjectsPage({
             ) : null}
 
             <form onSubmit={handleSave}>
+              <nav className="company-opportunity-form-map" aria-label="Opportunity form sections">
+                <a href="#opportunity-basics"><span>01</span><strong>Brief</strong></a>
+                <a href="#opportunity-plan"><span>02</span><strong>Work plan</strong></a>
+                <a href="#opportunity-evidence"><span>03</span><strong>Evidence</strong></a>
+                <a href="#opportunity-terms"><span>04</span><strong>Terms</strong></a>
+              </nav>
+
+              <section id="opportunity-basics" className="company-opportunity-form-section">
+                <header>
+                  <span>01 / Brief</span>
+                  <div>
+                    <h3>Define the opportunity</h3>
+                    <p>Give applicants enough context to understand the work and respond meaningfully.</p>
+                  </div>
+                </header>
               <Input
                 label="Title"
                 value={form.title}
@@ -1354,6 +1413,16 @@ export default function CompanyProjectsPage({
                   }
                 />
               </label>
+              </section>
+
+              <section id="opportunity-plan" className="company-opportunity-form-section">
+                <header>
+                  <span>02 / Work plan</span>
+                  <div>
+                    <h3>Set the delivery sequence</h3>
+                    <p>Milestones become the shared progress record for every accepted participant.</p>
+                  </div>
+                </header>
               <fieldset className="company-milestone-builder">
                 <legend>Work milestones</legend>
                 <p>
@@ -1471,6 +1540,16 @@ export default function CompanyProjectsPage({
                   Add milestone
                 </Button>
               </fieldset>
+              </section>
+
+              <section id="opportunity-evidence" className="company-opportunity-form-section">
+                <header>
+                  <span>03 / Evidence</span>
+                  <div>
+                    <h3>Define what can be proven</h3>
+                    <p>Criteria and confidentiality terms become the boundary for evaluation and public claims.</p>
+                  </div>
+                </header>
               <fieldset className="company-milestone-builder evidence-criteria-builder">
                 <legend>Evidence criteria</legend>
                 <p>
@@ -1660,6 +1739,16 @@ export default function CompanyProjectsPage({
                   }
                 />
               </label>
+              </section>
+
+              <section id="opportunity-terms" className="company-opportunity-form-section">
+                <header>
+                  <span>04 / Terms</span>
+                  <div>
+                    <h3>Set participation terms</h3>
+                    <p>Choose the opportunity type, access conditions, timing, capacity, and skills.</p>
+                  </div>
+                </header>
               {!isFreelanceView ? (
                 <label className="field">
                   <span>Opportunity type</span>
@@ -1985,6 +2074,7 @@ export default function CompanyProjectsPage({
                   </div>
                 </div>
               </fieldset>
+              </section>
               <div className="company-drawer-actions">
                 <Button type="button" variant="secondary" onClick={closeForm}>
                   Cancel
