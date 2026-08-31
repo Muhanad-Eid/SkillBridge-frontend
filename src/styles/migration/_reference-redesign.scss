@@ -152,6 +152,24 @@ body {
   background: var(--sb-color-action-hover);
 }
 
+.public-mobile-menu {
+  display: none;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--sb-color-border);
+  border-radius: 8px;
+  background: var(--sb-color-surface);
+  color: var(--sb-color-text-secondary);
+  cursor: pointer;
+}
+
+.public-mobile-menu:hover {
+  color: var(--sb-color-text);
+  background: var(--sb-color-surface-subtle);
+}
+
 .public-theme-toggle,
 .theme-toggle {
   width: 38px;
@@ -191,25 +209,29 @@ body {
   color: var(--sb-color-text-muted) !important;
 }
 
-/* Landing footer is a deliberately quiet closing band, separate from generic public pages. */
+/* Landing footer closes the public story with real navigation and support routes. */
 .site-footer.site-footer-landing {
   width: 100%;
-  min-height: 84px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 1.25rem clamp(1.5rem, 5vw, 4rem);
-  border-top: 1px solid var(--sb-color-border);
-  background: #ffffff !important;
-  color: var(--sb-color-text-secondary) !important;
+  display: block;
+  padding: 4.25rem clamp(1.5rem, 5vw, 4rem) 1.75rem;
+  border-top: 0;
+  background: #0f1b31 !important;
+  color: #aebed2 !important;
+}
+
+.landing-footer-inner {
+  width: min(100%, 1160px);
+  display: grid;
+  grid-template-columns: minmax(210px, 1.8fr) repeat(3, minmax(140px, 1fr));
+  gap: clamp(2rem, 5vw, 5rem);
+  margin: 0 auto;
 }
 
 .site-footer-landing .site-footer-brand {
   display: inline-flex;
   align-items: center;
   gap: 0.75rem;
-  color: var(--sb-color-text);
+  color: #ffffff;
   text-decoration: none;
 }
 
@@ -226,26 +248,79 @@ body {
 }
 
 .site-footer-landing .site-footer-brand strong {
-  color: var(--sb-color-text);
+  color: #ffffff;
   font-size: 0.8125rem;
   font-weight: 750;
   line-height: 1.1;
 }
 
-.public-shell .site-footer-landing .site-footer-brand small,
-.public-shell .site-footer-landing > small {
-  color: var(--sb-color-text-muted) !important;
+.public-shell .site-footer-landing .site-footer-brand small {
+  color: #aebed2 !important;
   font-size: 0.75rem;
   font-weight: 550;
   line-height: 1.35;
 }
 
-.landing-footer-bottom a {
+.landing-footer-intro > p {
+  max-width: 250px;
+  margin: 1.25rem 0 0;
+  color: #aebed2;
+  font-size: 0.8125rem;
+  line-height: 1.65;
+}
+
+.site-footer.site-footer-landing .landing-footer-column {
+  display: grid;
+  align-content: start;
+  gap: 0.7rem;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.landing-footer-column h2 {
+  margin: 0 0 0.35rem;
+  color: #ffffff;
+  font-size: 0.6875rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.landing-footer-column a {
+  width: fit-content;
+  color: #aebed2;
+  font-size: 0.8125rem;
+  line-height: 1.35;
   text-decoration: none;
 }
 
+.landing-footer-column a:hover,
 .landing-footer-bottom a:hover {
-  color: #ffffff;
+  color: #c7f26a;
+}
+
+.landing-footer-bottom {
+  width: min(100%, 1160px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 3.25rem auto 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgb(174 190 210 / 0.2);
+  color: #7f92aa;
+  font-size: 0.6875rem;
+}
+
+.landing-footer-bottom nav {
+  display: flex;
+  gap: 1rem;
+}
+
+.landing-footer-bottom a {
+  color: #aebed2;
+  text-decoration: none;
 }
 
 /* Auth screens follow the reference panels. */
@@ -957,14 +1032,42 @@ body {
     padding-inline: 1rem;
   }
 
-  .public-shell .site-nav {
-    gap: 0.75rem;
+  .public-shell .public-mobile-menu {
+    display: inline-grid;
+    margin-left: auto;
   }
 
-  .public-shell .site-nav-home,
-  .public-shell .site-nav-opportunities,
-  .public-shell .site-nav-freelance {
+  .public-shell .site-nav {
     display: none;
+  }
+
+  .public-shell .site-nav.site-nav-mobile-open {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 1rem;
+    left: 1rem;
+    z-index: 45;
+    display: grid;
+    gap: 0.35rem;
+    margin: 0;
+    padding: 0.55rem;
+    border: 1px solid var(--sb-color-border-strong);
+    border-radius: 8px;
+    background: var(--sb-color-surface);
+    box-shadow: 0 16px 40px color-mix(in srgb, #102542 18%, transparent);
+  }
+
+  .public-shell .site-nav.site-nav-mobile-open a {
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    padding: 0 0.75rem;
+    border-radius: 6px;
+  }
+
+  .public-shell .site-nav.site-nav-mobile-open .site-register-link {
+    justify-content: center;
+    margin-top: 0.25rem;
   }
 
   .public-shell .site-nav a {
@@ -1513,9 +1616,12 @@ body {
 
 @media (max-width: 640px) {
   .site-footer.site-footer-landing {
-    min-height: 76px;
-    padding: 1.25rem;
+    padding: 3rem 1.25rem 1.25rem;
   }
+
+  .landing-footer-inner { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2.25rem 1.5rem; }
+  .landing-footer-intro { grid-column: 1 / -1; }
+  .landing-footer-bottom { align-items: flex-start; flex-direction: column; margin-top: 2.5rem; }
 
   .landing-page-reference .landing-hero h1 { font-size: 2.35rem; }
   .landing-page-reference .landing-description { font-size: 1rem; }

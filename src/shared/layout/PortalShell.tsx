@@ -39,23 +39,23 @@ const primaryNavigationByRole: Record<PortalRole, PrimaryNavigationItem[]> = {
   company: [
     { sourceLabel: "Overview", label: "Overview" },
     { sourceLabel: "Work", label: "Work" },
-    { sourceLabel: "Proof Engine", label: "Evidence" },
+    { sourceLabel: "Evidence Replay", label: "Evidence" },
     { sourceLabel: "Find talent", label: "People" },
   ],
   "job-seeker": [
     { sourceLabel: "Overview", label: "Overview" },
     { sourceLabel: "Discover", label: "Explore" },
     { sourceLabel: "Work", label: "Work" },
-    { sourceLabel: "Proof Engine", label: "Evidence" },
+    { sourceLabel: "Evidence Replay", label: "Evidence" },
   ],
   university: [
     { sourceLabel: "Supervised training", label: "Work" },
-    { sourceLabel: "Proof Engine", label: "Evidence" },
+    { sourceLabel: "Evidence Replay", label: "Evidence" },
   ],
 };
 
 function getNavigationGroup(item: PortalNavItem): NavigationGroup {
-  if (["Proof Engine", "Evidence requests", "Portfolio", "Reviews", "Evidence", "Audit log", "Skills"].includes(item.label)) {
+  if (["Evidence Replay", "Evidence requests", "Portfolio", "Reviews", "Evidence", "Audit log", "Skills"].includes(item.label)) {
     return "Evidence";
   }
 
@@ -220,7 +220,7 @@ export default function PortalShell({
         </div>
       </header>
 
-      {isNavigationOpen && hasWorkspaceNavigation ? <><button className={styles.backdrop} type="button" aria-label="Close workspace navigation" onClick={() => setIsNavigationOpen(false)} /><section id={`${role}-bridge-deck`} className={styles.bridgeDeck} aria-label="Workspace navigation"><header><div><span>Workspace map</span><strong>{activeItem ? `${activeItem.label} is open` : portalLabel}</strong></div><button className={styles.deckClose} type="button" aria-label="Close workspace navigation" onClick={() => setIsNavigationOpen(false)}><X size={20} aria-hidden="true" /></button></header><div className={styles.deckGroups}>{groupedNavItems.map(({ group, items }) => <section className={styles.deckGroup} key={group}><h2>{group}</h2><nav aria-label={`${group} navigation`}>{items.map((item) => { const Icon = item.icon; return <NavLink key={item.to} className={({ isActive }) => `${styles.deckItem} ${isActive ? styles.deckItemActive : ""}`} to={item.to} onClick={() => setIsNavigationOpen(false)}><Icon size={19} strokeWidth={1.8} aria-hidden="true" /><span>{item.label}</span>{item.badgeCount && item.badgeCount > 0 ? <strong className={styles.badge}>{item.badgeCount}</strong> : null}</NavLink>; })}</nav></section>)}</div></section></> : null}
+      {isNavigationOpen && hasWorkspaceNavigation ? <><button className={styles.backdrop} type="button" aria-label="Close workspace navigation" onClick={() => setIsNavigationOpen(false)} /><section id={`${role}-bridge-deck`} className={styles.bridgeDeck} aria-label="Workspace navigation"><header><div><span>Workspace map</span><strong>{activeItem ? `${activeItem.label} is open` : portalLabel}</strong></div><button className={styles.deckClose} type="button" aria-label="Close workspace navigation" onClick={() => setIsNavigationOpen(false)}><X size={20} aria-hidden="true" /></button></header><div className={styles.deckGroups}><section className={`${styles.deckGroup} ${styles.mobilePrimaryGroup}`}><h2>Main</h2><nav aria-label="Main navigation">{primaryNavItems.map((item) => { const Icon = item.icon; return <NavLink key={item.to} className={({ isActive }) => `${styles.deckItem} ${isActive ? styles.deckItemActive : ""}`} to={item.to} onClick={() => setIsNavigationOpen(false)}><Icon size={19} strokeWidth={1.8} aria-hidden="true" /><span>{item.label}</span>{item.badgeCount && item.badgeCount > 0 ? <strong className={styles.badge}>{item.badgeCount}</strong> : null}</NavLink>; })}</nav></section>{groupedNavItems.map(({ group, items }) => <section className={styles.deckGroup} key={group}><h2>{group}</h2><nav aria-label={`${group} navigation`}>{items.map((item) => { const Icon = item.icon; return <NavLink key={item.to} className={({ isActive }) => `${styles.deckItem} ${isActive ? styles.deckItemActive : ""}`} to={item.to} onClick={() => setIsNavigationOpen(false)}><Icon size={19} strokeWidth={1.8} aria-hidden="true" /><span>{item.label}</span>{item.badgeCount && item.badgeCount > 0 ? <strong className={styles.badge}>{item.badgeCount}</strong> : null}</NavLink>; })}</nav></section>)}</div></section></> : null}
       <div className={styles.workspace}>
         {banner ? <div className={styles.banner}>{banner}</div> : null}
         <main id="portal-main-content" className={styles.content}>{children}</main>

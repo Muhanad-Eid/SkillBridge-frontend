@@ -32,7 +32,7 @@ import { useAuth } from "../../shared/auth/AuthContext";
 import ConfirmDialog from "../../shared/components/ConfirmDialog";
 import useVisibilityPolling from "../../shared/hooks/useVisibilityPolling";
 import { subscribeToPortalBadgeChanges } from "../../shared/events/portalEvents";
-import PortalShell from "../../shared/layout/SidebarPortalShell";
+import PortalShell from "../../shared/layout/PortalShell";
 
 type JobSeekerNavItem = {
   label: string;

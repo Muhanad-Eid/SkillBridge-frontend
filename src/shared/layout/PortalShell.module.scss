@@ -17,9 +17,11 @@
 .bridgeDeck::before { width: 72px; }
 .deckGroups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem 1.5rem; padding: 1.25rem .35rem .35rem; }
 .deckGroup { min-width: 0; }
+.mobilePrimaryGroup { display: none; }
 .deckGroup h2 { margin: 0 0 .55rem; color: var(--sb-color-text-muted); font-size: .68rem; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; }
 .deckGroup nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .4rem; padding-top: 0; }
 @media (max-width: 760px) {
   .deckGroups { grid-template-columns: 1fr; gap: 1rem; }
+  .mobilePrimaryGroup { display: block; }
   .deckGroup nav { grid-template-columns: 1fr; }
 }

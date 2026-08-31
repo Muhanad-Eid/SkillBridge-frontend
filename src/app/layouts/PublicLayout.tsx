@@ -1,5 +1,6 @@
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
-import { LayoutDashboard } from "lucide-react";
+import { LayoutDashboard, Menu, X } from "lucide-react";
+import { useState } from "react";
 import { getRoleHomePath, useAuth } from "../../shared/auth/AuthContext";
 import Button from "../../shared/components/Button";
 import BrandIcon from "../../shared/components/BrandIcon";
@@ -8,6 +9,7 @@ import ThemeToggle from "../../shared/components/ThemeToggle";
 export default function PublicLayout() {
   const { user } = useAuth();
   const location = useLocation();
+  const [isMobileNavigationOpen, setIsMobileNavigationOpen] = useState(false);
   const isLandingPage = location.pathname === "/";
   const isAuthPage = [
     "/login",
@@ -33,20 +35,31 @@ export default function PublicLayout() {
           </span>
         </Link>
 
-        <nav className="site-nav" aria-label="Main navigation">
-          <NavLink className="site-nav-home" to="/">
+        <button
+          className="public-mobile-menu"
+          type="button"
+          aria-label={isMobileNavigationOpen ? "Close main navigation" : "Open main navigation"}
+          aria-expanded={isMobileNavigationOpen}
+          aria-controls="public-main-navigation"
+          onClick={() => setIsMobileNavigationOpen((value) => !value)}
+        >
+          {isMobileNavigationOpen ? <X size={19} aria-hidden="true" /> : <Menu size={19} aria-hidden="true" />}
+        </button>
+
+        <nav id="public-main-navigation" className={`site-nav ${isMobileNavigationOpen ? "site-nav-mobile-open" : ""}`} aria-label="Main navigation">
+          <NavLink className="site-nav-home" to="/" onClick={() => setIsMobileNavigationOpen(false)}>
             About
           </NavLink>
-          <NavLink className="site-nav-opportunities" to="/opportunities">
+          <NavLink className="site-nav-opportunities" to="/opportunities" onClick={() => setIsMobileNavigationOpen(false)}>
             Opportunities
           </NavLink>
-          <NavLink className="site-nav-freelance" to="/freelance">
+          <NavLink className="site-nav-freelance" to="/freelance" onClick={() => setIsMobileNavigationOpen(false)}>
             Freelance
           </NavLink>
           {!user ? (
             <>
-              <NavLink to="/portal/login">Log in</NavLink>
-              <NavLink className="site-register-link" to="/register">
+              <NavLink to="/portal/login" onClick={() => setIsMobileNavigationOpen(false)}>Log in</NavLink>
+              <NavLink className="site-register-link" to="/register" onClick={() => setIsMobileNavigationOpen(false)}>
                 Register
               </NavLink>
             </>
@@ -71,14 +84,49 @@ export default function PublicLayout() {
       {!isAuthPage ? (
         isLandingPage ? (
           <footer className="site-footer site-footer-landing">
-            <Link className="site-footer-brand" to="/">
-              <BrandIcon />
-              <span>
-                <strong>SkillBridge</strong>
-                <small>Internships, training, and projects</small>
-              </span>
-            </Link>
-            <small>© 2026 SkillBridge</small>
+            <div className="landing-footer-inner">
+              <div className="landing-footer-intro">
+                <Link className="site-footer-brand" to="/">
+                  <BrandIcon />
+                  <span>
+                    <strong>SkillBridge</strong>
+                    <small>Internships, training, and projects</small>
+                  </span>
+                </Link>
+                <p>
+                  A controlled path from practical work to traceable,
+                  evidence-backed achievement.
+                </p>
+              </div>
+
+              <nav className="landing-footer-column" aria-label="Quick links">
+                <h2>Quick links</h2>
+                <Link to="/#how-it-works">How SkillBridge works</Link>
+                <Link to="/opportunities">Opportunities</Link>
+                <Link to="/freelance">Freelance</Link>
+              </nav>
+
+              <nav className="landing-footer-column" aria-label="Get started">
+                <h2>Get started</h2>
+                <Link to="/register">Create an account</Link>
+                <Link to="/portal/login">Sign in</Link>
+                <Link to="/register">For providers</Link>
+              </nav>
+
+              <nav className="landing-footer-column" aria-label="Contact and policies">
+                <h2>Contact us</h2>
+                <a href="mailto:contact@skillbridge.com">contact@skillbridge.com</a>
+                <Link to="/contact">Support for every role</Link>
+                <Link to="/contact">Contact page</Link>
+              </nav>
+            </div>
+            <div className="landing-footer-bottom">
+              <small>© 2026 SkillBridge. All rights reserved.</small>
+              <nav aria-label="Legal links">
+                <Link to="/privacy">Privacy</Link>
+                <Link to="/terms">Terms</Link>
+              </nav>
+            </div>
           </footer>
         ) : (
           <footer className="site-footer">

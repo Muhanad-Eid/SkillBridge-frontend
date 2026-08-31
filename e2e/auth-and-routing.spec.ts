@@ -25,10 +25,22 @@ test("role guards keep a participant out of the admin portal", async ({ page }) 
 
 test("@mobile participant portal remains navigable on a phone", async ({ page }) => {
   await loginAs(page, demoAccounts.participant);
-  await page.getByRole("button", { name: "Open navigation" }).click();
-  const navigation = page.locator("#job-seeker-portal-navigation");
+  await page.getByRole("button", { name: "Open workspace navigation" }).click();
+  const navigation = page.locator("#job-seeker-bridge-deck");
   await expect(navigation).toBeVisible();
   await navigation.getByRole("link", { name: "Work", exact: true }).click();
   await expect(page).toHaveURL(/\/job-seeker\/work(?:\/\d+)?$/);
   await expect(page.getByRole("heading", { name: "Work", exact: true })).toBeVisible();
+});
+
+test("@mobile public navigation exposes the opportunity board", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Open main navigation" }).click();
+
+  const navigation = page.locator("#public-main-navigation");
+  await expect(navigation).toBeVisible();
+  await navigation.getByRole("link", { name: "Opportunities", exact: true }).click();
+
+  await expect(page).toHaveURL(/\/opportunities$/);
+  await expect(page.getByRole("heading", { name: "Opportunities", exact: true })).toBeVisible();
 });

@@ -17,18 +17,6 @@ import styles from "./HomePage.module.scss";
 
 const roles = [
   {
-    icon: Building2,
-    tone: "Provider",
-    label: "For verified providers",
-    title: "Manage practical work clearly.",
-    description: "Manage an opportunity from the first post to the final review.",
-    features: [
-      "Define versioned requirements before work begins",
-      "Evaluate every criterion against accepted rules",
-      "Approve evidence through accountable workflows",
-    ],
-  },
-  {
     icon: BriefcaseBusiness,
     tone: "Individual",
     label: "For individuals",
@@ -38,6 +26,18 @@ const roles = [
       "Find opportunities that match your skills",
       "Complete milestones and participant-specific work",
       "Share traceable evidence with clear claim limits",
+    ],
+  },
+  {
+    icon: Building2,
+    tone: "Provider",
+    label: "For verified providers",
+    title: "Manage practical work clearly.",
+    description: "Manage an opportunity from the first post to the final review.",
+    features: [
+      "Define versioned requirements before work begins",
+      "Evaluate every criterion against accepted rules",
+      "Approve evidence through accountable workflows",
     ],
   },
   {
@@ -140,7 +140,7 @@ export default function HomePage() {
         <article className={styles.stat}><strong>2</strong><span>training approval gates</span></article>
       </section>
 
-      <section className={styles.section} aria-labelledby="process-title">
+      <section id="how-it-works" className={styles.section} aria-labelledby="process-title">
         <header className={styles.sectionHeader}>
           <h2 id="process-title">One controlled path from requirement to evidence.</h2>
           <p>A card is issued only when the complete evidence lineage satisfies the defined rules.</p>

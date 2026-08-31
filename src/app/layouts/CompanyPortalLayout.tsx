@@ -32,7 +32,7 @@ import { getUnreadMessageCountAsync } from "../../features/messages/infrastructu
 import { getUnreadNotificationCountAsync } from "../../features/notifications/infrastructure/notificationApi";
 import useVisibilityPolling from "../../shared/hooks/useVisibilityPolling";
 import { subscribeToPortalBadgeChanges } from "../../shared/events/portalEvents";
-import PortalShell from "../../shared/layout/SidebarPortalShell";
+import PortalShell from "../../shared/layout/PortalShell";
 
 type CompanyNavItem = {
   label: string;

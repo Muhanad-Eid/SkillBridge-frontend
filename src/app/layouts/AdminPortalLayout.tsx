@@ -20,7 +20,7 @@ import { getAdminQueueSummaryAsync } from "../../features/admin/infrastructure/a
 import { useAuth } from "../../shared/auth/AuthContext";
 import ConfirmDialog from "../../shared/components/ConfirmDialog";
 import useVisibilityPolling from "../../shared/hooks/useVisibilityPolling";
-import PortalShell from "../../shared/layout/SidebarPortalShell";
+import PortalShell from "../../shared/layout/PortalShell";
 
 type AdminNavItem = {
   label: string;
