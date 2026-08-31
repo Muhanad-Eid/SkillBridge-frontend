@@ -14,7 +14,7 @@ import { useAuth } from "../../shared/auth/AuthContext";
 import ConfirmDialog from "../../shared/components/ConfirmDialog";
 import { subscribeToPortalBadgeChanges } from "../../shared/events/portalEvents";
 import useVisibilityPolling from "../../shared/hooks/useVisibilityPolling";
-import PortalShell from "../../shared/layout/PortalShell";
+import PortalShell from "../../shared/layout/SidebarPortalShell";
 
 type UniversityNavItem = {
   label: string;
@@ -30,7 +30,7 @@ const universityNavItems: UniversityNavItem[] = [
     icon: GraduationCap,
   },
   {
-    label: "Proof Engine",
+    label: "Evidence Replay",
     to: "/university/proof-engine",
     icon: Workflow,
   },

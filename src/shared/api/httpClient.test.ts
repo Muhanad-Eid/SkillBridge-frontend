@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { HttpError, getTokenExpiresAt, isTokenExpired } from "./httpClient";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { HttpError, httpClient, getTokenExpiresAt, isTokenExpired } from "./httpClient";
 
 function createToken(expiresAtSeconds?: number) {
   const payload =
@@ -47,5 +47,53 @@ describe("HttpError", () => {
     expect(error.status).toBe(404);
     expect(error.code).toBe("route_missing");
     expect(error.traceId).toBe("trace-123");
+  });
+});
+
+describe("httpClient request reliability", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("retries transient server failures before succeeding", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch");
+    fetchMock
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ message: "temporary outage" }), {
+          status: 503,
+          headers: { "Content-Type": "application/json" },
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ ok: true }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+
+    const result = await httpClient<{ ok: boolean }>("/api/test", {
+      retries: 1,
+      retryDelayMs: 0,
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(result).toEqual({ ok: true });
+  });
+
+  it("surfaces a user cancellation when the request is aborted", async () => {
+    const controller = new AbortController();
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(() => {
+      controller.abort();
+      return Promise.reject(new DOMException("The operation was aborted.", "AbortError"));
+    });
+
+    await expect(
+      httpClient("/api/test", {
+        signal: controller.signal,
+        retries: 1,
+        retryDelayMs: 0,
+      }),
+    ).rejects.toThrow("The operation was aborted.");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });

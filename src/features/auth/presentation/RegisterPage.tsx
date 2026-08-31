@@ -23,6 +23,7 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isCompany = role === RegisterRoles.Company;
+  const errorMessageId = "register-form-error";
 
   function chooseRole(nextRole: RegisterRole) {
     setRole(nextRole);
@@ -81,19 +82,41 @@ export default function RegisterPage() {
         ) : (
           <div>
             <button className={styles.back} type="button" onClick={() => setStep(1)}><ArrowLeft size={14} aria-hidden="true" />Back</button>
-            {error ? <div className={`${styles.message} ${styles.error}`}>{error}</div> : null}
+            {error ? <div id={errorMessageId} className={`${styles.message} ${styles.error}`} role="alert" aria-live="assertive">{error}</div> : null}
             <div className={styles.row}>
-              <label className={styles.field}><input name="firstName" placeholder="First name" value={firstName} onChange={(event) => setFirstName(event.target.value)} required /></label>
-              <label className={styles.field}><input name="lastName" placeholder="Last name" value={lastName} onChange={(event) => setLastName(event.target.value)} required /></label>
+              <label className={styles.field} htmlFor="register-first-name">
+                <span className={styles.fieldLabel}>First name</span>
+                <input id="register-first-name" name="firstName" aria-invalid={Boolean(error)} aria-describedby={error ? errorMessageId : undefined} value={firstName} onChange={(event) => setFirstName(event.target.value)} required />
+              </label>
+              <label className={styles.field} htmlFor="register-last-name">
+                <span className={styles.fieldLabel}>Last name</span>
+                <input id="register-last-name" name="lastName" aria-invalid={Boolean(error)} aria-describedby={error ? errorMessageId : undefined} value={lastName} onChange={(event) => setLastName(event.target.value)} required />
+              </label>
             </div>
             {isCompany ? <div className={styles.organization}>
               <label htmlFor="providerType">Organization type</label>
-              <div className={styles.field}><select id="providerType" value={providerType} onChange={(event) => setProviderType(Number(event.target.value) as ProviderType)}><option value={ProviderTypes.Company}>Company</option><option value={ProviderTypes.TrainingProvider}>Training provider</option></select></div>
-              <label className={styles.field}><input name="companyName" placeholder="Organization name" value={companyName} onChange={(event) => setCompanyName(event.target.value)} required /></label>
+              <div className={styles.field}><select id="providerType" value={providerType} onChange={(event) => setProviderType(Number(event.target.value) as ProviderType)} aria-invalid={Boolean(error)} aria-describedby={error ? errorMessageId : undefined}><option value={ProviderTypes.Company}>Company</option><option value={ProviderTypes.TrainingProvider}>Training provider</option></select></div>
+              <label className={styles.field} htmlFor="register-company-name">
+                <span className={styles.fieldLabel}>Organization name</span>
+                <input id="register-company-name" name="companyName" aria-invalid={Boolean(error)} aria-describedby={error ? errorMessageId : undefined} value={companyName} onChange={(event) => setCompanyName(event.target.value)} required />
+              </label>
             </div> : null}
-            <label className={styles.field}><input name="email" type="email" autoComplete="email" placeholder="Email address" value={email} onChange={(event) => setEmail(event.target.value)} required /><Mail className={styles.fieldIcon} size={18} aria-hidden="true" /></label>
-            <label className={styles.field}><input name="password" type={showPassword ? "text" : "password"} minLength={8} autoComplete="new-password" placeholder="Create password" value={password} onChange={(event) => setPassword(event.target.value)} required /><LockKeyhole className={styles.fieldIcon} size={18} aria-hidden="true" /><button className={styles.eye} type="button" onClick={() => setShowPassword((visible) => !visible)} aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? <EyeOff size={17} aria-hidden="true" /> : <Eye size={17} aria-hidden="true" />}</button></label>
-            <label className={styles.field}><input name="confirmPassword" type={showPassword ? "text" : "password"} minLength={8} autoComplete="new-password" placeholder="Confirm password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} required /><LockKeyhole className={styles.fieldIcon} size={18} aria-hidden="true" /></label>
+            <label className={styles.field} htmlFor="register-email">
+              <span className={styles.fieldLabel}>Email address</span>
+              <input id="register-email" name="email" type="email" autoComplete="email" aria-invalid={Boolean(error)} aria-describedby={error ? errorMessageId : undefined} value={email} onChange={(event) => setEmail(event.target.value)} required />
+              <Mail className={styles.fieldIcon} size={18} aria-hidden="true" />
+            </label>
+            <label className={styles.field} htmlFor="register-password">
+              <span className={styles.fieldLabel}>Create password</span>
+              <input id="register-password" name="password" type={showPassword ? "text" : "password"} minLength={8} autoComplete="new-password" aria-invalid={Boolean(error)} aria-describedby={error ? errorMessageId : undefined} value={password} onChange={(event) => setPassword(event.target.value)} required />
+              <LockKeyhole className={styles.fieldIcon} size={18} aria-hidden="true" />
+              <button className={styles.eye} type="button" onClick={() => setShowPassword((visible) => !visible)} aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? <EyeOff size={17} aria-hidden="true" /> : <Eye size={17} aria-hidden="true" />}</button>
+            </label>
+            <label className={styles.field} htmlFor="register-confirm-password">
+              <span className={styles.fieldLabel}>Confirm password</span>
+              <input id="register-confirm-password" name="confirmPassword" type={showPassword ? "text" : "password"} minLength={8} autoComplete="new-password" aria-invalid={Boolean(error)} aria-describedby={error ? errorMessageId : undefined} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} required />
+              <LockKeyhole className={styles.fieldIcon} size={18} aria-hidden="true" />
+            </label>
             <button className={styles.submit} type="submit" disabled={isSubmitting}>{isSubmitting ? "Creating account..." : "Create account"}</button>
           </div>
         )}

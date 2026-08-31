@@ -120,7 +120,7 @@ export default function ProofReplayDialog({
       <section ref={dialogRef} className={styles.dialog} role="dialog" aria-modal="true" aria-labelledby="proof-replay-title" onMouseDown={(event) => event.stopPropagation()}>
         <header className={styles.header}>
           <div>
-            <span>SkillBridge Proof Engine</span>
+            <span>SkillBridge Evidence Replay</span>
             <h2 id="proof-replay-title">Proof Replay</h2>
             <p>Inspect the exact decision record without changing a single workflow record.</p>
           </div>

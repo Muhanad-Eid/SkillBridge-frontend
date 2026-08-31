@@ -1,12 +1,36 @@
 import type { AuthResponse } from "../../features/auth/domain/authTypes";
 
-const CONFIGURED_API_URL =
-  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL;
+const DEV_ALLOWED_API_HOSTNAMES = new Set(["127.0.0.1", "localhost"]);
 
-export const API_BASE_URL = import.meta.env.DEV
-  ? ""
-  : CONFIGURED_API_URL?.trim() ||
-    `${window.location.protocol}//${window.location.hostname}:8080`;
+function resolveConfiguredApiBaseUrl() {
+  const configuredUrl = (
+    import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? ""
+  )
+    .trim();
+
+  if (!configuredUrl) {
+    return "";
+  }
+
+  try {
+    const apiUrl = new URL(configuredUrl);
+
+    if (import.meta.env.DEV && !DEV_ALLOWED_API_HOSTNAMES.has(apiUrl.hostname)) {
+      console.warn(
+        "Ignoring remote VITE_API_URL in local development; using same-origin /api proxy instead.",
+      );
+      return "";
+    }
+
+    return apiUrl.origin;
+  } catch {
+    return configuredUrl.replace(/\/$/, "");
+  }
+}
+
+export const API_BASE_URL =
+  resolveConfiguredApiBaseUrl() ||
+  (import.meta.env.DEV ? "" : window.location.origin);
 
 export const API_HEALTH_URL = `${API_BASE_URL.replace(/\/$/, "")}/health/ready`;
 const SESSION_LOST_STATUSES = new Set([401]);
@@ -17,6 +41,9 @@ export const AUTH_EXPIRED_EVENT = "skillbridge:auth-expired";
 
 type HttpOptions = RequestInit & {
   skipAuth?: boolean;
+  retries?: number;
+  retryDelayMs?: number;
+  validateResponse?: (payload: unknown, response: Response) => void;
 };
 
 export class HttpError extends Error {
@@ -62,17 +89,29 @@ export async function httpClient<T>(
     }
   }
 
+  const requestOptions: RequestInit = {
+    ...options,
+    headers,
+  };
+
+  const maxRetries = Math.max(0, options.retries ?? 2);
+  const retryDelayMs = Math.max(0, options.retryDelayMs ?? 250);
+
   let response: Response;
 
   try {
-    response = await fetch(
+    response = await fetchWithRetry(
       `${API_BASE_URL.replace(/\/$/, "")}${endpoint}`,
-      {
-        ...options,
-        headers,
-      },
+      requestOptions,
+      0,
+      maxRetries,
+      retryDelayMs,
     );
   } catch (caughtError) {
+    if (caughtError instanceof Error && caughtError.name === "AbortError") {
+      throw caughtError;
+    }
+
     throw new Error(
       caughtError instanceof Error
         ? "The API service is unavailable. Start the API and try again."
@@ -82,6 +121,10 @@ export async function httpClient<T>(
   }
 
   const data = await readResponse(response);
+
+  if (options.validateResponse) {
+    options.validateResponse(data, response);
+  }
 
   if (!response.ok) {
     if (
@@ -145,12 +188,61 @@ export async function httpDownload(endpoint: string) {
   };
 }
 
+function getPreferredStorage(): Storage | null {
+  try {
+    return window.sessionStorage;
+  } catch {
+    return null;
+  }
+}
+
+function getFallbackStorage(): Storage | null {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+}
+
+function readStoredRawAuth(): string | null {
+  const preferred = getPreferredStorage();
+  const fallback = getFallbackStorage();
+
+  const preferredValue = preferred?.getItem(AUTH_STORAGE_KEY);
+  if (preferredValue) {
+    return preferredValue;
+  }
+
+  const fallbackValue = fallback?.getItem(AUTH_STORAGE_KEY);
+  if (fallbackValue) {
+    preferred?.setItem(AUTH_STORAGE_KEY, fallbackValue);
+    fallback?.removeItem(AUTH_STORAGE_KEY);
+    return fallbackValue;
+  }
+
+  return null;
+}
+
 export function saveAuth(auth: AuthResponse) {
-  localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(auth));
+  const payload = JSON.stringify(auth);
+  const preferred = getPreferredStorage();
+  const fallback = getFallbackStorage();
+
+  if (preferred) {
+    preferred.setItem(AUTH_STORAGE_KEY, payload);
+  }
+
+  if (fallback && fallback !== preferred) {
+    fallback.removeItem(AUTH_STORAGE_KEY);
+  }
+
+  if (!preferred && fallback) {
+    fallback.setItem(AUTH_STORAGE_KEY, payload);
+  }
 }
 
 export function getStoredAuth(): AuthResponse | null {
-  const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+  const raw = readStoredRawAuth();
 
   if (!raw) {
     return null;
@@ -172,7 +264,11 @@ export function getStoredAuth(): AuthResponse | null {
 }
 
 export function clearStoredAuth() {
-  localStorage.removeItem(AUTH_STORAGE_KEY);
+  const preferred = getPreferredStorage();
+  const fallback = getFallbackStorage();
+
+  preferred?.removeItem(AUTH_STORAGE_KEY);
+  fallback?.removeItem(AUTH_STORAGE_KEY);
 }
 
 export function getTokenExpiresAt(token: string): number | null {
@@ -214,6 +310,100 @@ export function expireAuthSession() {
   if (window.location.pathname !== loginPath) {
     window.location.replace(loginPath);
   }
+}
+
+async function fetchWithRetry(
+  url: string,
+  requestOptions: RequestInit,
+  attempt: number,
+  maxRetries: number,
+  retryDelayMs: number,
+): Promise<Response> {
+  const signal = requestOptions.signal ?? undefined;
+  const safeRequestOptions: RequestInit = {
+    ...requestOptions,
+    signal,
+  };
+
+  try {
+    const response = await fetch(url, safeRequestOptions);
+
+    if (shouldRetryResponse(response, attempt, maxRetries)) {
+      await delayRetry(retryDelayMs, signal);
+      return fetchWithRetry(url, safeRequestOptions, attempt + 1, maxRetries, retryDelayMs);
+    }
+
+    return response;
+  } catch (caughtError) {
+    if (shouldRetryError(caughtError, attempt, maxRetries, signal)) {
+      await delayRetry(retryDelayMs, signal);
+      return fetchWithRetry(url, safeRequestOptions, attempt + 1, maxRetries, retryDelayMs);
+    }
+
+    throw caughtError;
+  }
+}
+
+function shouldRetryResponse(
+  response: Response,
+  attempt: number,
+  maxRetries: number,
+): boolean {
+  if (attempt >= maxRetries) {
+    return false;
+  }
+
+  return response.status === 408 || response.status === 429 ||
+    response.status === 500 || response.status === 502 ||
+    response.status === 503 || response.status === 504;
+}
+
+function shouldRetryError(
+  caughtError: unknown,
+  attempt: number,
+  maxRetries: number,
+  signal?: AbortSignal,
+): boolean {
+  if (signal?.aborted) {
+    return false;
+  }
+
+  if (attempt >= maxRetries) {
+    return false;
+  }
+
+  return (
+    caughtError instanceof TypeError ||
+    (caughtError instanceof Error && caughtError.name === "TimeoutError") ||
+    (caughtError instanceof Error && caughtError.message.includes("fetch"))
+  );
+}
+
+async function delayRetry(delayMs: number, signal?: AbortSignal) {
+  if (delayMs <= 0) {
+    return;
+  }
+
+  const currentSignal = signal;
+
+  await new Promise<void>((resolve, reject) => {
+    if (currentSignal?.aborted) {
+      reject(currentSignal.reason ?? new DOMException("The operation was aborted.", "AbortError"));
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      currentSignal?.removeEventListener("abort", abortHandler);
+      resolve();
+    }, delayMs);
+
+    const abortHandler = () => {
+      window.clearTimeout(timeoutId);
+      reject(currentSignal?.reason ?? new DOMException("The operation was aborted.", "AbortError"));
+    };
+
+    currentSignal?.addEventListener("abort", abortHandler, { once: true });
+  });
 }
 
 async function readResponse(response: Response) {

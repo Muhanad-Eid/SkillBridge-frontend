@@ -349,7 +349,7 @@ export default function UniversityTrainingPage() {
   return (
     <section className={`page university-training-page ${styles.root}`}>
       <PageHeader
-        title="University Training Passport"
+        title="University Training"
         eyebrow="Academic oversight"
         description="Keep workplace evidence and academic approval connected in one supervised training record."
         actions={
@@ -360,7 +360,7 @@ export default function UniversityTrainingPage() {
                 variant="secondary"
               >
                 <Workflow size={17} aria-hidden="true" />
-                Open Proof Engine
+                Open Evidence Replay
               </Button>
               <Button
                 type="button"
@@ -487,7 +487,7 @@ export default function UniversityTrainingPage() {
           <div className="university-training-record">
             <header>
               <div>
-                <span>University Training Passport #{record.applicationId}</span>
+                <span>University Training record #{record.applicationId}</span>
                 <h2>{record.projectTitle}</h2>
                 <dl className="university-case-meta">
                   <div>

@@ -7,8 +7,6 @@ import {
   ClipboardCheck,
   FileCheck2,
   GraduationCap,
-  GitBranch,
-  LockKeyhole,
   Search,
   ShieldCheck,
   UserPlus,
@@ -19,18 +17,6 @@ import styles from "./HomePage.module.scss";
 
 const roles = [
   {
-    icon: BriefcaseBusiness,
-    tone: "Individual",
-    label: "For individuals",
-    title: "Build experience through real work.",
-    description: "Move from finding an opportunity to sharing approved evidence.",
-    features: [
-      "Find opportunities that match your skills",
-      "Complete milestones and participant-specific work",
-      "Share traceable evidence with clear claim limits",
-    ],
-  },
-  {
     icon: Building2,
     tone: "Provider",
     label: "For verified providers",
@@ -40,6 +26,18 @@ const roles = [
       "Define versioned requirements before work begins",
       "Evaluate every criterion against accepted rules",
       "Approve evidence through accountable workflows",
+    ],
+  },
+  {
+    icon: BriefcaseBusiness,
+    tone: "Individual",
+    label: "For individuals",
+    title: "Build experience through real work.",
+    description: "Move from finding an opportunity to sharing approved evidence.",
+    features: [
+      "Find opportunities that match your skills",
+      "Complete milestones and participant-specific work",
+      "Share traceable evidence with clear claim limits",
     ],
   },
   {
@@ -91,39 +89,36 @@ export default function HomePage() {
             </div>
           </div>
 
-          <section className={styles.heroVisual} aria-label="The SkillBridge evidence path">
-            <header className={styles.circuitTop}>
-              <div>
-                <p>SkillBridge proof path</p>
-                <h2>Work with a record that can be checked.</h2>
+          <div className={styles.heroVisual} aria-label="SkillBridge evidence preview">
+            <article className={`${styles.floatCard} ${styles.record}`}>
+              <div className={styles.cardHeader}>
+                <span className={`${styles.avatar} ${styles.blue}`}>P</span>
+                <div>
+                  <div className={styles.cardName}>Participation record</div>
+                  <div className={styles.cardSub}>Accepted contract version</div>
+                </div>
               </div>
-              <span><GitBranch size={15} aria-hidden="true" />Traceable</span>
-            </header>
+              <div className={styles.bar} aria-hidden="true"><span /></div>
+              <span className={`${styles.status} ${styles.progress}`}>In progress</span>
+            </article>
 
-            <ol className={styles.circuitFlow}>
-              <li>
-                <span className={`${styles.circuitIcon} ${styles.circuitBlue}`}><ClipboardCheck size={20} aria-hidden="true" /></span>
-                <div><strong>Evidence Contract</strong><small>Requirements versioned</small></div>
-              </li>
-              <li>
-                <span className={`${styles.circuitIcon} ${styles.circuitCoral}`}><BriefcaseBusiness size={20} aria-hidden="true" /></span>
-                <div><strong>Participant Work</strong><small>Deliverables protected</small></div>
-              </li>
-              <li>
-                <span className={`${styles.circuitIcon} ${styles.circuitGreen}`}><BadgeCheck size={20} aria-hidden="true" /></span>
-                <div><strong>Evaluation</strong><small>Criteria and approvals</small></div>
-              </li>
-              <li>
-                <span className={`${styles.circuitIcon} ${styles.circuitLime}`}><FileCheck2 size={20} aria-hidden="true" /></span>
-                <div><strong>Evidence Card</strong><small>Claim boundary included</small></div>
-              </li>
-            </ol>
+            <article className={`${styles.floatCard} ${styles.card}`}>
+              <div className={styles.cardHeader}>
+                <span className={`${styles.avatar} ${styles.green}`}><FileCheck2 size={15} aria-hidden="true" /></span>
+                <div>
+                  <div className={styles.cardName}>Skill Evidence Card</div>
+                  <div className={styles.cardSub}>Issued from evaluated work</div>
+                </div>
+              </div>
+              <span className={`${styles.status} ${styles.approved}`}><BadgeCheck size={13} aria-hidden="true" />Approved</span>
+            </article>
 
-            <footer className={styles.circuitFooter}>
-              <LockKeyhole size={18} aria-hidden="true" />
-              <div><strong>Private work stays private.</strong><span>Only a controlled, reviewable evidence record can be shared.</span></div>
-            </footer>
-          </section>
+            <article className={`${styles.floatCard} ${styles.review}`}>
+              <div className={styles.reviewLabel}>Evidence readiness</div>
+              <div className={styles.reviewValue}>Ready</div>
+              <div className={styles.miniBar} aria-hidden="true"><span /></div>
+            </article>
+          </div>
         </div>
       </section>
 
@@ -138,26 +133,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className={styles.proofPrinciples} aria-labelledby="protocol-title">
-        <div className={styles.protocolLead}>
-          <p>Evidence protocol</p>
-          <h2 id="protocol-title">What makes a SkillBridge record trustworthy.</h2>
-        </div>
-        <article className={styles.principle}>
-          <span>01</span>
-          <h3>Versioned requirements</h3>
-          <p>Work stays tied to the accepted Evidence Contract, not a later edit.</p>
-        </article>
-        <article className={styles.principle}>
-          <span>02</span>
-          <h3>Protected source work</h3>
-          <p>Final deliverables remain controlled while a share-safe record can be verified.</p>
-        </article>
-        <article className={styles.principle}>
-          <span>03</span>
-          <h3>Bounded claims</h3>
-          <p>Every card makes clear what its evidence supports and what it cannot claim.</p>
-        </article>
+      <section className={styles.stats} aria-label="SkillBridge facts">
+        <article className={styles.stat}><strong>5</strong><span>opportunity types</span></article>
+        <article className={styles.stat}><strong>1</strong><span>evidence issuance protocol</span></article>
+        <article className={styles.stat}><strong>All</strong><span>defined criteria evaluated</span></article>
+        <article className={styles.stat}><strong>2</strong><span>training approval gates</span></article>
       </section>
 
       <section className={styles.section} aria-labelledby="process-title">

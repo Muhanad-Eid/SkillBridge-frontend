@@ -22,7 +22,7 @@ const readiness: EvidenceReadiness = {
   ],
 };
 
-describe("Proof Engine circuit", () => {
+describe("Evidence Replay circuit", () => {
   it("keeps the complete lineage order and exact semantic blocker states", () => {
     const circuit = buildProofCircuit(readiness);
 

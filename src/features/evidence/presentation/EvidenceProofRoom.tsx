@@ -163,7 +163,7 @@ export default function EvidenceProofRoom({ card }: { card: PublicEvidenceCard }
           <ShieldCheck size={28} aria-hidden="true" />
           <div>
             <span>Verification receipt</span>
-            <strong>{card.proofReceipt ? "Proof Engine checks passed" : isActive ? "Issuance checks passed" : "Historical evidence record"}</strong>
+            <strong>{card.proofReceipt ? "Evidence issuance checks passed" : isActive ? "Issuance checks passed" : "Historical evidence record"}</strong>
           </div>
         </div>
         <dl>
@@ -174,10 +174,10 @@ export default function EvidenceProofRoom({ card }: { card: PublicEvidenceCard }
         </dl>
       </section>
       {card.proofReceipt ? (
-        <section className={styles.proofFingerprint} aria-label="Proof Engine receipt fingerprint">
+        <section className={styles.proofFingerprint} aria-label="Evidence issuance receipt fingerprint">
           <Fingerprint size={18} aria-hidden="true" />
           <div>
-            <span>Immutable Proof Engine receipt · RUN-{String(card.proofReceipt.runId).padStart(6, "0")}</span>
+            <span>Immutable evidence receipt · RUN-{String(card.proofReceipt.runId).padStart(6, "0")}</span>
             <code>{card.proofReceipt.fingerprint}</code>
           </div>
           <small>{new Date(card.proofReceipt.runAt).toLocaleString()}</small>

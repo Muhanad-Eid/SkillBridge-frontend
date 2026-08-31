@@ -49,6 +49,7 @@
 .divider::before, .divider::after { flex: 1; height: 1px; background: var(--border); content: ""; }
 
 .field { position: relative; display: block; margin-bottom: 1rem; }
+.fieldLabel { display: block; margin: 0 0 0.5rem; color: var(--secondary); font-size: 0.75rem; font-weight: 650; }
 .card .field input, .card .field select { width: 100%; min-height: 52px; padding: 0.8125rem 2.875rem; border: 1.5px solid var(--border); border-radius: 8px; outline: 0; background: var(--sb-color-surface); color: var(--ink); font: inherit; font-size: 0.875rem; transition: border-color 160ms ease, box-shadow 160ms ease; }
 .card .field select { padding-left: 0.875rem; }
 .card .field input:focus, .card .field select:focus { border-color: var(--ink); box-shadow: 0 0 0 4px rgb(15 23 42 / 0.045); }

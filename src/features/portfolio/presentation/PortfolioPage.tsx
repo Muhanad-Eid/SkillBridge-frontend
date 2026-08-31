@@ -491,7 +491,7 @@ export default function PortfolioPage() {
           <div className="portfolio-header-actions">
             <Button to="/job-seeker/proof-engine" variant="secondary">
               <Workflow size={16} aria-hidden="true" />
-              Open Proof Engine
+              Open Evidence Replay
             </Button>
             {publicPath ? (
               <Button to={publicPath} variant="secondary">

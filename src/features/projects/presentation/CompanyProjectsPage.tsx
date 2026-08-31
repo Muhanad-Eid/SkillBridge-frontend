@@ -28,6 +28,7 @@ import DataState from "../../../shared/components/DataState";
 import Input from "../../../shared/components/Input";
 import PageHeader from "../../../shared/components/PageHeader";
 import StatusBadge from "../../../shared/components/StatusBadge";
+import useUnsavedChangesGuard from "../../../shared/hooks/useUnsavedChangesGuard";
 import type { Skill } from "../../skills/domain/skillTypes";
 import { getSkillsAsync } from "../../skills/infrastructure/skillApi";
 import {
@@ -152,6 +153,20 @@ const emptyProjectForm: ProjectForm = {
   preferredSkillNames: [],
 };
 
+function normalizeProjectForm(form: ProjectForm): ProjectForm {
+  return {
+    ...form,
+    evidenceCriteria: form.evidenceCriteria.map((criterion) => ({
+      ...criterion,
+    })),
+    milestones: form.milestones.map((milestone) => ({
+      ...milestone,
+    })),
+    requiredSkillNames: [...form.requiredSkillNames],
+    preferredSkillNames: [...form.preferredSkillNames],
+  };
+}
+
 function createEmptyProjectForm(isFreelanceView: boolean): ProjectForm {
   return {
     ...emptyProjectForm,
@@ -165,6 +180,24 @@ function createEmptyProjectForm(isFreelanceView: boolean): ProjectForm {
       ? OpportunityTypes.FreelanceTask
       : OpportunityTypes.ProfessionalProject,
   };
+}
+
+function createProjectFormSnapshot(form: ProjectForm): ProjectForm {
+  return normalizeProjectForm(form);
+}
+
+function isProjectFormDirty(
+  currentForm: ProjectForm,
+  baselineForm: ProjectForm | null,
+): boolean {
+  if (!baselineForm) {
+    return false;
+  }
+
+  return (
+    JSON.stringify(normalizeProjectForm(currentForm)) !==
+    JSON.stringify(normalizeProjectForm(baselineForm))
+  );
 }
 
 type EvidenceContractTemplate = {
@@ -305,6 +338,9 @@ export default function CompanyProjectsPage({
   const [form, setForm] = useState<ProjectForm>(() =>
     createEmptyProjectForm(isFreelanceView),
   );
+  const [draftBaseline, setDraftBaseline] = useState<ProjectForm | null>(
+    createProjectFormSnapshot(createEmptyProjectForm(isFreelanceView)),
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [busyProjectId, setBusyProjectId] = useState<number | null>(null);
@@ -314,6 +350,13 @@ export default function CompanyProjectsPage({
       : "",
   );
   const [message, setMessage] = useState("");
+  const isFormDirty = isProjectFormDirty(form, draftBaseline);
+
+  useUnsavedChangesGuard({
+    isDirty: isFormOpen && isFormDirty,
+    message:
+      "You have unsaved changes to this opportunity. Leave without saving?",
+  });
 
   async function loadProjects() {
     setIsLoading(true);
@@ -394,6 +437,16 @@ export default function CompanyProjectsPage({
     [scopedProjects],
   );
 
+  function confirmDiscardDraft() {
+    if (!isFormDirty) {
+      return true;
+    }
+
+    return window.confirm(
+      "You have unsaved changes to this opportunity. Discard them?",
+    );
+  }
+
   function openCreateForm() {
     setMessage("");
     setError("");
@@ -403,24 +456,38 @@ export default function CompanyProjectsPage({
       return;
     }
 
+    if (!confirmDiscardDraft()) {
+      return;
+    }
+
+    const nextForm = createEmptyProjectForm(isFreelanceView);
     setMode("create");
     setEditingProject(null);
-    setForm(createEmptyProjectForm(isFreelanceView));
+    setForm(nextForm);
+    setDraftBaseline(createProjectFormSnapshot(nextForm));
     setRequiredSkillInput("");
     setPreferredSkillInput("");
     setIsFormOpen(true);
   }
 
   function applyEvidenceContractTemplate(template: EvidenceContractTemplate) {
-    setForm(template.apply(createEmptyProjectForm(isFreelanceView)));
+    if (!confirmDiscardDraft()) {
+      return;
+    }
+
+    const nextForm = template.apply(createEmptyProjectForm(isFreelanceView));
+    setForm(nextForm);
+    setDraftBaseline(createProjectFormSnapshot(nextForm));
     setRequiredSkillInput("");
     setPreferredSkillInput("");
   }
 
   function openEditForm(project: Project) {
-    setMode("edit");
-    setEditingProject(project);
-    setForm({
+    if (!confirmDiscardDraft()) {
+      return;
+    }
+
+    const nextForm = {
       title: project.title,
       description: project.description,
       requirements: project.requirements,
@@ -485,7 +552,12 @@ export default function CompanyProjectsPage({
       preferredSkillNames: project.skills
         .filter((skill) => !skill.isRequired)
         .map((skill) => skill.name),
-    });
+    };
+
+    setMode("edit");
+    setEditingProject(project);
+    setForm(nextForm);
+    setDraftBaseline(createProjectFormSnapshot(nextForm));
     setRequiredSkillInput("");
     setPreferredSkillInput("");
     setMessage("");
@@ -494,10 +566,16 @@ export default function CompanyProjectsPage({
   }
 
   function closeForm() {
+    if (!confirmDiscardDraft()) {
+      return;
+    }
+
     setIsFormOpen(false);
     setMode("create");
     setEditingProject(null);
-    setForm(createEmptyProjectForm(isFreelanceView));
+    const nextForm = createEmptyProjectForm(isFreelanceView);
+    setForm(nextForm);
+    setDraftBaseline(createProjectFormSnapshot(nextForm));
     setRequiredSkillInput("");
     setPreferredSkillInput("");
 

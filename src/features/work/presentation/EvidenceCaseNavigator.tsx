@@ -193,7 +193,7 @@ export default function EvidenceCaseNavigator({
             Evidence requests
           </Link>
           <Link to={`/${portal}/proof-engine/${record.applicationId}`}>
-            Open Proof Engine
+            Open Evidence Replay
           </Link>
         </nav>
       </footer>

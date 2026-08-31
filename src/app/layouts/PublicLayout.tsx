@@ -71,50 +71,14 @@ export default function PublicLayout() {
       {!isAuthPage ? (
         isLandingPage ? (
           <footer className="site-footer site-footer-landing">
-            <div className="landing-footer-content">
-              <div className="landing-footer-intro">
-                <Link className="site-footer-brand" to="/">
-                  <BrandIcon />
-                  <span>
-                    <strong>SkillBridge</strong>
-                    <small>Internships, training, and projects</small>
-                  </span>
-                </Link>
-                <p>
-                  A controlled path from practical work to traceable,
-                  evidence-backed achievement.
-                </p>
-              </div>
-
-              <nav className="landing-footer-group" aria-label="Quick links">
-                <h2>Quick links</h2>
-                <Link to="/">About SkillBridge</Link>
-                <Link to="/opportunities">Opportunities</Link>
-                <Link to="/freelance">Freelance</Link>
-              </nav>
-
-              <nav className="landing-footer-group" aria-label="Account links">
-                <h2>Get started</h2>
-                <Link to="/register">Create an account</Link>
-                <Link to="/portal/login">Sign in</Link>
-                <Link to="/register">For providers</Link>
-              </nav>
-
-              <div className="landing-footer-group landing-footer-contact">
-                <h2>Contact us</h2>
-                <a href="mailto:contact@skillbridge.com">contact@skillbridge.com</a>
-                <span>For students, providers, and universities</span>
-                <Link to="/contact">Contact page</Link>
-              </div>
-            </div>
-
-            <div className="landing-footer-bottom">
-              <small>© 2026 SkillBridge. All rights reserved.</small>
-              <nav aria-label="Legal links">
-                <Link to="/privacy">Privacy</Link>
-                <Link to="/terms">Terms</Link>
-              </nav>
-            </div>
+            <Link className="site-footer-brand" to="/">
+              <BrandIcon />
+              <span>
+                <strong>SkillBridge</strong>
+                <small>Internships, training, and projects</small>
+              </span>
+            </Link>
+            <small>© 2026 SkillBridge</small>
           </footer>
         ) : (
           <footer className="site-footer">

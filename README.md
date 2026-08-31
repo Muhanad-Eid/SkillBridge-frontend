@@ -20,9 +20,10 @@ targets the local API on port 8081). For deployed builds set:
 - `VITE_API_URL` — public API origin (e.g. `https://api.example.com`). When
   unset, production builds fall back to same-origin `/api`.
 
-Authentication uses bearer JWTs stored in `localStorage`
-(`skillbridge_auth`); sessions auto-expire client-side, sync across tabs, and
-server-side logout revokes the token family.
+Authentication uses bearer JWTs stored in `sessionStorage` by default
+(`skillbridge_auth`), with a one-time migration from legacy `localStorage`
+values. Sessions auto-expire client-side, sync across tabs, and the
+server-side logout flow revokes the active token family.
 
 ## Testing notes
 

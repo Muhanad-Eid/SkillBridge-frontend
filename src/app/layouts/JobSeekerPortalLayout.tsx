@@ -32,7 +32,7 @@ import { useAuth } from "../../shared/auth/AuthContext";
 import ConfirmDialog from "../../shared/components/ConfirmDialog";
 import useVisibilityPolling from "../../shared/hooks/useVisibilityPolling";
 import { subscribeToPortalBadgeChanges } from "../../shared/events/portalEvents";
-import PortalShell from "../../shared/layout/PortalShell";
+import PortalShell from "../../shared/layout/SidebarPortalShell";
 
 type JobSeekerNavItem = {
   label: string;
@@ -47,7 +47,7 @@ const jobSeekerNavItems: JobSeekerNavItem[] = [
   { label: "Freelance", to: "/job-seeker/freelance", icon: CircleDollarSign },
   { label: "Applications", to: "/job-seeker/applications", icon: FileCheck2 },
   { label: "Work", to: "/job-seeker/work", icon: ListChecks },
-  { label: "Proof Engine", to: "/job-seeker/proof-engine", icon: Workflow },
+  { label: "Evidence Replay", to: "/job-seeker/proof-engine", icon: Workflow },
   { label: "Evidence requests", to: "/job-seeker/evidence-requests", icon: ClipboardCheck },
   { label: "Portfolio", to: "/job-seeker/portfolio", icon: FolderKanban },
   { label: "Reviews", to: "/job-seeker/reviews", icon: Star },

@@ -20,7 +20,7 @@ import { getAdminQueueSummaryAsync } from "../../features/admin/infrastructure/a
 import { useAuth } from "../../shared/auth/AuthContext";
 import ConfirmDialog from "../../shared/components/ConfirmDialog";
 import useVisibilityPolling from "../../shared/hooks/useVisibilityPolling";
-import PortalShell from "../../shared/layout/PortalShell";
+import PortalShell from "../../shared/layout/SidebarPortalShell";
 
 type AdminNavItem = {
   label: string;
@@ -40,7 +40,7 @@ const adminNavItems: AdminNavItem[] = [
   { label: "Job seekers", to: "/admin/job-seekers", icon: GraduationCap },
   { label: "Projects", to: "/admin/projects", icon: BriefcaseBusiness },
   { label: "Evidence", to: "/admin/evidence", icon: ShieldCheck },
-  { label: "Proof Engine", to: "/admin/proof-engine", icon: Workflow },
+  { label: "Evidence Replay", to: "/admin/proof-engine", icon: Workflow },
   { label: "Evidence requests", to: "/admin/evidence-requests", icon: ClipboardCheck },
   { label: "Applications", to: "/admin/applications", icon: FileCheck2, badge: "applications" },
   { label: "Reviews", to: "/admin/reviews", icon: Star, badge: "reviews" },

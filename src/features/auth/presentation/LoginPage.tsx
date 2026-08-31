@@ -15,6 +15,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const errorMessageId = "login-form-error";
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -46,15 +47,17 @@ export default function LoginPage() {
           <p>Sign in to your SkillBridge account to continue.</p>
         </header>
 
-        {error ? <div className={`${styles.message} ${styles.error}`}>{error}</div> : null}
-        {searchParams.get("passwordChanged") === "1" ? <div className={`${styles.message} ${styles.success}`}>Password changed successfully. Log in with your new password.</div> : null}
+        {error ? <div id={errorMessageId} className={`${styles.message} ${styles.error}`} role="alert" aria-live="assertive">{error}</div> : null}
+        {searchParams.get("passwordChanged") === "1" ? <div className={`${styles.message} ${styles.success}`} role="status" aria-live="polite">Password changed successfully. Log in with your new password.</div> : null}
 
-        <label className={styles.field}>
-          <input name="email" type="email" autoComplete="email" placeholder="Email address" value={email} onChange={(event) => setEmail(event.target.value)} required />
+        <label className={styles.field} htmlFor="login-email">
+          <span className={styles.fieldLabel}>Email address</span>
+          <input id="login-email" name="email" type="email" autoComplete="email" aria-invalid={Boolean(error)} aria-describedby={error ? errorMessageId : undefined} placeholder="Email address" value={email} onChange={(event) => setEmail(event.target.value)} required />
           <Mail className={styles.fieldIcon} size={18} aria-hidden="true" />
         </label>
-        <label className={styles.field}>
-          <input name="password" type={showPassword ? "text" : "password"} autoComplete="current-password" placeholder="Password" value={password} onChange={(event) => setPassword(event.target.value)} required />
+        <label className={styles.field} htmlFor="login-password">
+          <span className={styles.fieldLabel}>Password</span>
+          <input id="login-password" name="password" type={showPassword ? "text" : "password"} autoComplete="current-password" aria-invalid={Boolean(error)} aria-describedby={error ? errorMessageId : undefined} placeholder="Password" value={password} onChange={(event) => setPassword(event.target.value)} required />
           <LockKeyhole className={styles.fieldIcon} size={18} aria-hidden="true" />
           <button className={styles.eye} type="button" onClick={() => setShowPassword((visible) => !visible)} aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? <EyeOff size={17} aria-hidden="true" /> : <Eye size={17} aria-hidden="true" />}</button>
         </label>
