@@ -23,6 +23,19 @@ test("role guards keep a participant out of the admin portal", async ({ page }) 
   await expect(page.getByRole("heading", { name: "Overview", exact: true })).toBeVisible();
 });
 
+test("workspace map keeps the current space visible and closes predictably", async ({ page }) => {
+  await loginAs(page, demoAccounts.participant);
+
+  await page.getByRole("button", { name: "Workspace", exact: true }).click();
+  const navigation = page.locator("#job-seeker-bridge-deck");
+  await expect(navigation).toBeVisible();
+  await expect(navigation.getByText("Currently open", { exact: true })).toBeVisible();
+  await expect(navigation.getByRole("link", { name: "Portfolio", exact: true })).toBeVisible();
+
+  await page.keyboard.press("Escape");
+  await expect(navigation).toBeHidden();
+});
+
 test("@mobile participant portal remains navigable on a phone", async ({ page }) => {
   await loginAs(page, demoAccounts.participant);
   await page.getByRole("button", { name: "Open workspace navigation" }).click();
