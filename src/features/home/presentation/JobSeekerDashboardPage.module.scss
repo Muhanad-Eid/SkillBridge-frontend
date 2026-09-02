@@ -14,12 +14,11 @@
     position: relative;
     margin: 0 0 1.1rem;
     overflow: hidden;
-    border: 1px solid #203b63;
-    border-left: 4px solid #c7f26a;
+    border: 1px solid var(--sb-color-border);
     border-radius: 8px;
-    background: #11294a;
-    color: #fff;
-    box-shadow: 0 16px 34px rgba(16, 37, 66, .14);
+    background: var(--sb-color-surface);
+    color: var(--sb-color-text);
+    box-shadow: none;
   }
 
   .pulse > header {
@@ -29,18 +28,18 @@
     gap: 1rem;
     min-height: 52px;
     padding: 0 1.4rem;
-    border-bottom: 1px solid rgba(255, 255, 255, .14);
+    border-bottom: 1px solid var(--sb-color-border);
   }
 
   .pulse h2 {
     margin: 0;
-    color: #fff;
+    color: var(--sb-color-text);
     font-size: 1rem;
     font-weight: 760;
   }
 
   .pulse > header span {
-    color: #b8c8dd;
+    color: var(--sb-color-text-muted);
     font-size: .72rem;
     font-weight: 700;
   }
@@ -62,7 +61,7 @@
     padding: 1.15rem 1.25rem;
     border: 0;
     border-radius: 0;
-    border-right: 1px solid rgba(255, 255, 255, .16);
+    border-right: 1px solid var(--sb-color-border);
     background: transparent !important;
     box-shadow: none;
   }
@@ -72,12 +71,12 @@
   }
 
   :global(.jobseeker-kpi-grid article:hover) {
-    background: rgba(255, 255, 255, .045) !important;
+    background: var(--sb-color-surface-subtle) !important;
     transform: none;
   }
 
   :global(.jobseeker-kpi-grid article > div > span) {
-    color: #b8c8dd;
+    color: var(--sb-color-text-muted);
     font-size: .68rem;
     font-weight: 760;
     letter-spacing: .075em;
@@ -86,14 +85,14 @@
 
   :global(.jobseeker-kpi-grid article > div > strong) {
     margin-top: .35rem;
-    color: #fff;
+    color: var(--sb-color-text);
     font-size: 2rem;
     line-height: 1;
   }
 
   :global(.jobseeker-kpi-grid article > div > small) {
     margin-top: .45rem;
-    color: #d6e0ed;
+    color: var(--sb-color-text-secondary);
     font-size: .76rem;
   }
 
@@ -245,7 +244,7 @@
     }
 
     :global(.jobseeker-kpi-grid article:nth-child(-n + 2)) {
-      border-bottom: 1px solid rgba(255, 255, 255, .16);
+      border-bottom: 1px solid var(--sb-color-border);
     }
 
     :global(.jobseeker-kpi-grid article) {
@@ -268,8 +267,7 @@
 
 [data-theme="dark"] .root {
   .pulse {
-    border-color: #31577f;
-    border-left-color: #c7f26a;
+    border-color: var(--sb-color-border);
     box-shadow: none;
   }
 

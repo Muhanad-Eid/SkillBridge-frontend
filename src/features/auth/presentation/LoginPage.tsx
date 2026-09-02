@@ -2,6 +2,7 @@ import { type FormEvent, useState } from "react";
 import { Check, Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { getRoleHomePath, useAuth } from "../../../shared/auth/AuthContext";
+import BrandIcon from "../../../shared/components/BrandIcon";
 import ThemeToggle from "../../../shared/components/ThemeToggle";
 import styles from "./AuthPage.module.scss";
 import { loginAsync } from "../infrastructure/authApi";
@@ -39,6 +40,10 @@ export default function LoginPage() {
 
   return (
     <section className={styles.page}>
+      <Link className={styles.homeLink} to="/" aria-label="Return to SkillBridge home">
+        <BrandIcon />
+        <span>SkillBridge</span>
+      </Link>
       <ThemeToggle className={styles.themeToggle} />
       <form className={styles.card} onSubmit={handleSubmit}>
         <header className={styles.header}>

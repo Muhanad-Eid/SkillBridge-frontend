@@ -2,6 +2,7 @@ import { type FormEvent, useState } from "react";
 import { ArrowLeft, ArrowRight, Box, Check, Eye, EyeOff, LockKeyhole, Mail, UserRound } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { getRoleHomePath, useAuth } from "../../../shared/auth/AuthContext";
+import BrandIcon from "../../../shared/components/BrandIcon";
 import ThemeToggle from "../../../shared/components/ThemeToggle";
 import styles from "./AuthPage.module.scss";
 import { ProviderTypes, RegisterRoles, type ProviderType, type RegisterRole } from "../domain/authTypes";
@@ -49,6 +50,10 @@ export default function RegisterPage() {
 
   return (
     <section className={styles.page}>
+      <Link className={styles.homeLink} to="/" aria-label="Return to SkillBridge home">
+        <BrandIcon />
+        <span>SkillBridge</span>
+      </Link>
       <ThemeToggle className={styles.themeToggle} />
       <form className={styles.card} onSubmit={handleSubmit}>
         <header className={styles.header}>

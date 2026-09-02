@@ -62,11 +62,32 @@
   color: var(--ink) !important;
 }
 
+.homeLink {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  color: var(--ink);
+  font-size: .85rem;
+  font-weight: 760;
+  text-decoration: none;
+}
+
+.homeLink :global(.brand-mark) {
+  width: 30px;
+  height: 30px;
+}
+
+.homeLink:hover { color: var(--sb-color-action); }
+
 :global(:root[data-theme="dark"]) .card .field input::placeholder {
   color: var(--dim) !important;
 }
-.fieldIcon { position: absolute; top: 50%; left: 1rem; color: var(--dim); pointer-events: none; transform: translateY(-50%); }
-.eye { position: absolute; top: 50%; right: 0.75rem; width: 32px; height: 32px; display: grid; place-items: center; padding: 0; border: 0; background: transparent; color: var(--dim); cursor: pointer; transform: translateY(-50%); }
+.fieldIcon { position: absolute; top: calc(50% + .8125rem); left: 1rem; color: var(--dim); pointer-events: none; transform: translateY(-50%); }
+.eye { position: absolute; top: calc(50% + .8125rem); right: 0.75rem; width: 32px; height: 32px; display: grid; place-items: center; padding: 0; border: 0; background: transparent; color: var(--dim); cursor: pointer; transform: translateY(-50%); }
 .eye:hover { color: var(--secondary); }
 
 .forgot { display: flex; justify-content: flex-end; margin: -0.375rem 0 1.125rem; }
@@ -118,5 +139,6 @@
 
 @media (max-width: 520px) {
   .card { border-radius: 8px; }
+  .homeLink { top: .75rem; left: .75rem; }
   .themeToggle { top: 0.75rem; right: 0.75rem; }
 }
