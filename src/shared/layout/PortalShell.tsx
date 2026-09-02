@@ -34,19 +34,25 @@ type PrimaryNavigationItem = {
 const primaryNavigationByRole: Record<PortalRole, PrimaryNavigationItem[]> = {
   admin: [
     { sourceLabel: "Overview", label: "Overview" },
-    { sourceLabel: "Projects", label: "Work" },
-    { sourceLabel: "Evidence", label: "Evidence" },
     { sourceLabel: "Users", label: "People" },
+    { sourceLabel: "Companies", label: "Companies" },
+    { sourceLabel: "Projects", label: "Work" },
+    { sourceLabel: "Applications", label: "Applications" },
+    { sourceLabel: "Evidence", label: "Evidence" },
   ],
   company: [
     { sourceLabel: "Overview", label: "Overview" },
+    { sourceLabel: "Opportunities", label: "Opportunities" },
+    { sourceLabel: "Freelance", label: "Freelance" },
+    { sourceLabel: "Applications", label: "Applications" },
     { sourceLabel: "Work", label: "Work" },
     { sourceLabel: "Evidence Replay", label: "Evidence" },
-    { sourceLabel: "Find talent", label: "People" },
   ],
   "job-seeker": [
     { sourceLabel: "Overview", label: "Overview" },
     { sourceLabel: "Discover", label: "Explore" },
+    { sourceLabel: "Freelance", label: "Freelance" },
+    { sourceLabel: "Applications", label: "Applications" },
     { sourceLabel: "Work", label: "Work" },
     { sourceLabel: "Evidence Replay", label: "Evidence" },
   ],
@@ -158,6 +164,7 @@ export default function PortalShell({
     return navItem ? [{ ...navItem, primaryLabel: primaryItem.label }] : [];
   });
   const activeItemIsPrimary = primaryNavItems.some((item) => item.to === activeItem?.to);
+  const messageItem = navItems.find((item) => item.label === "Messages");
   const notificationItem = navItems.find((item) => item.label === "Notifications");
   const groupedNavItems = (Object.keys({ Work: true, Evidence: true, People: true }) as NavigationGroup[])
     .map((group) => ({
@@ -165,6 +172,7 @@ export default function PortalShell({
       items: navItems.filter(
         (item) =>
           getNavigationGroup(item) === group &&
+          item.to !== messageItem?.to &&
           item.to !== notificationItem?.to &&
           !primaryNavItems.some((primaryItem) => primaryItem.to === item.to),
       ),
@@ -178,6 +186,7 @@ export default function PortalShell({
   const ProfileIcon = profileItem?.icon;
   const PasswordIcon = passwordItem?.icon;
   const ActiveItemIcon = activeItem?.icon;
+  const MessageIcon = messageItem?.icon;
   const hasWorkspaceNavigation = groupedNavItems.length > 0;
 
   return (
@@ -195,6 +204,12 @@ export default function PortalShell({
           <div className={styles.topbarActions}>
             {hasWorkspaceNavigation ? <button className={`${styles.allSpacesButton} ${isNavigationOpen || !activeItemIsPrimary ? styles.allSpacesButtonActive : ""}`} type="button" aria-expanded={isNavigationOpen} aria-controls={`${role}-bridge-deck`} onClick={() => { setIsAccountOpen(false); setIsNavigationOpen((value) => !value); }}><PanelsTopLeft size={17} aria-hidden="true" /><span>Workspace</span><ChevronDown size={15} aria-hidden="true" /></button> : null}
             {hasWorkspaceNavigation ? <button className={`${styles.iconButton} ${styles.mobileMenu}`} type="button" aria-label="Open workspace navigation" onClick={() => { setIsAccountOpen(false); setIsNavigationOpen(true); }}><Menu size={20} aria-hidden="true" /></button> : null}
+            {messageItem ? (
+              <Link className={styles.notificationButton} to={messageItem.to} aria-label={messageItem.badgeCount ? `Messages, ${messageItem.badgeCount} unread` : "Messages"} title="Messages">
+                {MessageIcon ? <MessageIcon size={18} aria-hidden="true" /> : null}
+                {messageItem.badgeCount ? <strong className={styles.notificationBadge}>{messageItem.badgeCount}</strong> : null}
+              </Link>
+            ) : null}
             {notificationItem ? (
               <Link className={styles.notificationButton} to={notificationItem.to} aria-label={notificationItem.badgeCount ? `Notifications, ${notificationItem.badgeCount} unread` : "Notifications"} title="Notifications">
                 <Bell size={18} aria-hidden="true" />

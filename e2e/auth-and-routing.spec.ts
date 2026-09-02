@@ -26,6 +26,13 @@ test("role guards keep a participant out of the admin portal", async ({ page }) 
 test("workspace map keeps the current space visible and closes predictably", async ({ page }) => {
   await loginAs(page, demoAccounts.participant);
 
+  const primaryNavigation = page.getByRole("navigation", { name: "Job seeker portal primary navigation" });
+  for (const label of ["Overview", "Explore", "Freelance", "Applications", "Work", "Evidence"]) {
+    await expect(primaryNavigation.getByRole("link", { name: label, exact: true })).toBeVisible();
+  }
+  await expect(page.getByRole("link", { name: "Messages" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Notifications" })).toBeVisible();
+
   await page.getByRole("button", { name: "Workspace", exact: true }).click();
   const navigation = page.locator("#job-seeker-bridge-deck");
   await expect(navigation).toBeVisible();
