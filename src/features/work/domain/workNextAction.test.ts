@@ -109,6 +109,17 @@ describe("getWorkNextAction", () => {
     expect(action.targetId).toBe("final-submission");
   });
 
+  it("does not offer submission after the opportunity is closed", () => {
+    const action = getWorkNextAction(
+      workRecord({ projectStatus: ProjectStatuses.Completed }),
+      false,
+      null,
+    );
+
+    expect(action.label).toBe("Opportunity closed");
+    expect(action.targetId).toBeUndefined();
+  });
+
   it("leads the provider to criterion evaluation for submitted final work", () => {
     const action = getWorkNextAction(
       workRecord({ workStatus: WorkSubmissionStatuses.Submitted }),

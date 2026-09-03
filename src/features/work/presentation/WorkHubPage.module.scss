@@ -1,5 +1,19 @@
 .root {
-  max-width: 1380px;
+  width: 100%;
+  max-width: none;
+
+  :global(.work-hub-state-warning) {
+    display: grid;
+    gap: .25rem;
+    border: 1px solid #f0d49b;
+    background: #fff9eb;
+    color: #7a4b00;
+  }
+
+  :global(.work-hub-state-warning span) {
+    color: #8b6a30;
+    font-weight: 500;
+  }
 
   :global(.work-hub-back) {
     margin-bottom: .35rem;

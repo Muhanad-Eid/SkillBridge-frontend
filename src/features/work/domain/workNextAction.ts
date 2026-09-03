@@ -23,9 +23,7 @@ export function getWorkNextAction(
   const canEditFinalWork =
     record.workStatus === WorkSubmissionStatuses.NotSubmitted ||
     record.workStatus === WorkSubmissionStatuses.ChangesRequested;
-  const isWorkActive =
-    record.projectStatus === ProjectStatuses.InProgress ||
-    (record.projectStatus === ProjectStatuses.Completed && canEditFinalWork);
+  const isWorkActive = record.projectStatus === ProjectStatuses.InProgress;
   const milestonesApproved = record.milestones.every(
     (milestone) => milestone.status === MilestoneStatuses.Approved,
   );
@@ -159,6 +157,14 @@ export function getWorkNextAction(
   }
 
   if (!isCompany && !isWorkActive) {
+    if (record.projectStatus === ProjectStatuses.Completed) {
+      return {
+        label: "Opportunity closed",
+        detail:
+          "This opportunity is closed. Final work can no longer be submitted from this work record.",
+      };
+    }
+
     return {
       label: "Waiting for work to start",
       detail:

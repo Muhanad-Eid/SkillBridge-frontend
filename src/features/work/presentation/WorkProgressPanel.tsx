@@ -323,9 +323,7 @@ export default function WorkProgressPanel({
     record.workStatus === WorkSubmissionStatuses.NotSubmitted ||
     record.workStatus === WorkSubmissionStatuses.ChangesRequested;
   const isWorkActive =
-    record.projectStatus === ProjectStatuses.InProgress ||
-    (record.projectStatus === ProjectStatuses.Completed &&
-      canEditMilestones);
+    record.projectStatus === ProjectStatuses.InProgress;
   const milestonesApproved = record.milestones.every(
     (milestone) => milestone.status === MilestoneStatuses.Approved,
   );

@@ -103,6 +103,17 @@ function getProjectTone(
   return "neutral";
 }
 
+function getWorkHubProjectStatusLabel(
+  project: Pick<Project, "status" | "applicationDeadline">,
+  isCompany: boolean,
+) {
+  if (project.status === ProjectStatuses.Completed && !isCompany) {
+    return "Opportunity closed";
+  }
+
+  return getProjectDisplayStatusLabel(project);
+}
+
 function buildConversationUrl(
   portal: "company" | "job-seeker",
   receiverId: string,
@@ -286,8 +297,9 @@ export default function WorkHubPage() {
     );
   const participantWorkStatus = acceptedApplications[0]?.workStatus;
   const canParticipantSubmitFinal =
-    participantWorkStatus === WorkSubmissionStatuses.NotSubmitted ||
-    participantWorkStatus === WorkSubmissionStatuses.ChangesRequested;
+    project?.status === ProjectStatuses.InProgress &&
+    (participantWorkStatus === WorkSubmissionStatuses.NotSubmitted ||
+      participantWorkStatus === WorkSubmissionStatuses.ChangesRequested);
 
   function focusFinalSubmission() {
     setActiveSection("delivery");
@@ -381,10 +393,16 @@ export default function WorkHubPage() {
         icon: Play,
       },
       {
-        label: isFreelanceContract ? "Delivery approved" : "Work completed",
+        label: isFreelanceContract
+          ? "Delivery approved"
+          : project.status === ProjectStatuses.Completed
+            ? "Opportunity closed"
+            : "Work completed",
         detail: isFreelanceContract
           ? "The client approved the final delivery."
-          : "The company has confirmed the opportunity is complete.",
+          : project.status === ProjectStatuses.Completed
+            ? "The opportunity is closed. Your participant work record still follows its own submission and approval status."
+            : "The company has confirmed the opportunity is complete.",
         done: workCompleted,
         icon: CheckCircle2,
       },
@@ -485,7 +503,7 @@ export default function WorkHubPage() {
         </div>
         {project ? (
           <StatusBadge tone={getProjectTone(project)}>
-            {getProjectDisplayStatusLabel(project)}
+            {getWorkHubProjectStatusLabel(project, isCompany)}
           </StatusBadge>
         ) : null}
       </header>
@@ -522,6 +540,17 @@ export default function WorkHubPage() {
             <div className="notice notice-error">
               This opportunity is cancelled. Its history remains visible, but
               no new work should continue.
+            </div>
+          ) : null}
+
+          {!isCompany &&
+          project.status === ProjectStatuses.Completed &&
+          participantWorkStatus !== WorkSubmissionStatuses.Approved ? (
+            <div className="notice work-hub-state-warning" role="status">
+              <strong>This opportunity is closed, but your work record is not complete.</strong>
+              <span>
+                Final work submission is no longer available because this opportunity is closed.
+              </span>
             </div>
           ) : null}
 
@@ -1050,9 +1079,9 @@ export default function WorkHubPage() {
                           participantWorkStatus ===
                             WorkSubmissionStatuses.AwaitingUniversityApproval
                         ? "Final work under review"
-                        : portfolioItem
-                        ? "Evidence card ready (work pending approval)"
-                        : "Submit your completed work"}
+                          : portfolioItem
+                            ? "Evidence card ready (work pending approval)"
+                            : "Opportunity closed"}
                     </h2>
                     <p>
                       {acceptedApplications[0]?.workStatus === WorkSubmissionStatuses.Approved
@@ -1063,9 +1092,9 @@ export default function WorkHubPage() {
                           participantWorkStatus ===
                             WorkSubmissionStatuses.AwaitingUniversityApproval
                         ? "Your final submission is saved and waiting for the remaining review and approval steps."
-                        : portfolioItem
-                        ? "Your work is pending provider approval."
-                        : "Submit your completed work above. The evidence card is created after the provider approves it."}
+                         : portfolioItem
+                           ? "Your work is pending provider approval."
+                           : "Final work submission is unavailable because the opportunity is closed."}
                     </p>
                     {canParticipantSubmitFinal ? (
                       <Button
