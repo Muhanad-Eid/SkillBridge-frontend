@@ -730,9 +730,7 @@ export default function WorkHubPage() {
                             <div className="work-hub-worker-actions">
                               <Button
                                 to={
-                                  profile
-                                    ? `/company/talent/${profile.id}`
-                                    : `/company/applications?application=${application.id}`
+                                  `/company/applications/${application.id}/profile`
                                 }
                                 variant="secondary"
                               >

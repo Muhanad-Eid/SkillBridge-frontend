@@ -47,7 +47,7 @@ const jobSeekerNavItems: JobSeekerNavItem[] = [
   { label: "Freelance", to: "/job-seeker/freelance", icon: CircleDollarSign },
   { label: "Applications", to: "/job-seeker/applications", icon: FileCheck2 },
   { label: "Work", to: "/job-seeker/work", icon: ListChecks },
-  { label: "Evidence Replay", to: "/job-seeker/proof-engine", icon: Workflow },
+  { label: "Evidence checks", to: "/job-seeker/proof-engine", icon: Workflow },
   { label: "Evidence requests", to: "/job-seeker/evidence-requests", icon: ClipboardCheck },
   { label: "Portfolio", to: "/job-seeker/portfolio", icon: FolderKanban },
   { label: "Reviews", to: "/job-seeker/reviews", icon: Star },

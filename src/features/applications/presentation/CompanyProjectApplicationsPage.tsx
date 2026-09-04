@@ -889,13 +889,13 @@ export default function CompanyProjectApplicationsPage() {
                       <Button
                         to={
                           project.type !== OpportunityTypes.FreelanceTask &&
-                          application.jobSeekerId
-                            ? `/company/talent/${application.jobSeekerId}`
+                          application.id
+                            ? `/company/applications/${application.id}/profile`
                             : undefined
                         }
                         type={
                           project.type !== OpportunityTypes.FreelanceTask &&
-                          application.jobSeekerId
+                          application.id
                             ? undefined
                             : "button"
                         }

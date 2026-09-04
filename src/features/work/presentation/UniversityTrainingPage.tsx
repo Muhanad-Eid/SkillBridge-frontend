@@ -360,7 +360,7 @@ export default function UniversityTrainingPage() {
                 variant="secondary"
               >
                 <Workflow size={17} aria-hidden="true" />
-                Open Evidence Replay
+                Open evidence checks
               </Button>
               <Button
                 type="button"

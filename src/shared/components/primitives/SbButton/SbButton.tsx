@@ -32,6 +32,11 @@ export default function SbButton({
   ...buttonProps
 }: SbButtonProps) {
   const isDisabled = disabled || isLoading;
+  const tooltip =
+    buttonProps.title ??
+    (size === "icon" && typeof buttonProps["aria-label"] === "string"
+      ? buttonProps["aria-label"]
+      : undefined);
   const classes = [
     styles.button,
     styles[variant],
@@ -70,7 +75,7 @@ export default function SbButton({
         aria-busy={isLoading || undefined}
         aria-disabled={isDisabled || undefined}
         tabIndex={isDisabled ? -1 : undefined}
-        title={buttonProps.title}
+        title={tooltip}
         onClick={handleLinkClick}
       >
         {content}
@@ -82,6 +87,7 @@ export default function SbButton({
     <button
       {...buttonProps}
       className={classes}
+      title={tooltip}
       type={type}
       disabled={isDisabled}
       aria-busy={isLoading || undefined}

@@ -76,9 +76,11 @@ const conditionOrder: Record<string, number> = {
 export default function EvidenceReadinessPanel({
   readiness,
   onResolveCondition,
+  audience = "reviewer",
 }: {
   readiness: EvidenceReadiness;
   onResolveCondition?: (code: string) => void;
+  audience?: "participant" | "reviewer";
 }) {
   const blockerCount = readiness.conditions.filter(
     (condition) => condition.state !== "Complete",
@@ -91,6 +93,25 @@ export default function EvidenceReadinessPanel({
         (conditionOrder[right.code] ?? Number.MAX_SAFE_INTEGER) ||
       left.code.localeCompare(right.code),
   );
+  const actionableConditions = orderedConditions.filter(
+    (condition) => condition.state !== "Complete",
+  );
+  const verifiedConditions = orderedConditions.filter(
+    (condition) => condition.state === "Complete",
+  );
+  const participantActionCodes = new Set([
+    "FinalSubmissionMissing",
+    "WorkIncomplete",
+    "ContributionUnresolved",
+  ]);
+  const participantAction = actionableConditions.find((condition) =>
+    participantActionCodes.has(condition.code),
+  );
+  const participantIsWaiting =
+    !readiness.ready && !participantAction && actionableConditions.length > 0;
+  const participantActionPresentation = participantAction
+    ? getConditionPresentation(participantAction.code)
+    : null;
 
   return (
     <section
@@ -121,11 +142,21 @@ export default function EvidenceReadinessPanel({
       <div className={styles.readinessTimelineIntro}>
         <div>
           <span className={styles.timelineEyebrow}>Integrity progress</span>
-          <strong>
-            {completedCount} of {totalConditions} checks verified
-          </strong>
+          <strong>{audience === "participant"
+            ? readiness.ready
+              ? "Evidence is ready"
+              : participantActionPresentation
+                ? participantActionPresentation.title
+                : "Waiting for review"
+            : `${completedCount} of ${totalConditions} checks verified`}</strong>
           <p>
-            Every check must pass before an evidence card is created.
+            {audience === "participant"
+              ? readiness.ready
+                ? "Your approved evidence is being issued to your portfolio."
+                : participantAction
+                  ? participantAction.message
+                  : "Your work is with the provider or university for the remaining review steps."
+              : "Every check must pass before an evidence card is created."}
           </p>
         </div>
         <div
@@ -143,8 +174,54 @@ export default function EvidenceReadinessPanel({
         </div>
       </div>
 
-      <ol className={styles.readinessTimeline} aria-label="Evidence issuance checkpoints">
-        {orderedConditions.map((condition, index) => {
+      {audience === "participant" ? (
+        <section className={styles.participantStatus} role="status">
+          {readiness.ready ? (
+            <>
+              <CheckCircle2 size={20} aria-hidden="true" />
+              <div>
+                <strong>Evidence card is ready</strong>
+                <span>Your approved work will appear in your Evidence Portfolio after issuance completes.</span>
+              </div>
+            </>
+          ) : participantAction && participantActionPresentation ? (
+            <>
+              <CircleDashed size={20} aria-hidden="true" />
+              <div>
+                <strong>Your next step: {participantActionPresentation.title}</strong>
+                <span>{participantAction.message}</span>
+              </div>
+              {onResolveCondition ? (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => onResolveCondition(participantAction.code)}
+                >
+                  Continue
+                  <ArrowRight size={14} aria-hidden="true" />
+                </Button>
+              ) : null}
+            </>
+          ) : participantIsWaiting ? (
+            <>
+              <CircleDashed size={20} aria-hidden="true" />
+              <div>
+                <strong>Waiting for review</strong>
+                <span>The remaining evidence checks are being completed by the provider or university.</span>
+              </div>
+            </>
+          ) : null}
+        </section>
+      ) : actionableConditions.length > 0 ? (
+        <section className={styles.actionableChecks} aria-labelledby="evidence-actionable-checks">
+          <header>
+            <span>Required next steps</span>
+            <strong id="evidence-actionable-checks">
+              Resolve these {actionableConditions.length === 1 ? "condition" : "conditions"}
+            </strong>
+          </header>
+          <ol className={styles.readinessTimeline} aria-label="Evidence conditions requiring attention">
+            {actionableConditions.map((condition, index) => {
           const stateLabel = condition.state === "Complete"
             ? "SATISFIED"
             : condition.state.toUpperCase();
@@ -188,8 +265,42 @@ export default function EvidenceReadinessPanel({
               </div>
             </li>
           );
-        })}
-      </ol>
+            })}
+          </ol>
+        </section>
+      ) : (
+        <section className={styles.readyState} role="status">
+          <CheckCircle2 size={20} aria-hidden="true" />
+          <div>
+            <strong>Evidence is ready for issuance</strong>
+            <span>Every required condition has been verified against the accepted contract.</span>
+          </div>
+        </section>
+      )}
+
+      {audience === "reviewer" && verifiedConditions.length > 0 ? (
+        <details className={styles.verifiedChecks} open={readiness.ready}>
+          <summary>
+            <CheckCircle2 size={17} aria-hidden="true" />
+            <span>Verified checks</span>
+            <strong>{verifiedConditions.length} complete</strong>
+          </summary>
+          <ol>
+            {verifiedConditions.map((condition) => {
+              const presentation = getConditionPresentation(condition.code);
+              return (
+                <li key={`${condition.code}-${condition.criterionId ?? "general"}`}>
+                  <CheckCircle2 size={15} aria-hidden="true" />
+                  <span>
+                    <strong>{presentation.title}</strong>
+                    <small>{presentation.phase}</small>
+                  </span>
+                </li>
+              );
+            })}
+          </ol>
+        </details>
+      ) : null}
       {readiness.criteria.length > 0 ? (
         <section className={styles.criteriaPreview} aria-label="Criterion claim preview">
           <header>

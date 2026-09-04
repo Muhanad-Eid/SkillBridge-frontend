@@ -46,7 +46,7 @@ const primaryNavigationByRole: Record<PortalRole, PrimaryNavigationItem[]> = {
     { sourceLabel: "Freelance", label: "Freelance" },
     { sourceLabel: "Applications", label: "Applications" },
     { sourceLabel: "Work", label: "Work" },
-    { sourceLabel: "Evidence Replay", label: "Evidence" },
+    { sourceLabel: "Evidence checks", label: "Evidence" },
   ],
   "job-seeker": [
     { sourceLabel: "Overview", label: "Overview" },
@@ -54,16 +54,16 @@ const primaryNavigationByRole: Record<PortalRole, PrimaryNavigationItem[]> = {
     { sourceLabel: "Freelance", label: "Freelance" },
     { sourceLabel: "Applications", label: "Applications" },
     { sourceLabel: "Work", label: "Work" },
-    { sourceLabel: "Evidence Replay", label: "Evidence" },
+    { sourceLabel: "Portfolio", label: "Evidence" },
   ],
   university: [
     { sourceLabel: "Supervised training", label: "Work" },
-    { sourceLabel: "Evidence Replay", label: "Evidence" },
+    { sourceLabel: "Evidence checks", label: "Evidence" },
   ],
 };
 
 function getNavigationGroup(item: PortalNavItem): NavigationGroup {
-  if (["Evidence Replay", "Evidence requests", "Portfolio", "Reviews", "Evidence", "Audit log", "Skills"].includes(item.label)) {
+  if (["Evidence checks", "Evidence requests", "Portfolio", "Reviews", "Evidence", "Audit log", "Skills"].includes(item.label)) {
     return "Evidence";
   }
 
@@ -172,6 +172,7 @@ export default function PortalShell({
       items: navItems.filter(
         (item) =>
           getNavigationGroup(item) === group &&
+          !(role === "job-seeker" && item.label === "Evidence checks") &&
           item.to !== messageItem?.to &&
           item.to !== notificationItem?.to &&
           !primaryNavItems.some((primaryItem) => primaryItem.to === item.to),

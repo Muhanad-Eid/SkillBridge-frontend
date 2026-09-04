@@ -189,7 +189,7 @@ export default function EvidenceCaseNavigator({
             Evidence requests
           </Link>
           <Link to={`/${portal}/proof-engine/${record.applicationId}`}>
-            Open Evidence Replay
+            Open evidence checks
           </Link>
         </nav>
       </footer>

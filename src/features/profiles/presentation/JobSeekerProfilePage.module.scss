@@ -43,13 +43,17 @@
     position: sticky;
     top: 84px;
     align-self: start;
+    align-content: start;
+    justify-items: start;
     overflow: hidden;
-    border: 1px solid #203b63;
-    border-top: 0;
+    padding: 1.5rem;
+    border: 1px solid #203b63 !important;
+    border-top: 0 !important;
     border-radius: 8px;
-    background: #11294a;
-    color: #fff;
+    background: #11294a !important;
+    color: #fff !important;
     box-shadow: none;
+    text-align: left;
   }
 
   :global(.jobseeker-profile-summary::before) {
@@ -60,12 +64,21 @@
   }
 
   :global(.jobseeker-profile-summary h2) {
+    width: 100%;
     color: #fff;
+    font-size: 1.35rem;
+    line-height: 1.2;
   }
 
   :global(.jobseeker-profile-summary > span),
   :global(.jobseeker-profile-summary > p) {
+    width: 100%;
     color: #d6e0ed;
+  }
+
+  :global(.jobseeker-profile-summary > p) {
+    margin-top: .9rem;
+    line-height: 1.6;
   }
 
   :global(.jobseeker-profile-avatar) {
@@ -75,7 +88,10 @@
   }
 
   :global(.jobseeker-profile-strength) {
+    margin-top: 1.35rem;
+    padding-top: 1.15rem;
     border-color: rgba(255, 255, 255, .16);
+    border-top: 1px solid rgba(255, 255, 255, .16);
   }
 
   :global(.jobseeker-profile-strength span),
@@ -97,6 +113,16 @@
   :global(.jobseeker-profile-signals),
   :global(.jobseeker-profile-checklist) {
     border-color: rgba(255, 255, 255, .16);
+  }
+
+  :global(.jobseeker-profile-signals) {
+    margin-top: 1.35rem;
+    padding: 1rem 0;
+  }
+
+  :global(.jobseeker-profile-checklist) {
+    gap: .7rem;
+    margin-top: 1.2rem;
   }
 
   :global(.jobseeker-profile-checklist > div) {

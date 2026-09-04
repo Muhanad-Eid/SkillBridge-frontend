@@ -437,17 +437,21 @@ export default function CompanyProjectsPage({
     [scopedProjects],
   );
 
-  function confirmDiscardDraft() {
+  async function confirmDiscardDraft() {
     if (!isFormDirty) {
       return true;
     }
 
-    return window.confirm(
-      "You have unsaved changes to this opportunity. Discard them?",
-    );
+    return confirmAction({
+      title: "Discard unsaved changes?",
+      description:
+        "Your edits to this opportunity have not been saved and will be lost.",
+      confirmLabel: "Discard changes",
+      variant: "warning",
+    });
   }
 
-  function openCreateForm() {
+  async function openCreateForm() {
     setMessage("");
     setError("");
 
@@ -456,7 +460,7 @@ export default function CompanyProjectsPage({
       return;
     }
 
-    if (!confirmDiscardDraft()) {
+    if (!(await confirmDiscardDraft())) {
       return;
     }
 
@@ -470,8 +474,8 @@ export default function CompanyProjectsPage({
     setIsFormOpen(true);
   }
 
-  function applyEvidenceContractTemplate(template: EvidenceContractTemplate) {
-    if (!confirmDiscardDraft()) {
+  async function applyEvidenceContractTemplate(template: EvidenceContractTemplate) {
+    if (!(await confirmDiscardDraft())) {
       return;
     }
 
@@ -482,8 +486,8 @@ export default function CompanyProjectsPage({
     setPreferredSkillInput("");
   }
 
-  function openEditForm(project: Project) {
-    if (!confirmDiscardDraft()) {
+  async function openEditForm(project: Project) {
+    if (!(await confirmDiscardDraft())) {
       return;
     }
 
@@ -565,8 +569,8 @@ export default function CompanyProjectsPage({
     setIsFormOpen(true);
   }
 
-  function closeForm() {
-    if (!confirmDiscardDraft()) {
+  async function closeForm({ confirmDiscard = true }: { confirmDiscard?: boolean } = {}) {
+    if (confirmDiscard && !(await confirmDiscardDraft())) {
       return;
     }
 
@@ -820,7 +824,7 @@ export default function CompanyProjectsPage({
         setMessage("Opportunity details updated.");
       }
 
-      closeForm();
+      await closeForm({ confirmDiscard: false });
       await loadProjects();
     } catch (caughtError) {
       setError(
@@ -1380,7 +1384,7 @@ export default function CompanyProjectsPage({
                 className="company-icon-action"
                 aria-label="Close form"
                 title="Close"
-                onClick={closeForm}
+                onClick={() => void closeForm()}
               >
                 <X size={19} aria-hidden="true" />
               </Button>
@@ -1410,7 +1414,7 @@ export default function CompanyProjectsPage({
                     <button
                       type="button"
                       key={template.id}
-                      onClick={() => applyEvidenceContractTemplate(template)}
+                      onClick={() => void applyEvidenceContractTemplate(template)}
                     >
                       <strong>{template.title}</strong>
                       <span>{template.description}</span>
@@ -2156,7 +2160,7 @@ export default function CompanyProjectsPage({
               </fieldset>
               </section>
               <div className="company-drawer-actions">
-                <Button type="button" variant="secondary" onClick={closeForm}>
+                <Button type="button" variant="secondary" onClick={() => void closeForm()}>
                   Cancel
                 </Button>
                 <Button type="submit" isLoading={isSaving}>

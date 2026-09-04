@@ -575,6 +575,24 @@
   max-height: min(92vh, 940px);
 }
 
+.evidence-chain-dialog > header {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  background: var(--surface);
+}
+
+.evidence-dialog-close {
+  width: 42px;
+  min-width: 42px;
+  height: 42px;
+  min-height: 42px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  border-color: var(--border-strong);
+}
+
 .evidence-dialog-kicker {
   display: flex;
   flex-wrap: wrap;
@@ -591,6 +609,10 @@
 
 .evidence-chain-dialog .evidence-dialog-verification {
   align-items: center;
+  margin: 18px 20px 0;
+  border: 1px solid #b9e5d8;
+  border-left: 3px solid var(--green);
+  background: #f2fbf7;
 }
 
 .evidence-chain-dialog .evidence-dialog-verification > strong {
@@ -604,9 +626,8 @@
 }
 
 .evidence-chain-summary {
-  margin: 22px 20px 0;
-  border-block: 1px solid var(--border);
-  padding: 18px 0;
+  margin: 18px 20px 0;
+  padding: 0;
 }
 
 .evidence-chain-summary > header {
@@ -643,9 +664,8 @@
 .evidence-chain-summary dl {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1px;
+  gap: 10px;
   margin: 0;
-  background: var(--border);
 }
 
 .evidence-chain-summary dl > div {
@@ -653,8 +673,10 @@
   display: grid;
   grid-template-columns: 24px minmax(0, 1fr);
   gap: 2px 7px;
-  background: var(--surface);
-  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface-soft);
+  padding: 13px 12px;
 }
 
 .evidence-chain-summary dl svg {
@@ -664,7 +686,7 @@
 
 .evidence-chain-summary dt {
   color: var(--muted);
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   font-weight: 800;
   text-transform: uppercase;
 }
@@ -672,7 +694,7 @@
 .evidence-chain-summary dd {
   margin: 0;
   color: var(--text);
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 750;
   overflow-wrap: anywhere;
 }
@@ -681,7 +703,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) 250px;
   align-items: start;
-  gap: 24px;
+  gap: 22px;
   margin: 22px 20px 0;
 }
 
@@ -693,6 +715,10 @@
 
 .evidence-record-section {
   min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
 }
 
 .evidence-record-section > header {
@@ -843,8 +869,10 @@
 }
 
 .evidence-provenance {
-  border-left: 1px solid var(--border);
-  padding-left: 18px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-soft);
+  padding: 18px;
 }
 
 .evidence-provenance > header {
@@ -943,6 +971,35 @@
   gap: 8px;
   border-top: 1px solid var(--border);
   padding-top: 16px;
+}
+
+.evidence-details-access-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 18px 20px 0;
+  border-left: 3px solid var(--amber);
+  background: var(--amber-soft);
+  color: var(--text);
+  padding: 12px 14px;
+}
+
+.evidence-details-access-note svg {
+  flex: 0 0 auto;
+  color: var(--amber);
+}
+
+.evidence-details-access-note strong,
+.evidence-details-access-note p {
+  display: block;
+  margin: 0;
+}
+
+.evidence-details-access-note p {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.45;
 }
 
 .evidence-chain-dialog .evidence-dialog-skills > span {

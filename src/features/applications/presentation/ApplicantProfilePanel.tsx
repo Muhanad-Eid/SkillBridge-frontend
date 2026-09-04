@@ -67,6 +67,21 @@ export default function ApplicantProfilePanel({
   const [isCvDownloading, setIsCvDownloading] = useState(false);
   const [cvError, setCvError] = useState("");
 
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onClose]);
+
   async function downloadCv() {
     setIsCvDownloading(true);
     setCvError("");
@@ -135,8 +150,8 @@ export default function ApplicantProfilePanel({
           </div>
           <Button
             type="button"
-            variant="ghost"
-            className="company-icon-action"
+            variant="secondary"
+            className="company-icon-action company-applicant-close"
             aria-label="Close applicant profile"
             title="Close"
             onClick={onClose}
@@ -326,7 +341,7 @@ export default function ApplicantProfilePanel({
           {actions}
           {profile ? (
             <Button
-              to={`/company/talent/${profile.id}`}
+              to={`/company/applications/${application.id}/profile`}
               variant="secondary"
               className="button-with-icon"
             >

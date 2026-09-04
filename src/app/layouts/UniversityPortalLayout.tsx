@@ -30,7 +30,7 @@ const universityNavItems: UniversityNavItem[] = [
     icon: GraduationCap,
   },
   {
-    label: "Evidence Replay",
+    label: "Evidence checks",
     to: "/university/proof-engine",
     icon: Workflow,
   },

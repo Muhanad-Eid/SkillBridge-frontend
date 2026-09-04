@@ -168,6 +168,10 @@ export const router = createBrowserRouter([
       },
       { path: "projects/:projectId/work", element: <WorkHubPage /> },
       { path: "applications", element: <CompanyApplicationsPage /> },
+      {
+        path: "applications/:applicationId/profile",
+        element: <TalentProfilePage mode="application" />,
+      },
       { path: "talent", element: <TalentSearchPage /> },
       { path: "talent/:jobSeekerId", element: <TalentProfilePage /> },
       { path: "profile", element: <CompanyProfilePage /> },

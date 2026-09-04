@@ -109,6 +109,48 @@ describe("getWorkNextAction", () => {
     expect(action.targetId).toBe("final-submission");
   });
 
+  it("keeps later milestones locked while an earlier one is under review", () => {
+    const action = getWorkNextAction(
+      workRecord({
+        milestones: [
+          {
+            id: 21,
+            projectApplicationId: 7,
+            title: "Plan the website",
+            description: null,
+            dueDate: null,
+            sortOrder: 0,
+            status: MilestoneStatuses.Submitted,
+            submissionNote: "Initial plan is ready for review.",
+            submissionUrl: null,
+            feedback: null,
+            submittedAt: "2026-09-01T00:00:00Z",
+            reviewedAt: null,
+          },
+          {
+            id: 22,
+            projectApplicationId: 7,
+            title: "Build the website",
+            description: null,
+            dueDate: null,
+            sortOrder: 1,
+            status: MilestoneStatuses.Planned,
+            submissionNote: null,
+            submissionUrl: null,
+            feedback: null,
+            submittedAt: null,
+            reviewedAt: null,
+          },
+        ],
+      }),
+      false,
+      null,
+    );
+
+    expect(action.label).toBe("Milestone under review");
+    expect(action.targetId).toBe("work-milestone-21");
+  });
+
   it("does not offer submission after the opportunity is closed", () => {
     const action = getWorkNextAction(
       workRecord({ projectStatus: ProjectStatuses.Completed }),

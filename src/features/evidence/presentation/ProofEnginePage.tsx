@@ -218,7 +218,7 @@ export default function ProofEnginePage() {
       setReadiness(readinessData);
       setRuns(runData);
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : "Unable to load Evidence Replay.");
+      setError(caughtError instanceof Error ? caughtError.message : "Unable to load evidence checks.");
     } finally {
       setIsLoading(false);
     }
@@ -273,7 +273,7 @@ export default function ProofEnginePage() {
       <header className={styles.pageHeader}>
         <div>
           <span>SkillBridge integrity workspace</span>
-          <h1>Evidence Replay</h1>
+          <h1>Evidence checks</h1>
           <p>Follow every source that turns completed work into a bounded, verifiable claim.</p>
         </div>
         <div className={styles.headerActions}>

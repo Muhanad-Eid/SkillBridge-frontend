@@ -114,7 +114,7 @@ export async function httpClient<T>(
 
     throw new Error(
       caughtError instanceof Error
-        ? "The API service is unavailable. Start the API and try again."
+        ? "SkillBridge is temporarily unavailable. Please try again."
         : "Unable to reach the API.",
       { cause: caughtError },
     );
@@ -162,7 +162,7 @@ export async function httpDownload(endpoint: string) {
   } catch (caughtError) {
     throw new Error(
       caughtError instanceof Error
-        ? "The API service is unavailable. Start the API and try again."
+        ? "SkillBridge is temporarily unavailable. Please try again."
         : "Unable to reach the API.",
       { cause: caughtError },
     );
@@ -437,7 +437,7 @@ function getDownloadFileName(contentDisposition: string | null) {
 
 function getErrorMessage(data: unknown, status: number) {
   if (API_UNAVAILABLE_STATUSES.has(status)) {
-    return "The API service is unavailable. Start the API and try again.";
+    return "SkillBridge is temporarily unavailable. Please try again.";
   }
 
   if (typeof data === "string" && data.trim()) {

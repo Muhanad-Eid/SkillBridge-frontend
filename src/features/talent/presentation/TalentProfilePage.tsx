@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   Code2,
   Eye,
+  EyeOff,
   ExternalLink,
   FileCheck2,
   GraduationCap,
@@ -18,6 +19,7 @@ import { useParams } from "react-router-dom";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
+import { HttpError } from "../../../shared/api/httpClient";
 import type { PortfolioItem } from "../../portfolio/domain/portfolioTypes";
 import { getPublicPortfolioAsync } from "../../portfolio/infrastructure/portfolioApi";
 import EvidenceDetailsDialog from "../../portfolio/presentation/EvidenceDetailsDialog";
@@ -26,10 +28,11 @@ import {
   getMyJobSeekerProfileAsync,
   getPublicJobSeekerProfileAsync,
 } from "../../profiles/infrastructure/profileApi";
+import { getApplicantProfileAsync } from "../../applications/infrastructure/applicationApi";
 import { getOpportunityTypeLabel } from "../../projects/domain/projectTypes";
 
 type TalentProfilePageProps = {
-  mode?: "company" | "self-preview";
+  mode?: "company" | "self-preview" | "application";
 };
 
 function evidenceReference(id: number) {
@@ -44,15 +47,20 @@ export default function TalentProfilePage({
   mode = "company",
 }: TalentProfilePageProps) {
   const isSelfPreview = mode === "self-preview";
-  const { jobSeekerId } = useParams();
+  const isApplicationProfile = mode === "application";
+  const { jobSeekerId, applicationId } = useParams();
   const numericJobSeekerId = Number(jobSeekerId);
+  const numericApplicationId = Number(applicationId);
   const hasValidJobSeekerId =
     Number.isInteger(numericJobSeekerId) && numericJobSeekerId > 0;
-  const canLoadProfile = isSelfPreview || hasValidJobSeekerId;
+  const hasValidApplicationId =
+    Number.isInteger(numericApplicationId) && numericApplicationId > 0;
+  const canLoadProfile = isSelfPreview || (isApplicationProfile ? hasValidApplicationId : hasValidJobSeekerId);
   const [profile, setProfile] = useState<JobSeekerProfile | null>(null);
   const [evidence, setEvidence] = useState<PortfolioItem[]>([]);
   const [isLoading, setIsLoading] = useState(canLoadProfile);
   const [error, setError] = useState("");
+  const [isPrivateProfile, setIsPrivateProfile] = useState(false);
   const [selectedEvidence, setSelectedEvidence] =
     useState<PortfolioItem | null>(null);
 
@@ -65,13 +73,16 @@ export default function TalentProfilePage({
       if (isMounted) {
         setIsLoading(true);
         setError("");
+        setIsPrivateProfile(false);
       }
 
       try {
         const profileResult = isSelfPreview
           ? await getMyJobSeekerProfileAsync()
-          : await getPublicJobSeekerProfileAsync(numericJobSeekerId);
-        const portfolioResult = await getPublicPortfolioAsync(profileResult.id);
+          : isApplicationProfile
+            ? await getApplicantProfileAsync(numericApplicationId)
+            : await getPublicJobSeekerProfileAsync(numericJobSeekerId);
+        const portfolioResult = await getPublicPortfolioAsync(profileResult.id).catch(() => []);
 
         if (isMounted) {
           setProfile(profileResult);
@@ -79,6 +90,16 @@ export default function TalentProfilePage({
         }
       } catch (caughtError) {
         if (isMounted) {
+          if (
+            !isSelfPreview &&
+            !isApplicationProfile &&
+            caughtError instanceof HttpError &&
+            caughtError.status === 404
+          ) {
+            setIsPrivateProfile(true);
+            return;
+          }
+
           setError(
             caughtError instanceof Error
               ? caughtError.message
@@ -96,7 +117,7 @@ export default function TalentProfilePage({
       isMounted = false;
       window.clearTimeout(timeoutId);
     };
-  }, [canLoadProfile, isSelfPreview, numericJobSeekerId]);
+  }, [canLoadProfile, isApplicationProfile, isSelfPreview, numericApplicationId, numericJobSeekerId]);
 
   const supportedSkills = useMemo(() => {
     const counts = new Map<string, number>();
@@ -132,11 +153,11 @@ export default function TalentProfilePage({
         title={isSelfPreview ? "Profile preview" : "Talent profile"}
         actions={
           <Button
-            to={isSelfPreview ? "/job-seeker/profile" : "/company/talent"}
+            to={isSelfPreview ? "/job-seeker/profile" : isApplicationProfile ? "/company/applications" : "/company/talent"}
             variant="ghost"
           >
             <ArrowLeft size={16} aria-hidden="true" />
-            {isSelfPreview ? "Back to profile" : "Back to search"}
+            {isSelfPreview ? "Back to profile" : isApplicationProfile ? "Back to applications" : "Back to search"}
           </Button>
         }
       />
@@ -159,8 +180,20 @@ export default function TalentProfilePage({
             : "This talent profile link is invalid."
         }
         empty={!isLoading && !error && !profile}
-        emptyTitle="Profile not found"
-        emptyDescription="This profile may no longer be available."
+        emptyTitle={isPrivateProfile ? "This profile is private" : "Profile not found"}
+        emptyDescription={
+          isPrivateProfile
+            ? "The profile owner has chosen not to make their professional details and shared evidence publicly viewable."
+            : "This profile may no longer be available."
+        }
+        emptyAction={
+          isPrivateProfile ? (
+            <Button to="/company/talent" variant="secondary" className="button-with-icon">
+              <EyeOff size={16} aria-hidden="true" />
+              Back to talent search
+            </Button>
+          ) : undefined
+        }
       />
 
       {profile ? (
@@ -172,7 +205,11 @@ export default function TalentProfilePage({
             <div className="company-talent-profile-identity">
               <span className="company-talent-profile-kicker">
                 <ShieldCheck size={14} aria-hidden="true" />
-                {isSelfPreview ? "External reviewer view" : "Evidence-backed professional profile"}
+                {isSelfPreview
+                  ? "External reviewer view"
+                  : isApplicationProfile
+                    ? "Applicant profile"
+                    : "Professional profile"}
               </span>
               <h1>{profile.fullName}</h1>
               <div className="company-talent-profile-meta">
@@ -311,8 +348,11 @@ export default function TalentProfilePage({
                 <div className="company-talent-no-evidence">
                   <FileCheck2 size={22} aria-hidden="true" />
                   <div>
-                    <strong>No evidence has been shared</strong>
-                    <p>This individual has not made an approved evidence card visible.</p>
+                    <strong>No shared evidence yet</strong>
+                    <p>
+                      This applicant's work can still be reviewed through the
+                      application and decision record.
+                    </p>
                   </div>
                 </div>
               ) : (

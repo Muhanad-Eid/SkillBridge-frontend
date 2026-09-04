@@ -1201,6 +1201,31 @@
   width: min(100%, 620px);
 }
 
+.company-applicant-header {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  align-items: center;
+  background: #ffffff;
+}
+
+.company-applicant-close.company-icon-action {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  flex: 0 0 44px;
+  border-color: #cbd5e1;
+  background: #ffffff;
+  color: #172033 !important;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.08);
+}
+
+.company-applicant-close.company-icon-action:hover {
+  border-color: #94a3b8;
+  background: #f8fafc;
+}
+
 .company-applicant-identity {
   min-width: 0;
   display: flex;

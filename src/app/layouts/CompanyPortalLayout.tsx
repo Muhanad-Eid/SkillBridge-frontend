@@ -47,7 +47,7 @@ const companyNavItems: CompanyNavItem[] = [
   { label: "Freelance", to: "/company/freelance", icon: CircleDollarSign },
   { label: "Applications", to: "/company/applications", icon: ClipboardList },
   { label: "Work", to: "/company/work", icon: ListChecks },
-  { label: "Evidence Replay", to: "/company/proof-engine", icon: Workflow },
+  { label: "Evidence checks", to: "/company/proof-engine", icon: Workflow },
   { label: "Evidence requests", to: "/company/evidence-requests", icon: ClipboardList },
   { label: "Find talent", to: "/company/talent", icon: UserRoundSearch },
   {

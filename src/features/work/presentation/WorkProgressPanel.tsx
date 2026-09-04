@@ -7,6 +7,7 @@ import {
   Clock3,
   Download,
   ExternalLink,
+  LockKeyhole,
   Plus,
   RotateCcw,
   Send,
@@ -326,6 +327,16 @@ export default function WorkProgressPanel({
   const milestonesApproved = record.milestones.every(
     (milestone) => milestone.status === MilestoneStatuses.Approved,
   );
+  const currentParticipantMilestoneIndex = !isCompany
+    ? record.milestones.findIndex(
+        (milestone, index) =>
+          (milestone.status === MilestoneStatuses.Planned ||
+            milestone.status === MilestoneStatuses.ChangesRequested) &&
+          record.milestones
+            .slice(0, index)
+            .every((previous) => previous.status === MilestoneStatuses.Approved),
+      )
+    : -1;
   const trainingReportsApproved = record.trainingReports.every(
     (report) => report.status === TrainingReportStatuses.Approved,
   );
@@ -400,6 +411,25 @@ export default function WorkProgressPanel({
       !item.isRequired ||
       item.rating >= item.minimumRating,
     );
+  const approvalBlockers = [
+    evaluation.trim().length < 10
+      ? "Add an overall evaluation of at least 10 characters."
+      : null,
+    ...criterionEvaluations.flatMap((item) => {
+      if (item.rating === 0 || item.note.length < 3) {
+        return [`Complete the result and evidence note for “${item.criterion}”.`];
+      }
+
+      if (item.isRequired && item.rating < item.minimumRating) {
+        return [`“${item.criterion}” is below the required standard.`];
+      }
+
+      return [];
+    }),
+    record.availableSkills.length > 0 && demonstratedSkillIds.length === 0
+      ? "Select at least one demonstrated skill."
+      : null,
+  ].filter((blocker): blocker is string => Boolean(blocker));
   const projectContributionReviews = contributionReviewQueue.filter(
     (item) => item.projectId === record.projectId,
   );
@@ -516,6 +546,70 @@ export default function WorkProgressPanel({
         </div>
       ) : null}
 
+      {record.milestones.length > 0 ? (
+        <section className="work-milestone-roadmap" aria-labelledby="milestone-plan-title">
+          <header>
+            <div>
+              <span>Delivery plan</span>
+              <h3 id="milestone-plan-title">Milestones</h3>
+            </div>
+            <small>
+              {record.milestones.filter(
+                (milestone) => milestone.status === MilestoneStatuses.Approved,
+              ).length}
+              /{record.milestones.length} approved
+            </small>
+          </header>
+          <ol>
+            {record.milestones.map((milestone, index) => {
+              const isCurrent = !isCompany && index === currentParticipantMilestoneIndex;
+              const isLocked =
+                !isCompany &&
+                !isCurrent &&
+                (milestone.status === MilestoneStatuses.Planned ||
+                  milestone.status === MilestoneStatuses.ChangesRequested);
+              const progressLabel =
+                milestone.status === MilestoneStatuses.Approved
+                  ? "Approved"
+                  : milestone.status === MilestoneStatuses.Submitted
+                    ? "Under review"
+                    : milestone.status === MilestoneStatuses.ChangesRequested
+                      ? "Needs revision"
+                      : isCurrent
+                        ? "Ready to submit"
+                        : "Locked";
+
+              return (
+                <li key={milestone.id}>
+                  <a href={`#work-milestone-${milestone.id}`}>
+                    <span className="work-milestone-roadmap-index">{index + 1}</span>
+                    <span className="work-milestone-roadmap-copy">
+                      <strong>{milestone.title}</strong>
+                      <small>
+                        {milestone.dueDate ? `Due ${milestone.dueDate}` : "No due date"}
+                      </small>
+                    </span>
+                    <StatusBadge
+                      tone={
+                        milestone.status === MilestoneStatuses.Approved
+                          ? "green"
+                          : milestone.status === MilestoneStatuses.ChangesRequested
+                            ? "red"
+                            : isLocked
+                              ? "neutral"
+                              : "amber"
+                      }
+                    >
+                      {progressLabel}
+                    </StatusBadge>
+                  </a>
+                </li>
+              );
+            })}
+          </ol>
+        </section>
+      ) : null}
+
       <section className="work-next-action" aria-labelledby="work-next-action-title">
         <div>
           <span>Next required action</span>
@@ -534,19 +628,22 @@ export default function WorkProgressPanel({
         ) : null}
       </section>
 
-      <EvidenceCaseNavigator
-        record={record}
-        readiness={
-          readiness?.applicationId === record.applicationId ? readiness : null
-        }
-        isCompany={isCompany}
-        onNavigate={focusWorkSection}
-      />
+      {isCompany ? (
+        <EvidenceCaseNavigator
+          record={record}
+          readiness={
+            readiness?.applicationId === record.applicationId ? readiness : null
+          }
+          isCompany={isCompany}
+          onNavigate={focusWorkSection}
+        />
+      ) : null}
 
       <div id="evidence-readiness">
         {readiness?.applicationId === record.applicationId ? (
           <EvidenceReadinessPanel
             readiness={readiness}
+            audience={isCompany ? "reviewer" : "participant"}
             onResolveCondition={resolveReadinessCondition}
           />
         ) : null}
@@ -1025,6 +1122,14 @@ export default function WorkProgressPanel({
               url: "",
               feedback: "",
             };
+            const submissionNoteLength = draft.note.trim().length;
+            const isCurrentParticipantMilestone =
+              !isCompany && index === currentParticipantMilestoneIndex;
+            const isFutureParticipantMilestone =
+              !isCompany &&
+              !isCurrentParticipantMilestone &&
+              (milestone.status === MilestoneStatuses.Planned ||
+                milestone.status === MilestoneStatuses.ChangesRequested);
             return (
               <article
                 id={`work-milestone-${milestone.id}`}
@@ -1078,8 +1183,18 @@ export default function WorkProgressPanel({
                     </div>
                   ) : null}
 
+                  {isFutureParticipantMilestone ? (
+                    <div className="work-milestone-locked" role="status">
+                      <LockKeyhole size={16} aria-hidden="true" />
+                      <span>
+                        Available after milestone {index} is approved.
+                      </span>
+                    </div>
+                  ) : null}
+
                   {!isCompany &&
                   isWorkActive &&
+                  isCurrentParticipantMilestone &&
                   (milestone.status === MilestoneStatuses.Planned ||
                     milestone.status === MilestoneStatuses.ChangesRequested) ? (
                     <div className="work-inline-form">
@@ -1108,22 +1223,40 @@ export default function WorkProgressPanel({
                           )
                         }
                       />
-                      <Button
-                        type="button"
-                        disabled={draft.note.trim().length < 10}
-                        isLoading={busyKey === `submit-${milestone.id}`}
-                        onClick={() =>
-                          void runAction(`submit-${milestone.id}`, () =>
-                            submitMilestoneAsync(milestone.id, {
-                              submissionNote: draft.note.trim(),
-                              submissionUrl: draft.url.trim() || undefined,
-                            }),
-                          )
+                      <small className="work-submission-requirement">
+                        {submissionNoteLength < 10
+                          ? `Add at least ${10 - submissionNoteLength} more character${
+                              10 - submissionNoteLength === 1 ? "" : "s"
+                            } to submit this milestone.`
+                          : "Your milestone summary is ready to submit."}
+                      </small>
+                      <span
+                        className="work-submission-button"
+                        title={
+                          submissionNoteLength < 10
+                            ? `Add ${10 - submissionNoteLength} more character${
+                                10 - submissionNoteLength === 1 ? "" : "s"
+                              } to enable submission.`
+                            : "Submit this milestone for provider review."
                         }
                       >
-                        <Send size={16} aria-hidden="true" />
-                        Submit milestone
-                      </Button>
+                        <Button
+                          type="button"
+                          disabled={submissionNoteLength < 10}
+                          isLoading={busyKey === `submit-${milestone.id}`}
+                          onClick={() =>
+                            void runAction(`submit-${milestone.id}`, () =>
+                              submitMilestoneAsync(milestone.id, {
+                                submissionNote: draft.note.trim(),
+                                submissionUrl: draft.url.trim() || undefined,
+                              }),
+                            )
+                          }
+                        >
+                          <Send size={16} aria-hidden="true" />
+                          Submit milestone
+                        </Button>
+                      </span>
                     </div>
                   ) : null}
 
@@ -1407,6 +1540,11 @@ export default function WorkProgressPanel({
             </fieldset>
           ) : null}
           <div className="work-final-actions">
+            {approvalBlockers.length > 0 ? (
+              <p className="work-approval-blocker" role="status">
+                <strong>Approval is blocked:</strong> {approvalBlockers.join(" ")}
+              </p>
+            ) : null}
             <Button
               type="button"
               disabled={

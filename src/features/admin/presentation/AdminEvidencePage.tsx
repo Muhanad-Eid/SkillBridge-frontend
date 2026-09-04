@@ -107,11 +107,11 @@ export default function AdminEvidencePage() {
       {selected ? (
         <div className={styles.proofLaunch}>
           <div>
-            <strong>Inspect this card in Evidence Replay</strong>
+            <strong>Inspect this card in evidence checks</strong>
             <span>Replay its immutable issuance checks and exact evidence lineage.</span>
           </div>
           <Link className="button button-secondary" to={`/admin/proof-engine/${selected.applicationId}`}>
-            Open Evidence Replay
+            Open evidence checks
           </Link>
         </div>
       ) : null}

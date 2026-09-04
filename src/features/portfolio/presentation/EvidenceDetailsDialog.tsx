@@ -46,25 +46,6 @@ function formatDate(value: string | null) {
   return value ? new Date(value).toLocaleDateString() : "Not recorded";
 }
 
-function evidenceAge(value: string | null) {
-  if (!value) return "Approval date unavailable";
-
-  const approvedAt = new Date(value);
-  const days = Math.max(
-    0,
-    Math.floor((Date.now() - approvedAt.getTime()) / 86_400_000),
-  );
-
-  if (days < 30) return "Approved this month";
-  if (days < 365) {
-    const months = Math.max(1, Math.floor(days / 30));
-    return `Approved ${months} month${months === 1 ? "" : "s"} ago`;
-  }
-
-  const years = Math.max(1, Math.floor(days / 365));
-  return `Approved ${years} year${years === 1 ? "" : "s"} ago`;
-}
-
 function ratingLabel(rating: PortfolioCriterionEvaluation["rating"]) {
   if (rating === 3) return "Exceeds standard";
   if (rating === 2) return "Meets standard";
@@ -192,8 +173,9 @@ export default function EvidenceDetailsDialog({
           </div>
           <Button
             type="button"
-            variant="ghost"
+            variant="secondary"
             autoFocus
+            className="evidence-dialog-close"
             aria-label="Close evidence details"
             title="Close"
             onClick={onClose}
@@ -213,11 +195,10 @@ export default function EvidenceDetailsDialog({
         <div className="evidence-dialog-verification">
           <ShieldCheck size={21} aria-hidden="true" />
           <div>
-            <strong>System-generated evidence</strong>
+            <strong>Verified evidence record</strong>
             <span>
-              This record was created from completed work after the required
-              approval. The owner can control sharing and presentation, but
-              cannot rewrite the source work, evaluation, evaluator, or dates.
+              Issued from completed work after the required approvals. Source
+              work, evaluation, and dates are locked after issuance.
             </span>
           </div>
           <strong>{completedChecks}/5 checks</strong>
@@ -226,10 +207,10 @@ export default function EvidenceDetailsDialog({
         <section className="evidence-chain-summary">
           <header>
             <div>
-              <span>Evidence Chain</span>
-              <h3>Why this record can be checked</h3>
+              <span>Verification</span>
+              <h3>How this record was verified</h3>
             </div>
-            <span>{evidenceAge(item.approvedAt)}</span>
+            <span>{completedChecks}/5 checks complete</span>
           </header>
           <dl>
             <div>
@@ -264,7 +245,17 @@ export default function EvidenceDetailsDialog({
         </section>
 
         {detailsError ? (
-          <div className="notice notice-error">{detailsError}</div>
+          <div className="evidence-details-access-note" role="status">
+            <LockKeyhole size={18} aria-hidden="true" />
+            <div>
+              <strong>Private trace restricted</strong>
+              <p>
+                The detailed audit trace is available only to the evidence
+                owner and authorized reviewers. This evidence summary remains
+                available.
+              </p>
+            </div>
+          </div>
         ) : null}
         {details ? (
           <div className="evidence-protocol-details">

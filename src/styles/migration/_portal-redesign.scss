@@ -105,8 +105,6 @@
 .training-report-panel,
 .training-supervisor-card,
 .university-training-record,
-.company-talent-profile-body > aside,
-.company-talent-profile-section,
 .account-security-summary,
 .account-security-form {
   border: 1px solid var(--sb-color-border) !important;
@@ -597,6 +595,58 @@
 [data-portal-role="university"] .university-training-page .university-training-kpis,
 [data-portal-role="university"] .university-training-page .training-report-overview {
   border-top: 1px solid var(--sb-color-border);
+}
+
+/* A talent profile is a dossier, not a stack of unrelated cards. */
+.company-talent-profile-page:not(.profile-preview-page) .company-talent-profile-body > aside,
+.company-talent-profile-page:not(.profile-preview-page) .company-talent-evidence {
+  border: 1px solid var(--sb-color-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--sb-color-surface) 96%, transparent);
+  box-shadow: 0 10px 32px rgb(15 23 42 / 0.035);
+}
+
+.company-talent-profile-page:not(.profile-preview-page) .company-talent-profile-body > aside {
+  overflow: hidden;
+}
+
+.company-talent-profile-page:not(.profile-preview-page) .company-talent-profile-section {
+  padding: 1.125rem 1.25rem;
+  border: 0;
+  border-bottom: 1px solid var(--sb-color-border);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.company-talent-profile-page:not(.profile-preview-page) .company-talent-profile-section:first-child {
+  padding-top: 1.125rem;
+}
+
+.company-talent-profile-page:not(.profile-preview-page) .company-talent-profile-section:last-child {
+  border-bottom: 0;
+}
+
+.company-talent-profile-page:not(.profile-preview-page) .company-talent-section-heading {
+  min-height: 0;
+  padding: 0 0 0.75rem;
+  border-bottom: 0;
+}
+
+.company-talent-profile-page:not(.profile-preview-page) .company-talent-evidence {
+  align-content: start;
+  padding: 1.25rem 1.5rem;
+}
+
+.company-talent-profile-page:not(.profile-preview-page) .company-talent-evidence > header {
+  padding-bottom: 1rem;
+}
+
+.company-talent-profile-page:not(.profile-preview-page) .company-talent-no-evidence {
+  min-height: 9.5rem;
+  align-items: center;
+  border-style: solid;
+  background: var(--sb-color-surface-soft);
 }
 
 [data-portal-role="university"] .university-training-page .university-training-kpis article:first-child svg,

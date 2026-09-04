@@ -172,6 +172,15 @@ export function getWorkNextAction(
     };
   }
 
+  if (!isCompany && submittedMilestone) {
+    return {
+      label: "Milestone under review",
+      detail: `“${submittedMilestone.title}” is waiting for provider review. The next milestone opens after it is approved.`,
+      targetId: `work-milestone-${submittedMilestone.id}`,
+      actionLabel: "View milestone",
+    };
+  }
+
   if (!isCompany && participantMilestone) {
     const revision =
       participantMilestone.status === MilestoneStatuses.ChangesRequested;

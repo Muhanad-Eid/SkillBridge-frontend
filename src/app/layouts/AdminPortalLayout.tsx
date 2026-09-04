@@ -40,7 +40,7 @@ const adminNavItems: AdminNavItem[] = [
   { label: "Job seekers", to: "/admin/job-seekers", icon: GraduationCap },
   { label: "Projects", to: "/admin/projects", icon: BriefcaseBusiness },
   { label: "Evidence", to: "/admin/evidence", icon: ShieldCheck },
-  { label: "Evidence Replay", to: "/admin/proof-engine", icon: Workflow },
+  { label: "Evidence checks", to: "/admin/proof-engine", icon: Workflow },
   { label: "Evidence requests", to: "/admin/evidence-requests", icon: ClipboardCheck },
   { label: "Applications", to: "/admin/applications", icon: FileCheck2, badge: "applications" },
   { label: "Reviews", to: "/admin/reviews", icon: Star, badge: "reviews" },
