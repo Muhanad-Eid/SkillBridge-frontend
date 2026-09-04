@@ -101,7 +101,7 @@ export default function EvidenceReadinessPanel({
       <header className={styles.panelHeader}>
         <div>
           <span className={styles.readinessKicker}>Evidence issuance gate</span>
-          <h3 id="evidence-readiness-title">Readiness timeline</h3>
+          <h3 id="evidence-readiness-title">Issuance readiness</h3>
           <p>
             Contract version {readiness.acceptedContractVersionNumber ?? "not pinned"}
             {readiness.submissionRevision > 0
@@ -125,8 +125,7 @@ export default function EvidenceReadinessPanel({
             {completedCount} of {totalConditions} checks verified
           </strong>
           <p>
-            SkillBridge checks the complete evidence lineage before it creates
-            an active evidence card.
+            Every check must pass before an evidence card is created.
           </p>
         </div>
         <div

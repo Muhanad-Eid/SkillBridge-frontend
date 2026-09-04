@@ -1,12 +1,70 @@
 import { demoAccounts } from "./support/accounts";
 import { expect, loginAs, logout, test } from "./support/fixtures";
 
+let createdProjectId: number | undefined;
+let createdParticipantEmail: string | undefined;
+
+test.afterEach(async ({ request }) => {
+  if (!createdProjectId && !createdParticipantEmail) return;
+
+  const providerLogin = await request.post("/api/auth/login", {
+    data: {
+      email: demoAccounts.provider.email,
+      password: "DemoPass123!",
+    },
+  });
+  expect(providerLogin.ok(), "The E2E cleanup provider could not sign in.").toBeTruthy();
+
+  if (createdProjectId) {
+    const { token } = (await providerLogin.json()) as { token: string };
+    const cancelProject = await request.put(`/api/projects/${createdProjectId}/status`, {
+      headers: { Authorization: `Bearer ${token}` },
+      data: { status: 3 },
+    });
+    expect(cancelProject.ok(), "The E2E opportunity could not be cancelled.").toBeTruthy();
+  }
+
+  if (createdParticipantEmail) {
+    const adminLogin = await request.post("/api/auth/login", {
+      data: {
+        email: demoAccounts.admin.email,
+        password: "DemoPass123!",
+      },
+    });
+    expect(adminLogin.ok(), "The E2E cleanup administrator could not sign in.").toBeTruthy();
+
+    const { token } = (await adminLogin.json()) as { token: string };
+    const headers = { Authorization: `Bearer ${token}` };
+    const usersResponse = await request.get("/api/admin/users", {
+      headers,
+      params: { page: 1, pageSize: 10, search: createdParticipantEmail },
+    });
+    expect(usersResponse.ok(), "The E2E participant could not be found for cleanup.").toBeTruthy();
+
+    const users = (await usersResponse.json()) as {
+      items: Array<{ id: string; email: string }>;
+    };
+    const participant = users.items.find(
+      (user) => user.email.toLowerCase() === createdParticipantEmail?.toLowerCase(),
+    );
+
+    if (participant) {
+      const deleteParticipant = await request.delete(`/api/admin/users/${participant.id}`, { headers });
+      expect(deleteParticipant.ok(), "The E2E participant could not be deactivated.").toBeTruthy();
+    }
+  }
+
+  createdProjectId = undefined;
+  createdParticipantEmail = undefined;
+});
+
 test("a participant applies and the provider accepts the application", async ({ page, request }, testInfo) => {
   test.setTimeout(120_000);
   const runId = `${Date.now()}-${testInfo.workerIndex}`;
   const participantName = `E2E Candidate ${runId}`;
   const email = `e2e.candidate.${runId}@skillbridge.local`;
   const opportunityTitle = `E2E evidence placement ${runId}`;
+  createdParticipantEmail = email;
 
   const providerLogin = await request.post("/api/auth/login", {
     data: {
@@ -55,6 +113,7 @@ test("a participant applies and the provider accepts the application", async ({ 
   });
   expect(projectResponse.ok()).toBeTruthy();
   const project = (await projectResponse.json()) as { id: number };
+  createdProjectId = project.id;
   const publishResponse = await request.post(`/api/projects/${project.id}/publish`, {
     headers: { Authorization: `Bearer ${token}` },
   });

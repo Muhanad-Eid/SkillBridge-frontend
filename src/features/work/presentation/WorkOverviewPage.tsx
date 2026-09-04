@@ -41,7 +41,7 @@ import {
   reviewContributionAsync,
 } from "../infrastructure/workApi";
 
-type WorkView = "all" | "active" | "attention" | "review" | "completed";
+type WorkView = "all" | "active" | "attention" | "review" | "completed" | "closed";
 
 function isAvailableWorkRecord(record: WorkRecord) {
   return (
@@ -57,6 +57,7 @@ const workViews: Array<{ label: string; value: WorkView }> = [
   { label: "Needs action", value: "attention" },
   { label: "Under review", value: "review" },
   { label: "Completed", value: "completed" },
+  { label: "Closed", value: "closed" },
 ];
 
 function getWorkView(record: WorkRecord, isCompany: boolean): WorkView {
@@ -65,6 +66,10 @@ function getWorkView(record: WorkRecord, isCompany: boolean): WorkView {
     record.hasEvidenceCard
   ) {
     return "completed";
+  }
+
+  if (record.projectStatus === ProjectStatuses.Completed) {
+    return "closed";
   }
 
   const hasSubmittedMilestone = record.milestones.some(
@@ -151,6 +156,9 @@ function getStatusPresentation(view: WorkView, isCompany: boolean) {
   if (view === "completed") {
     return { label: "Completed", tone: "green" as const };
   }
+  if (view === "closed") {
+    return { label: "Opportunity closed", tone: "amber" as const };
+  }
   if (view === "attention") {
     return {
       label: isCompany ? "Ready for review" : "Needs your update",
@@ -169,6 +177,7 @@ function getNextAction(
   isCompany: boolean,
 ) {
   if (view === "completed") return "View completed work";
+  if (view === "closed") return "View closed opportunity";
   if (view === "attention") {
     return isCompany ? "Review the latest submission" : "Address the feedback";
   }
@@ -181,6 +190,7 @@ function getNextAction(
 
 function getPrimaryActionLabel(view: WorkView, isCompany: boolean) {
   if (view === "completed") return "View record";
+  if (view === "closed") return "View record";
   if (view === "attention") {
     return isCompany ? "Review submission" : "Update work";
   }

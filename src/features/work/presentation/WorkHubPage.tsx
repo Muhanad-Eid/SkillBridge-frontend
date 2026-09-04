@@ -19,7 +19,6 @@ import {
   MessageSquare,
   Play,
   Star,
-  Upload,
   UsersRound,
   Wrench,
   type LucideIcon,
@@ -296,24 +295,19 @@ export default function WorkHubPage() {
         application.workStatus === WorkSubmissionStatuses.Approved,
     );
   const participantWorkStatus = acceptedApplications[0]?.workStatus;
-  const canParticipantSubmitFinal =
+  const participantNeedsWorkAttention =
     project?.status === ProjectStatuses.InProgress &&
     (participantWorkStatus === WorkSubmissionStatuses.NotSubmitted ||
       participantWorkStatus === WorkSubmissionStatuses.ChangesRequested);
 
-  function focusFinalSubmission() {
+  function focusWorkRecord() {
     setActiveSection("delivery");
     window.requestAnimationFrame(() => {
-      const form = document.getElementById("final-submission");
-      if (!form) {
-        setError(
-          "Final submission is not available until the opportunity is active and every required milestone is approved.",
-        );
-        return;
-      }
+      const workRecord = document.getElementById("work-progress");
+      if (!workRecord) return;
 
-      form.scrollIntoView({ behavior: "smooth", block: "start" });
-      form.querySelector<HTMLElement>("textarea, input, button")?.focus({
+      workRecord.scrollIntoView({ behavior: "smooth", block: "start" });
+      workRecord.querySelector<HTMLElement>("button, textarea, input")?.focus({
         preventScroll: true,
       });
     });
@@ -496,9 +490,9 @@ export default function WorkHubPage() {
           <p>
             {project
               ? isCompany
-                ? "Keep the delivery, approvals, and evidence route moving from one place."
-                : "Complete the delivery and follow the evidence route from submission to approval."
-              : "Loading the delivery workspace."}
+                ? "Manage delivery, approvals, and evidence."
+                : "Submit work and track approval."
+              : "Loading work."}
           </p>
         </div>
         {project ? (
@@ -1016,11 +1010,11 @@ export default function WorkHubPage() {
                 project.status === ProjectStatuses.InProgress ? (
                   <>
                     <h2>
-                      {canParticipantSubmitFinal
+                      {participantNeedsWorkAttention
                         ? participantWorkStatus ===
                           WorkSubmissionStatuses.ChangesRequested
-                          ? "Revision requested"
-                          : "Submit your completed work"
+                          ? "Changes requested"
+                          : "Work in progress"
                         : participantWorkStatus ===
                             WorkSubmissionStatuses.Submitted ||
                           participantWorkStatus ===
@@ -1029,8 +1023,11 @@ export default function WorkHubPage() {
                         : "Final work approved"}
                     </h2>
                     <p>
-                      {canParticipantSubmitFinal
-                        ? "Complete the final submission form and send the work to the provider for criterion-level evaluation."
+                      {participantNeedsWorkAttention
+                        ? participantWorkStatus ===
+                          WorkSubmissionStatuses.ChangesRequested
+                          ? "Review the provider feedback in your work record, then complete the requested revision."
+                          : "Complete the required milestones in your work record before submitting final work."
                         : participantWorkStatus ===
                             WorkSubmissionStatuses.Submitted ||
                           participantWorkStatus ===
@@ -1038,17 +1035,14 @@ export default function WorkHubPage() {
                         ? "Your submission is saved. The provider or university must complete the remaining review."
                         : "Your final work has completed the required approval route."}
                     </p>
-                    {canParticipantSubmitFinal ? (
+                    {participantNeedsWorkAttention ? (
                       <Button
                         type="button"
                         fullWidth
-                        onClick={focusFinalSubmission}
+                        onClick={focusWorkRecord}
                       >
-                        <Upload size={17} aria-hidden="true" />
-                        {participantWorkStatus ===
-                        WorkSubmissionStatuses.ChangesRequested
-                          ? "Submit revision"
-                          : "Submit final work"}
+                        <Wrench size={17} aria-hidden="true" />
+                        Open work record
                       </Button>
                     ) : companyProfile ? (
                       <Button
@@ -1096,20 +1090,6 @@ export default function WorkHubPage() {
                            ? "Your work is pending provider approval."
                            : "Final work submission is unavailable because the opportunity is closed."}
                     </p>
-                    {canParticipantSubmitFinal ? (
-                      <Button
-                        type="button"
-                        variant="primary"
-                        fullWidth
-                        onClick={focusFinalSubmission}
-                      >
-                        <Upload size={17} aria-hidden="true" />
-                        {participantWorkStatus ===
-                        WorkSubmissionStatuses.ChangesRequested
-                          ? "Submit revision"
-                          : "Submit final work"}
-                      </Button>
-                    ) : null}
                     {acceptedApplications[0]?.workStatus === WorkSubmissionStatuses.Approved && portfolioItem && (
                       <Button
                         to="/job-seeker/portfolio"

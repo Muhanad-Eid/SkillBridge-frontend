@@ -50,7 +50,7 @@ export default function EvidenceContractPanel({
         <span className="evidence-contract-icon"><FileCheck2 size={18} aria-hidden="true" /></span>
         <div>
           <h2 id="evidence-contract-title">Evidence Contract</h2>
-          <p>Requirements and evaluation rules defined before the work begins.</p>
+          <p>Defines the work and evaluation basis.</p>
         </div>
       </header>
       <div className="evidence-contract-summary">

@@ -78,7 +78,7 @@ export default function EvidenceCaseNavigator({
       <header>
         <div>
           <span>Evidence case</span>
-          <h3 id="evidence-case-title">From accepted work to trusted proof</h3>
+          <h3 id="evidence-case-title">Evidence route</h3>
         </div>
         <strong>
           {satisfiedCount}/{stages.length} stages satisfied
@@ -182,10 +182,6 @@ export default function EvidenceCaseNavigator({
         </section>
       )}
       <footer>
-        <p>
-          Requests, responses, and proof runs remain attached to application #
-          {record.applicationId}.
-        </p>
         <nav aria-label="Evidence case actions">
           <Link
             to={`/${portal}/evidence-requests?applicationId=${record.applicationId}`}

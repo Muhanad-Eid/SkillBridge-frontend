@@ -1709,15 +1709,17 @@
 
 .jobseeker-opportunity-details-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 350px;
+  grid-template-columns: minmax(0, 1.7fr) minmax(320px, 0.8fr);
+  grid-template-areas: "main apply";
   align-items: start;
-  gap: 18px;
+  gap: 24px;
 }
 
 .jobseeker-opportunity-main {
+  grid-area: main;
   min-width: 0;
   display: grid;
-  gap: 14px;
+  gap: 16px;
 }
 
 .jobseeker-opportunity-main > section {
@@ -1854,9 +1856,13 @@
 }
 
 .jobseeker-apply-panel {
+  grid-area: apply;
   position: sticky;
   top: 92px;
   padding: 22px;
+  max-height: calc(100vh - 112px);
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 
 .jobseeker-apply-panel form,
@@ -1915,6 +1921,12 @@
   .jobseeker-dashboard-grid,
   .jobseeker-opportunity-details-grid {
     grid-template-columns: 1fr;
+  }
+
+  .jobseeker-opportunity-details-grid {
+    grid-template-areas:
+      "apply"
+      "main";
   }
 
   .jobseeker-readiness-panel,

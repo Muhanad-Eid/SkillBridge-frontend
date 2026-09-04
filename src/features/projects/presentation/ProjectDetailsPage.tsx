@@ -382,19 +382,16 @@ export default function ProjectDetailsPage() {
                 </div>
               </section>
 
-              <section>
-                <h2>
-                  {project.type === OpportunityTypes.FreelanceTask
-                    ? "Client question"
-                    : "Short application task"}
-                </h2>
-                <p>{project.applicationTask}</p>
-                <small>
-                  {project.type === OpportunityTypes.FreelanceTask
-                    ? "Freelancers can answer this question or provide a relevant work sample."
-                    : "Applicants can answer this task or provide a previous work sample."}
-                </small>
-              </section>
+              {(!isJobSeeker || existingApplication) && project.applicationTask?.trim() ? (
+                <section>
+                  <h2>
+                    {project.type === OpportunityTypes.FreelanceTask
+                      ? "Client question"
+                      : "Application task"}
+                  </h2>
+                  <p>{project.applicationTask}</p>
+                </section>
+              ) : null}
 
               {project.deliverables?.trim() ? (
                 <section>
@@ -486,7 +483,7 @@ export default function ProjectDetailsPage() {
                 </section>
               ) : null}
 
-              {criterionCoverage ? (
+              {existingApplication && criterionCoverage ? (
                 <CriterionCoveragePanel coverage={criterionCoverage} />
               ) : null}
 
@@ -633,8 +630,8 @@ export default function ProjectDetailsPage() {
                   </h2>
                   <p>
                     {project.type === OpportunityTypes.FreelanceTask
-                      ? "Send clear terms and show the provider how you plan to deliver the requested result."
-                      : "Write a focused note connecting your skills and interests to this work."}
+                      ? "Outline your approach, price, and delivery time."
+                      : "Tell the provider why you fit this work."}
                   </p>
                   {project.type === OpportunityTypes.FreelanceTask ? (
                     <div className="freelance-brief-reference">
@@ -820,10 +817,6 @@ export default function ProjectDetailsPage() {
                       ? "Send proposal"
                       : "Submit application"}
                   </Button>
-                  <small>
-                    The provider can review your profile, application details,
-                    and attached CV before making a decision.
-                  </small>
                 </form>
               ) : user ? (
                 <div className="jobseeker-applied-state">

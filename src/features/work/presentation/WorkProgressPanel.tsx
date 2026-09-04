@@ -12,7 +12,6 @@ import {
   Send,
   UserRoundCheck,
 } from "lucide-react";
-import { Link } from "react-router-dom";
 import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import StatusBadge from "../../../shared/components/StatusBadge";
@@ -340,7 +339,9 @@ export default function WorkProgressPanel({
     (record.opportunityType !== OpportunityTypes.UniversityTraining ||
       (trainingReportsApproved && trainingHoursComplete));
   const finalSubmissionBlocker = !isWorkActive
-    ? "This opportunity must be in progress before final work can be submitted."
+    ? record.projectStatus === ProjectStatuses.Completed
+      ? "This opportunity is closed. Final work can no longer be submitted."
+      : "This opportunity must be in progress before final work can be submitted."
     : !canEditMilestones
       ? "Your final work is already under review or approved."
       : !milestonesApproved
@@ -440,7 +441,7 @@ export default function WorkProgressPanel({
   }
 
   return (
-    <section className="work-hub-panel work-progress-panel">
+    <section id="work-progress" className="work-hub-panel work-progress-panel">
       <header className="work-hub-panel-header">
         <div>
           <span>Work record</span>
@@ -543,17 +544,6 @@ export default function WorkProgressPanel({
       />
 
       <div id="evidence-readiness">
-        <div className="work-proof-engine-launch">
-          <div>
-            <span>SkillBridge Evidence Replay</span>
-            <strong>Inspect the complete evidence lineage</strong>
-            <p>Run an immutable preflight and open every exact issuance blocker.</p>
-          </div>
-          <Link className="button button-secondary" to={`/${isCompany ? "company" : "job-seeker"}/proof-engine/${record.applicationId}`}>
-            Open Evidence Replay
-            <ExternalLink size={15} aria-hidden="true" />
-          </Link>
-        </div>
         {readiness?.applicationId === record.applicationId ? (
           <EvidenceReadinessPanel
             readiness={readiness}
@@ -563,7 +553,7 @@ export default function WorkProgressPanel({
       </div>
 
       {!isCompany && !record.hasEvidenceCard ? (
-        canPrepareFinalSubmission ? (
+        canSubmitFinal ? (
           <form
             id="final-submission"
             className="work-final-form"
@@ -572,16 +562,10 @@ export default function WorkProgressPanel({
             <div>
               <strong>Submit final work</strong>
               <p>
-                Add your completed-work summary and an optional protected
-                deliverable. The provider will then evaluate the work against
-                the accepted Evidence Contract.
+                Add a summary and optional protected deliverable for provider
+                evaluation.
               </p>
             </div>
-            {!canSubmitFinal ? (
-              <div className="work-final-prerequisite" role="status">
-                {finalSubmissionBlocker}
-              </div>
-            ) : null}
             <label className="field">
               <span>Completed work summary</span>
               <textarea
@@ -631,7 +615,6 @@ export default function WorkProgressPanel({
             </label>
             <Button
               type="submit"
-              disabled={!canSubmitFinal}
               isLoading={busyKey === "final-submit"}
             >
               <Send size={16} aria-hidden="true" />
@@ -639,7 +622,11 @@ export default function WorkProgressPanel({
             </Button>
           </form>
         ) : (
-          <section className="work-final-unavailable" role="status">
+          <section
+            id="final-submission"
+            className="work-final-unavailable"
+            role="status"
+          >
             <strong>Final submission is not available</strong>
             <p>{finalSubmissionBlocker}</p>
           </section>
@@ -853,8 +840,7 @@ export default function WorkProgressPanel({
           </section>
           {isCompany &&
           canEditMilestones &&
-          record.projectStatus !== ProjectStatuses.Completed &&
-          record.projectStatus !== ProjectStatuses.Cancelled ? (
+          isWorkActive ? (
             <div className="work-inline-form">
               <textarea
                 value={responsibilityDraft}
@@ -914,7 +900,7 @@ export default function WorkProgressPanel({
               ) : null}
             </div>
           ) : null}
-          {!isCompany && record.contributionRecord &&
+          {!isCompany && isWorkActive && record.contributionRecord &&
           record.contributionRecord.status !== ContributionResolutionStatuses.Locked ? (
             <div className="work-inline-form">
               <textarea
@@ -941,7 +927,7 @@ export default function WorkProgressPanel({
               </Button>
             </div>
           ) : null}
-          {isCompany && record.contributionRecord &&
+          {isCompany && isWorkActive && record.contributionRecord &&
           record.contributionRecord.status !== ContributionResolutionStatuses.Locked ? (
             <div className="work-inline-form">
               <textarea
@@ -967,7 +953,7 @@ export default function WorkProgressPanel({
               </Button>
             </div>
           ) : null}
-          {!isCompany && projectContributionReviews.length > 0 ? (
+          {!isCompany && isWorkActive && projectContributionReviews.length > 0 ? (
             <div className="contribution-review-queue">
               <strong>Team attribution to review</strong>
               {projectContributionReviews.map((task) => (
@@ -1142,6 +1128,7 @@ export default function WorkProgressPanel({
                   ) : null}
 
                   {isCompany &&
+                  isWorkActive &&
                   milestone.status === MilestoneStatuses.Submitted ? (
                     <div className="work-inline-form">
                       <textarea
@@ -1201,8 +1188,7 @@ export default function WorkProgressPanel({
 
       {isCompany &&
       canEditMilestones &&
-      record.projectStatus !== ProjectStatuses.Completed &&
-      record.projectStatus !== ProjectStatuses.Cancelled ? (
+      isWorkActive ? (
         <form className="work-add-milestone" onSubmit={handleCreateMilestone}>
           <strong>Add milestone for {record.jobSeekerName}</strong>
           <div className="company-form-grid">
@@ -1241,6 +1227,7 @@ export default function WorkProgressPanel({
       ) : null}
 
       {isCompany &&
+      isWorkActive &&
       record.workStatus === WorkSubmissionStatuses.Submitted ? (
         <section id="final-review" className="work-final-review">
           <section className="work-approval-standard">
