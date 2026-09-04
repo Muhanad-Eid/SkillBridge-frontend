@@ -18,7 +18,6 @@ import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
 import StatusBadge from "../../../shared/components/StatusBadge";
 import type { JobSeekerProfile } from "../../profiles/domain/profileTypes";
-import { getPublicJobSeekerProfileAsync } from "../../profiles/infrastructure/profileApi";
 import { getMyCompanyProjectsAsync } from "../../projects/infrastructure/projectApi";
 import type { Project } from "../../projects/domain/projectTypes";
 import {
@@ -33,6 +32,7 @@ import {
 } from "../domain/applicationTypes";
 import {
   downloadApplicationCvAsync,
+  getApplicantProfileAsync,
   getProjectApplicationsAsync,
   updateApplicationStatusAsync,
 } from "../infrastructure/applicationApi";
@@ -85,7 +85,7 @@ export default function DecisionRoomPage() {
       const nextApplication = applications.items.find((item) => item.id === applicationId) ?? null;
       setProject(nextProject); setApplication(nextApplication);
       setProofPack(nextApplication ? submissions.filter((item) => item.projectApplicationId === nextApplication.id).sort((left, right) => right.revisionNumber - left.revisionNumber)[0] ?? null : null);
-      if (nextApplication?.jobSeekerId) setProfile(await getPublicJobSeekerProfileAsync(nextApplication.jobSeekerId).catch(() => null));
+      if (nextApplication) setProfile(await getApplicantProfileAsync(nextApplication.id).catch(() => null));
       else setProfile(null);
     } catch (caught) { setError(caught instanceof Error ? caught.message : "Unable to open the decision room."); }
     finally { setIsLoading(false); }

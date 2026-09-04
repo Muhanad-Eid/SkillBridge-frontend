@@ -773,7 +773,9 @@ export default function CompanyProjectsPage({
           requiredSkillNames,
           preferredSkillNames,
         });
-        setMessage("Opportunity published.");
+        setMessage(
+          "Opportunity saved as a draft. Publish it from the opportunity list when it is ready.",
+        );
       } else if (editingProject) {
         await updateProjectAsync(editingProject.id, {
           title: form.title.trim(),
@@ -2158,7 +2160,7 @@ export default function CompanyProjectsPage({
                   Cancel
                 </Button>
                 <Button type="submit" isLoading={isSaving}>
-                  {mode === "create" ? "Publish opportunity" : "Save changes"}
+                  {mode === "create" ? "Save opportunity" : "Save changes"}
                 </Button>
               </div>
             </form>

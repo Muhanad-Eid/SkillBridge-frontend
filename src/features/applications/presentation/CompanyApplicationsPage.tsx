@@ -7,7 +7,6 @@ import PageHeader from "../../../shared/components/PageHeader";
 import Pagination from "../../../shared/components/Pagination";
 import StatusBadge from "../../../shared/components/StatusBadge";
 import type { JobSeekerProfile } from "../../profiles/domain/profileTypes";
-import { getPublicJobSeekerProfileAsync } from "../../profiles/infrastructure/profileApi";
 import ApplicantProfilePanel from "./ApplicantProfilePanel";
 import {
   ApplicationStatuses,
@@ -17,6 +16,7 @@ import {
 } from "../domain/applicationTypes";
 import {
   getCompanyApplicationsAsync,
+  getApplicantProfileAsync,
   updateApplicationStatusAsync,
 } from "../infrastructure/applicationApi";
 import ApplicationDecisionDialog from "./ApplicationDecisionDialog";
@@ -158,11 +158,6 @@ export default function CompanyApplicationsPage() {
     setSelectedApplication(application);
     setSelectedProfile(null);
     setProfileError("");
-    if (application.jobSeekerId === null) {
-      setIsProfileLoading(false);
-      return;
-    }
-
     setIsProfileLoading(true);
     setSearchParams((current) => {
       const next = new URLSearchParams(current);
@@ -171,9 +166,7 @@ export default function CompanyApplicationsPage() {
     }, { replace: true });
 
     try {
-      setSelectedProfile(
-        await getPublicJobSeekerProfileAsync(application.jobSeekerId),
-      );
+      setSelectedProfile(await getApplicantProfileAsync(application.id));
     } catch (caughtError) {
       setProfileError(
         caughtError instanceof Error
@@ -393,6 +386,16 @@ export default function CompanyApplicationsPage() {
                   {getApplicationStatusLabel(application.status)}
                 </StatusBadge>
                 <div className="company-decision-actions">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="button-with-icon company-profile-action"
+                    aria-label={`View profile for ${application.jobSeekerName}`}
+                    onClick={() => openApplicantProfile(application)}
+                  >
+                    <UserRoundSearch size={17} aria-hidden="true" />
+                    <span>View profile</span>
+                  </Button>
                   {isPending ? (
                     <>
                       <Button
@@ -428,27 +431,7 @@ export default function CompanyApplicationsPage() {
                         <X size={17} aria-hidden="true" />
                       </Button>
                     </>
-                  ) : (
-                    <Button
-                      to={
-                        application.jobSeekerId
-                          ? `/company/talent/${application.jobSeekerId}`
-                          : undefined
-                      }
-                      type={application.jobSeekerId ? undefined : "button"}
-                      variant="ghost"
-                      className="company-icon-action"
-                      aria-label={`View ${application.jobSeekerName}`}
-                      title="View profile"
-                      onClick={
-                        application.jobSeekerId
-                          ? undefined
-                          : () => openApplicantProfile(application)
-                      }
-                    >
-                      <UserRoundSearch size={18} aria-hidden="true" />
-                    </Button>
-                  )}
+                  ) : null}
                 </div>
               </article>
             );

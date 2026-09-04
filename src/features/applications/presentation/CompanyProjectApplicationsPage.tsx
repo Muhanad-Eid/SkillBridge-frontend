@@ -32,7 +32,6 @@ import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
 import StatusBadge from "../../../shared/components/StatusBadge";
 import type { JobSeekerProfile } from "../../profiles/domain/profileTypes";
-import { getPublicJobSeekerProfileAsync } from "../../profiles/infrastructure/profileApi";
 import {
   getProjectDisplayStatusLabel,
   getFreelancePricingLabel,
@@ -61,6 +60,7 @@ import {
   type ApplicationStatus,
 } from "../domain/applicationTypes";
 import {
+  getApplicantProfileAsync,
   getProjectApplicationsAsync,
   updateApplicationShortlistAsync,
   updateApplicationStatusAsync,
@@ -264,17 +264,10 @@ export default function CompanyProjectApplicationsPage() {
     setSelectedProfile(null);
     setProfileError("");
 
-    if (application.jobSeekerId === null) {
-      setIsProfileLoading(false);
-      return;
-    }
-
     setIsProfileLoading(true);
 
     try {
-      setSelectedProfile(
-        await getPublicJobSeekerProfileAsync(application.jobSeekerId),
-      );
+      setSelectedProfile(await getApplicantProfileAsync(application.id));
     } catch (caughtError) {
       setProfileError(
         caughtError instanceof Error
@@ -818,15 +811,16 @@ export default function CompanyProjectApplicationsPage() {
                           </>
                         ) : (
                           <>
-                            <Button
-                              to={`/company/projects/${project.id}/applications/${application.id}/decision`}
-                              variant="secondary"
-                              className="company-icon-action"
-                              aria-label={`Open Decision Room for ${application.jobSeekerName}`}
-                              title="Open Decision Room"
-                            >
-                              <Eye size={17} aria-hidden="true" />
-                            </Button>
+                              <Button
+                                to={`/company/projects/${project.id}/applications/${application.id}/decision`}
+                                variant="secondary"
+                                className="button-with-icon company-decision-room-action"
+                                aria-label={`Open Decision Room for ${application.jobSeekerName}`}
+                                title="Open Decision Room"
+                              >
+                                <Eye size={17} aria-hidden="true" />
+                                <span>Decision room</span>
+                              </Button>
                             <Button
                               type="button"
                               variant="secondary"
@@ -908,12 +902,12 @@ export default function CompanyProjectApplicationsPage() {
                         variant={
                           project.type === OpportunityTypes.FreelanceTask
                             ? "secondary"
-                            : "ghost"
+                            : "secondary"
                         }
                         className={
                           project.type === OpportunityTypes.FreelanceTask
                             ? "button-with-icon company-view-proposal"
-                            : "company-icon-action"
+                            : "button-with-icon company-profile-action"
                         }
                         aria-label={`View ${
                           project.type === OpportunityTypes.FreelanceTask
@@ -938,7 +932,10 @@ export default function CompanyProjectApplicationsPage() {
                             View proposal
                           </>
                         ) : (
-                          <UserRoundSearch size={18} aria-hidden="true" />
+                          <>
+                            <UserRoundSearch size={18} aria-hidden="true" />
+                            <span>View profile</span>
+                          </>
                         )}
                       </Button>
                     </div>

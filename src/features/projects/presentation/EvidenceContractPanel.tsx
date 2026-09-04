@@ -136,10 +136,11 @@ export default function EvidenceContractPanel({
               <div className="evidence-contract-approvals">
                 <span>Approval route</span>
                 <strong>
-                  {selectedVersion.requiresProviderApproval ? "Provider" : ""}
                   {selectedVersion.requiresProviderApproval &&
                   selectedVersion.requiresUniversityApproval
-                    ? " and university"
+                    ? "Provider and university"
+                    : selectedVersion.requiresProviderApproval
+                      ? "Provider"
                     : selectedVersion.requiresUniversityApproval
                       ? "University"
                       : "No approval route configured"}

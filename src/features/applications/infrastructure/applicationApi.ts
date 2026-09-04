@@ -8,6 +8,7 @@ import type {
   UpdateApplicationShortlistRequest,
   UpdateApplicationStatusRequest,
 } from "../domain/applicationTypes";
+import type { JobSeekerProfile } from "../../profiles/domain/profileTypes";
 import type { PagedResult } from "../../projects/domain/projectTypes";
 import { normalizePagedResult } from "../../../shared/api/pagedResult";
 
@@ -80,6 +81,12 @@ export function getProjectApplicationsAsync(
   return httpClient<PagedResult<Application>>(
     `/api/applications/projects/${projectId}?page=${page}&pageSize=${pageSize}`,
   ).then(normalizePagedResult<Application>);
+}
+
+export function getApplicantProfileAsync(applicationId: number) {
+  return httpClient<JobSeekerProfile>(
+    `/api/applications/${applicationId}/applicant-profile`,
+  );
 }
 
 export function updateApplicationStatusAsync(
