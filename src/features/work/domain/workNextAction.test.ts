@@ -109,6 +109,17 @@ describe("getWorkNextAction", () => {
     expect(action.targetId).toBe("final-submission");
   });
 
+  it("uses a direct task action for an industry micro-task", () => {
+    const action = getWorkNextAction(
+      workRecord({ opportunityType: OpportunityTypes.FreelanceTask }),
+      false,
+      null,
+    );
+
+    expect(action.label).toBe("Submit task");
+    expect(action.detail).toContain("direct criterion-level evaluation");
+  });
+
   it("keeps later milestones locked while an earlier one is under review", () => {
     const action = getWorkNextAction(
       workRecord({

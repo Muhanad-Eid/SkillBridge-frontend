@@ -31,6 +31,7 @@ import type { CriterionEvidenceCoverage } from "../../evidence/domain/evidenceTy
 import { getCriterionEvidenceCoverageAsync } from "../../evidence/infrastructure/evidenceApi";
 import CriterionCoveragePanel from "../../evidence/presentation/CriterionCoveragePanel";
 import {
+  ApplicationStatuses,
   getApplicationStatusLabelForOpportunity,
   type Application,
 } from "../../applications/domain/applicationTypes";
@@ -580,21 +581,27 @@ export default function ProjectDetailsPage() {
                     )}
                   </h2>
                   <p>
-                    {project.type === OpportunityTypes.FreelanceTask
-                      ? "The provider can now review your proposed price, delivery time, and evidence."
-                      : "Your application was sent to the provider. Follow its status from Applications."}
+                    {existingApplication.status === ApplicationStatuses.Accepted
+                      ? "You have been accepted. Open the Work Hub to complete the delivery and evidence steps."
+                      : project.type === OpportunityTypes.FreelanceTask
+                        ? "The provider can now review your proposed price, delivery time, and evidence."
+                        : "Your application was sent to the provider. Follow its status from Applications."}
                   </p>
                   <Button
                     to={
-                      project.type === OpportunityTypes.FreelanceTask
-                        ? "/job-seeker/freelance/proposals"
-                        : "/job-seeker/applications"
+                      existingApplication.status === ApplicationStatuses.Accepted
+                        ? `/job-seeker/work/${project.id}`
+                        : project.type === OpportunityTypes.FreelanceTask
+                          ? "/job-seeker/freelance/proposals"
+                          : "/job-seeker/applications"
                     }
                     variant="primary"
                   >
-                    {project.type === OpportunityTypes.FreelanceTask
-                      ? "Track proposal"
-                      : "Track application"}
+                    {existingApplication.status === ApplicationStatuses.Accepted
+                      ? "Open Work Hub"
+                      : project.type === OpportunityTypes.FreelanceTask
+                        ? "Track proposal"
+                        : "Track application"}
                   </Button>
                 </div>
               ) : !isAcceptingApplications ? (

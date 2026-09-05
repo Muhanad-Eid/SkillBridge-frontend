@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Bell,
   BriefcaseBusiness,
@@ -16,7 +17,6 @@ import Button from "../../../shared/components/Button";
 import DataState from "../../../shared/components/DataState";
 import PageHeader from "../../../shared/components/PageHeader";
 import { useAuth } from "../../../shared/auth/AuthContext";
-import useVisibilityPolling from "../../../shared/hooks/useVisibilityPolling";
 import { notifyPortalBadgesChanged } from "../../../shared/events/portalEvents";
 import {
   getNotificationDestination,
@@ -30,6 +30,7 @@ import {
 } from "../infrastructure/notificationApi";
 
 type NotificationFilter = "all" | "unread";
+const emptyNotifications: Notification[] = [];
 
 const notificationPresentation: Record<
   number,
@@ -45,38 +46,42 @@ const notificationPresentation: Record<
 export default function NotificationsPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [filter, setFilter] = useState<NotificationFilter>("all");
-  const [isLoading, setIsLoading] = useState(true);
-  const [busyId, setBusyId] = useState<number | null>(null);
-  const [error, setError] = useState("");
-
-  async function loadNotifications(showLoading = false) {
-    if (showLoading) setIsLoading(true);
-
-    try {
-      setNotifications(await getMyNotificationsAsync());
-      setError("");
-    } catch (caughtError) {
-      setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Unable to load notifications.",
-      );
-    } finally {
-      if (showLoading) setIsLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    const timeoutId = window.setTimeout(() => loadNotifications(true), 0);
-    return () => window.clearTimeout(timeoutId);
-  }, []);
-
-  useVisibilityPolling(
-    () => loadNotifications(false),
-    30000,
-  );
+  const queryClient = useQueryClient();
+  const notificationsQuery = useQuery({
+    queryKey: ["notifications", "mine"],
+    queryFn: ({ signal }) => getMyNotificationsAsync({ signal }),
+    refetchInterval: 30_000,
+    refetchIntervalInBackground: false,
+  });
+  const notifications = notificationsQuery.data ?? emptyNotifications;
+  const refreshNotifications = () => {
+    void queryClient.invalidateQueries({ queryKey: ["notifications", "mine"] });
+    notifyPortalBadgesChanged();
+  };
+  const markAllReadMutation = useMutation({
+    mutationFn: markAllNotificationsReadAsync,
+    onSuccess: refreshNotifications,
+  });
+  const markReadMutation = useMutation({
+    mutationFn: markNotificationReadAsync,
+    onSuccess: refreshNotifications,
+  });
+  const deleteNotificationMutation = useMutation({
+    mutationFn: deleteNotificationAsync,
+    onSuccess: refreshNotifications,
+  });
+  const busyId = markReadMutation.isPending
+    ? markReadMutation.variables
+    : deleteNotificationMutation.isPending
+      ? deleteNotificationMutation.variables
+      : null;
+  const requestError =
+    notificationsQuery.error ??
+    markAllReadMutation.error ??
+    markReadMutation.error ??
+    deleteNotificationMutation.error;
+  const error = requestError instanceof Error ? requestError.message : "";
 
   const unreadCount = notifications.filter(
     (notification) => !notification.isRead,
@@ -89,71 +94,16 @@ export default function NotificationsPage() {
     [filter, notifications],
   );
 
-  async function markAllRead() {
-    setError("");
-    try {
-      await markAllNotificationsReadAsync();
-      await loadNotifications(false);
-      notifyPortalBadgesChanged();
-    } catch (caughtError) {
-      setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Unable to mark notifications as read.",
-      );
-    }
-  }
-
-  async function markRead(notificationId: number) {
-    setBusyId(notificationId);
-    setError("");
-    try {
-      await markNotificationReadAsync(notificationId);
-      await loadNotifications(false);
-      notifyPortalBadgesChanged();
-    } catch (caughtError) {
-      setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Unable to mark the notification as read.",
-      );
-    } finally {
-      setBusyId(null);
-    }
-  }
-
-  async function deleteNotification(notificationId: number) {
-    setBusyId(notificationId);
-    setError("");
-    try {
-      await deleteNotificationAsync(notificationId);
-      await loadNotifications(false);
-      notifyPortalBadgesChanged();
-    } catch (caughtError) {
-      setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Unable to delete the notification.",
-      );
-    } finally {
-      setBusyId(null);
-    }
-  }
-
   function openNotification(notification: Notification) {
     const destination = getNotificationDestination(notification, user?.role);
 
     if (!notification.isRead) {
-      setNotifications((current) =>
-        current.map((item) =>
+      queryClient.setQueryData<Notification[]>(["notifications", "mine"], (current) =>
+        current?.map((item) =>
           item.id === notification.id ? { ...item, isRead: true } : item,
-        ),
+        ) ?? current,
       );
-      void markNotificationReadAsync(notification.id)
-        .then(notifyPortalBadgesChanged)
-        .catch(() => {
-          // Opening the destination should not be blocked by a read-state error.
-        });
+      markReadMutation.mutate(notification.id);
     }
 
     navigate(destination);
@@ -171,7 +121,7 @@ export default function NotificationsPage() {
             variant="secondary"
             className="button-with-icon"
             disabled={unreadCount === 0}
-            onClick={markAllRead}
+            onClick={() => markAllReadMutation.mutate()}
           >
             <CheckCheck size={17} aria-hidden="true" />
             Mark all read
@@ -203,9 +153,9 @@ export default function NotificationsPage() {
       </div>
 
       <DataState
-        isLoading={isLoading}
+        isLoading={notificationsQuery.isLoading}
         error=""
-        empty={!isLoading && visibleNotifications.length === 0}
+        empty={!notificationsQuery.isLoading && visibleNotifications.length === 0}
         emptyTitle={filter === "unread" ? "No unread notifications" : "No notifications"}
         emptyDescription="You are all caught up."
       />
@@ -257,7 +207,7 @@ export default function NotificationsPage() {
                     disabled={busyId === notification.id}
                     aria-label={`Mark ${notification.title} as read`}
                     title="Mark as read"
-                    onClick={() => markRead(notification.id)}
+                    onClick={() => markReadMutation.mutate(notification.id)}
                   >
                     <CheckCheck size={17} aria-hidden="true" />
                   </Button>
@@ -269,7 +219,7 @@ export default function NotificationsPage() {
                   disabled={busyId === notification.id}
                   aria-label={`Delete ${notification.title}`}
                   title="Delete notification"
-                  onClick={() => deleteNotification(notification.id)}
+                  onClick={() => deleteNotificationMutation.mutate(notification.id)}
                 >
                   <Trash2 size={16} aria-hidden="true" />
                 </Button>

@@ -37,7 +37,8 @@ test("workspace map keeps the current space visible and closes predictably", asy
   const navigation = page.locator("#job-seeker-bridge-deck");
   await expect(navigation).toBeVisible();
   await expect(navigation.getByText("Currently open", { exact: true })).toBeVisible();
-  await expect(navigation.getByRole("link", { name: "Portfolio", exact: true })).toBeVisible();
+  await expect(navigation.getByRole("link", { name: "Evidence requests", exact: true })).toBeVisible();
+  await expect(navigation.getByRole("link", { name: "Reviews", exact: true })).toBeVisible();
 
   await page.keyboard.press("Escape");
   await expect(navigation).toBeHidden();

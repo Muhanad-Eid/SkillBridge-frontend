@@ -1,6 +1,8 @@
 export const OpportunityTypes = {
   ProfessionalProject: 0,
   UniversityTraining: 1,
+  IndustryMicroTask: 2,
+  // Compatibility alias for existing API consumers and saved client state.
   FreelanceTask: 2,
   SkillDevelopmentChallenge: 3,
   TeamProject: 4,
@@ -185,7 +187,7 @@ export type UpdateProjectRequest = CreateProjectRequest & {
 
 export function getOpportunityTypeLabel(type: OpportunityType) {
   if (type === OpportunityTypes.UniversityTraining) return "University training";
-  if (type === OpportunityTypes.FreelanceTask) return "Industry micro-task";
+  if (type === OpportunityTypes.IndustryMicroTask) return "Industry micro-task";
   if (type === OpportunityTypes.SkillDevelopmentChallenge) {
     return "Skill-development challenge";
   }

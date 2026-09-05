@@ -55,7 +55,7 @@ export default defineConfig({
     : [
         {
           command:
-            "dotnet run --no-build --project SkillBridge.API --launch-profile http",
+            "dotnet run --project SkillBridge.API --launch-profile http",
           cwd: backendDirectory,
           env: {
             ...process.env,

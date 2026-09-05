@@ -103,7 +103,6 @@ type ProjectForm = {
 
 type CompanyPortalContext = {
   isCompanyVerified: boolean;
-  isTrainingProvider: boolean;
 };
 
 type CompanyProjectsPageProps = {
@@ -201,13 +200,35 @@ function isProjectFormDirty(
 }
 
 type EvidenceContractTemplate = {
-  id: "training" | "team" | "micro-task";
+  id: "professional" | "training" | "team" | "micro-task" | "challenge";
   title: string;
   description: string;
   apply: (base: ProjectForm) => ProjectForm;
 };
 
 const evidenceContractTemplates: EvidenceContractTemplate[] = [
+  {
+    id: "professional",
+    title: "Professional Project",
+    description: "Structured delivery with milestones, feedback, and final evaluation.",
+    apply: (base) => ({
+      ...base,
+      type: OpportunityTypes.ProfessionalProject,
+      title: "Professional delivery project",
+      description: "A defined provider project with practical deliverables and reviewable progress.",
+      requirements: "Complete the agreed work, respond to feedback, and submit the final delivery for evaluation.",
+      deliverables: "Project deliverables, milestone evidence, final submission, and a concise handover note.",
+      durationWeeks: "8",
+      evidenceCriteria: [
+        { key: "template-project-delivery", title: "Required deliverables completed", description: "The completed work satisfies the agreed project deliverables.", evaluationType: CriterionEvaluationTypes.PassFail, minimumRating: 2, isRequired: true, sortOrder: 0 },
+        { key: "template-project-quality", title: "Quality of implementation", description: "The work meets the provider's stated quality standard.", evaluationType: CriterionEvaluationTypes.Rating, minimumRating: 2, isRequired: true, sortOrder: 1 },
+      ],
+      milestones: [
+        { key: "template-project-plan", title: "Plan and approach", description: "Confirm the work approach and deliverable plan.", dueAfterDays: 14 },
+        { key: "template-project-delivery", title: "Final delivery", description: "Submit completed work for provider evaluation.", dueAfterDays: 56 },
+      ],
+    }),
+  },
   {
     id: "training",
     title: "University Training",
@@ -246,6 +267,7 @@ const evidenceContractTemplates: EvidenceContractTemplate[] = [
       requirements: "Complete assigned responsibilities, declare participant-specific contribution, and respond to affected-member review.",
       deliverables: "Team deliverable, attributed work record, final submission, and contribution declaration.",
       durationWeeks: "8",
+      positionsAvailable: "2",
       evidenceCriteria: [
         { key: "template-team-delivery", title: "Assigned work delivered", description: "Participant-specific responsibilities are completed to the accepted standard.", evaluationType: CriterionEvaluationTypes.PassFail, minimumRating: 2, isRequired: true, sortOrder: 0 },
         { key: "template-team-contribution", title: "Contribution attribution resolved", description: "Affected-member review and provider resolution are complete.", evaluationType: CriterionEvaluationTypes.PassFail, minimumRating: 2, isRequired: true, sortOrder: 1 },
@@ -270,6 +292,7 @@ const evidenceContractTemplates: EvidenceContractTemplate[] = [
       requirements: "Respond to the brief, complete the agreed scope, and submit one final deliverable.",
       deliverables: "Final deliverable, concise delivery note, and any agreed revision response.",
       durationWeeks: "2",
+      budget: "250",
       freelanceDeliveryDays: "14",
       includedRevisions: "1",
       evidenceCriteria: [
@@ -277,10 +300,29 @@ const evidenceContractTemplates: EvidenceContractTemplate[] = [
         { key: "template-micro-quality", title: "Quality of final delivery", description: "The final work meets the provider's stated quality standard.", evaluationType: CriterionEvaluationTypes.Rating, minimumRating: 2, isRequired: true, sortOrder: 1 },
         { key: "template-micro-communication", title: "Delivery communication", description: "The delivery note explains key decisions and handoff details.", evaluationType: CriterionEvaluationTypes.Rating, minimumRating: 2, isRequired: false, sortOrder: 2 },
       ],
-      milestones: [
-        { key: "template-micro-brief", title: "Brief acknowledged", description: "Confirm scope and final delivery format.", dueAfterDays: 2 },
-        { key: "template-micro-final", title: "Final delivery", description: "Submit the completed work for provider evaluation.", dueAfterDays: 14 },
+      milestones: [],
+    }),
+  },
+  {
+    id: "challenge",
+    title: "Skill Challenge",
+    description: "A predefined assessed challenge with one focused submission.",
+    apply: (base) => ({
+      ...base,
+      type: OpportunityTypes.SkillDevelopmentChallenge,
+      title: "Practical skill challenge",
+      description: "A predefined challenge that demonstrates a focused practical skill through one assessed outcome.",
+      requirements: "Complete the challenge statement using the stated requirements and submit the expected outcome.",
+      deliverables: "One challenge submission with a concise explanation of the approach and result.",
+      applicationTask: "Describe how you would approach the challenge requirements.",
+      durationWeeks: "2",
+      budget: "",
+      evidenceCriteria: [
+        { key: "template-challenge-outcome", title: "Expected outcome achieved", description: "The submission meets the defined challenge outcome.", evaluationType: CriterionEvaluationTypes.PassFail, minimumRating: 2, isRequired: true, sortOrder: 0 },
+        { key: "template-challenge-quality", title: "Solution quality", description: "The submitted solution demonstrates the target skill to the required standard.", evaluationType: CriterionEvaluationTypes.Rating, minimumRating: 2, isRequired: true, sortOrder: 1 },
+        { key: "template-challenge-extension", title: "Optional extension", description: "Additional work that strengthens the challenge submission.", evaluationType: CriterionEvaluationTypes.Rating, minimumRating: 2, isRequired: false, sortOrder: 2 },
       ],
+      milestones: [],
     }),
   },
 ];
@@ -318,7 +360,7 @@ export default function CompanyProjectsPage({
   mode: pageMode = "opportunities",
 }: CompanyProjectsPageProps) {
   const confirmAction = useConfirmation();
-  const { isCompanyVerified, isTrainingProvider } =
+  const { isCompanyVerified } =
     useOutletContext<CompanyPortalContext>();
   const [searchParams, setSearchParams] = useSearchParams();
   const createRequested = searchParams.get("create") === "1";
@@ -608,17 +650,24 @@ export default function CompanyProjectsPage({
       form.type === OpportunityTypes.FreelanceTask
         ? freelanceDeliveryDays
         : durationWeeks * 7;
+    const usesDirectSubmission =
+      form.type === OpportunityTypes.FreelanceTask ||
+      form.type === OpportunityTypes.SkillDevelopmentChallenge;
     const milestones = form.milestones.map((milestone) => ({
       title: milestone.title.trim(),
       description: milestone.description.trim() || null,
       dueAfterDays: Number(milestone.dueAfterDays),
     }));
-    const milestonePlan = milestones
-      .map(
-        (milestone, index) =>
-          `${index + 1}. ${milestone.title} (day ${milestone.dueAfterDays})`,
-      )
-      .join("\n");
+    const milestonePlan = milestones.length > 0
+      ? milestones
+          .map(
+            (milestone, index) =>
+              `${index + 1}. ${milestone.title} (day ${milestone.dueAfterDays})`,
+          )
+          .join("\n")
+      : form.type === OpportunityTypes.SkillDevelopmentChallenge
+        ? "Complete one assessed challenge submission."
+        : "Complete one focused final task submission.";
     const evidenceCriteria = form.evidenceCriteria.map((criterion, index) => ({
       id: criterion.id ?? null,
       title: criterion.title.trim(),
@@ -714,7 +763,7 @@ export default function CompanyProjectsPage({
     }
 
     if (
-      milestones.length === 0 ||
+      (!usesDirectSubmission && milestones.length === 0) ||
       milestones.some(
         (milestone) =>
           !milestone.title ||
@@ -1089,11 +1138,9 @@ export default function CompanyProjectsPage({
             <option value={OpportunityTypes.ProfessionalProject}>
               Professional projects
             </option>
-            {!isTrainingProvider ? (
-              <option value={OpportunityTypes.UniversityTraining}>
-                University training
-              </option>
-            ) : null}
+            <option value={OpportunityTypes.UniversityTraining}>
+              University training
+            </option>
             <option value={OpportunityTypes.SkillDevelopmentChallenge}>
               Skill-development challenges
             </option>
@@ -1404,8 +1451,8 @@ export default function CompanyProjectsPage({
               <section className="evidence-contract-template-picker" aria-labelledby="contract-template-title">
                 <header>
                   <div>
-                    <span>Evidence Contract templates</span>
-                    <strong id="contract-template-title">Start with a proven evidence structure</strong>
+                    <span>What kind of opportunity are you creating?</span>
+                    <strong id="contract-template-title">Choose a type to start with the right work and evidence structure</strong>
                   </div>
                   <small>All fields remain editable before publishing.</small>
                 </header>
@@ -1503,10 +1550,16 @@ export default function CompanyProjectsPage({
                 <header>
                   <span>02 / Work plan</span>
                   <div>
-                    <h3>Set the delivery sequence</h3>
-                    <p>Milestones become the shared progress record for every accepted participant.</p>
+                    <h3>{form.type === OpportunityTypes.FreelanceTask || form.type === OpportunityTypes.SkillDevelopmentChallenge ? "Set the submission expectations" : "Set the delivery sequence"}</h3>
+                    <p>{form.type === OpportunityTypes.FreelanceTask || form.type === OpportunityTypes.SkillDevelopmentChallenge ? "This opportunity has one direct submission instead of a milestone sequence." : "Milestones become the shared progress record for every accepted participant."}</p>
                   </div>
                 </header>
+              {form.type === OpportunityTypes.FreelanceTask || form.type === OpportunityTypes.SkillDevelopmentChallenge ? (
+                <div className="notice" role="status">
+                  <strong>One direct submission</strong>
+                  <span>The participant completes the task or challenge, then submits it once for criterion-level evaluation.</span>
+                </div>
+              ) : (
               <fieldset className="company-milestone-builder">
                 <legend>Work milestones</legend>
                 <p>
@@ -1624,6 +1677,7 @@ export default function CompanyProjectsPage({
                   Add milestone
                 </Button>
               </fieldset>
+              )}
               </section>
 
               <section id="opportunity-evidence" className="company-opportunity-form-section">
@@ -1848,11 +1902,9 @@ export default function CompanyProjectsPage({
                     <option value={OpportunityTypes.ProfessionalProject}>
                       Professional project
                     </option>
-                    {!isTrainingProvider ? (
-                      <option value={OpportunityTypes.UniversityTraining}>
-                        University training
-                      </option>
-                    ) : null}
+                    <option value={OpportunityTypes.UniversityTraining}>
+                      University training
+                    </option>
                     <option value={OpportunityTypes.SkillDevelopmentChallenge}>
                       Skill-development challenge
                     </option>

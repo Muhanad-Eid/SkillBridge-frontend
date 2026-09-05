@@ -21,6 +21,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Checkout backend OpenAPI contract
+        uses: actions/checkout@v4
+        with:
+          repository: Muhanad-Eid/SkillBridge
+          ref: master
+          path: backend
+
+      - name: Verify generated API contracts
+        run: npm run api:contracts:check
+        env:
+          OPENAPI_INPUT: backend/openapi/skillbridge.openapi.json
+
       - name: Lint
         run: npm run lint
 
@@ -29,3 +41,47 @@ jobs:
 
       - name: Test
         run: npm test
+
+  browser-journeys:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout backend
+        uses: actions/checkout@v4
+        with:
+          repository: Muhanad-Eid/SkillBridge
+          ref: master
+          path: backend
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run browser journeys
+        run: npm run e2e
+        env:
+          SKILLBRIDGE_BACKEND_DIR: ${{ github.workspace }}/backend
+
+      - name: Upload browser diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report
+            test-results
+          if-no-files-found: ignore

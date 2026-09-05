@@ -3,6 +3,7 @@ import {
   calculateProjectMatch,
   getProjectDisplayStatusLabel,
   getProjectStatusLabel,
+  getOpportunityTypeLabel,
   isApplicationDeadlinePassed,
   isProjectAcceptingApplications,
   ProjectStatuses,
@@ -74,5 +75,11 @@ describe("getProjectStatusLabel", () => {
         applicationDeadline: null,
       }),
     ).toBe(false);
+  });
+});
+
+describe("opportunity type labels", () => {
+  it("uses the canonical Industry Micro-Task label for the legacy value", () => {
+    expect(getOpportunityTypeLabel(2)).toBe("Industry micro-task");
   });
 });

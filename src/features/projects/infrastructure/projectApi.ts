@@ -22,7 +22,10 @@ export type ProjectSearchParams = {
   sort?: string;
 };
 
-export function getProjectsAsync(params: ProjectSearchParams = {}) {
+export function getProjectsAsync(
+  params: ProjectSearchParams = {},
+  options: Pick<RequestInit, "signal"> = {},
+) {
   const search = new URLSearchParams();
 
   search.set("page", String(params.page ?? 1));
@@ -54,6 +57,7 @@ export function getProjectsAsync(params: ProjectSearchParams = {}) {
 
   return httpClient<PagedResult<Project>>(`/api/projects?${search}`, {
     skipAuth: true,
+    ...options,
   }).then(normalizePagedResult<Project>);
 }
 

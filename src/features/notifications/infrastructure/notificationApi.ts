@@ -3,8 +3,8 @@ import type { Notification } from "../domain/notificationTypes";
 
 let unreadCountEndpointSupported = true;
 
-export function getMyNotificationsAsync() {
-  return httpClient<Notification[]>("/api/notifications/my");
+export function getMyNotificationsAsync(options?: Pick<RequestInit, "signal">) {
+  return httpClient<Notification[]>("/api/notifications/my", options);
 }
 
 export async function getUnreadNotificationCountAsync() {

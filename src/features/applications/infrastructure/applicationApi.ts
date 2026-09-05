@@ -58,9 +58,14 @@ export function applyToProjectAsync(
   });
 }
 
-export function getMyApplicationsAsync(page = 1, pageSize = DEFAULT_PAGE_SIZE) {
+export function getMyApplicationsAsync(
+  page = 1,
+  pageSize = DEFAULT_PAGE_SIZE,
+  options: Pick<RequestInit, "signal"> = {},
+) {
   return httpClient<PagedResult<Application>>(
     `/api/applications/my?page=${page}&pageSize=${pageSize}`,
+    options,
   ).then(normalizePagedResult<Application>);
 }
 

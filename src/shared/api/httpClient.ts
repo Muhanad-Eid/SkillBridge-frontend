@@ -43,6 +43,11 @@ type HttpOptions = RequestInit & {
   skipAuth?: boolean;
   retries?: number;
   retryDelayMs?: number;
+  /**
+   * Mutating requests are attempted once by default. Set this only for an
+   * endpoint whose server-side operation is explicitly safe to repeat.
+   */
+  retryIdempotent?: boolean;
   validateResponse?: (payload: unknown, response: Response) => void;
 };
 
@@ -94,7 +99,7 @@ export async function httpClient<T>(
     headers,
   };
 
-  const maxRetries = Math.max(0, options.retries ?? 2);
+  const maxRetries = getRetryLimit(options);
   const retryDelayMs = Math.max(0, options.retryDelayMs ?? 250);
 
   let response: Response;
@@ -142,6 +147,17 @@ export async function httpClient<T>(
   }
 
   return data as T;
+}
+
+function getRetryLimit(options: HttpOptions) {
+  const method = (options.method ?? "GET").toUpperCase();
+  const isReadRequest = method === "GET" || method === "HEAD";
+
+  if (!isReadRequest && !options.retryIdempotent) {
+    return 0;
+  }
+
+  return Math.max(0, options.retries ?? 2);
 }
 
 export async function httpDownload(endpoint: string) {

@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowRight,
   CircleDollarSign,
@@ -18,7 +19,6 @@ import StatusBadge from "../../../shared/components/StatusBadge";
 import {
   getFreelancePricingLabel,
   OpportunityTypes,
-  type Project,
 } from "../../projects/domain/projectTypes";
 import { getProjectsAsync } from "../../projects/infrastructure/projectApi";
 import FreelanceWorkspaceNav from "../../projects/presentation/FreelanceWorkspaceNav";
@@ -42,6 +42,8 @@ const statusTabs = [
   { label: "Rejected", value: String(ApplicationStatuses.Rejected) },
   { label: "Withdrawn", value: String(ApplicationStatuses.Withdrawn) },
 ];
+const emptyApplications: Application[] = [];
+const emptyProjects = [] as const;
 
 function getApplicationTone(status: ApplicationStatus) {
   if (status === ApplicationStatuses.Accepted) return "green";
@@ -58,44 +60,35 @@ export default function MyApplicationsPage({
   mode = "applications",
 }: MyApplicationsPageProps) {
   const confirmAction = useConfirmation();
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [projects, setProjects] = useState<Project[]>([]);
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [isLoading, setIsLoading] = useState(true);
-  const [withdrawingId, setWithdrawingId] = useState<number | null>(null);
   const [downloadingCvId, setDownloadingCvId] = useState<number | null>(null);
-  const [error, setError] = useState("");
   const [cvError, setCvError] = useState("");
   const [message, setMessage] = useState("");
   const isFreelanceView = mode === "freelance";
 
-  async function loadApplications() {
-    setIsLoading(true);
-    setError("");
-
-    try {
-      const [applicationData, projectData] = await Promise.all([
-        getMyApplicationsAsync(),
-        getProjectsAsync(),
-      ]);
-      setApplications(applicationData.items);
-      setProjects(projectData.items);
-    } catch (caughtError) {
-      setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Unable to load applications.",
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    const timeoutId = window.setTimeout(loadApplications, 0);
-    return () => window.clearTimeout(timeoutId);
-  }, []);
+  const applicationsQuery = useQuery({
+    queryKey: ["applications", "mine"],
+    queryFn: ({ signal }) => getMyApplicationsAsync(1, 50, { signal }),
+  });
+  const projectsQuery = useQuery({
+    queryKey: ["projects", "public", "all"],
+    queryFn: ({ signal }) => getProjectsAsync({ pageSize: 50 }, { signal }),
+  });
+  const withdrawMutation = useMutation({
+    mutationFn: withdrawApplicationAsync,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["applications", "mine"] });
+    },
+  });
+  const applications = applicationsQuery.data?.items ?? emptyApplications;
+  const projects = projectsQuery.data?.items ?? emptyProjects;
+  const isLoading = applicationsQuery.isPending || projectsQuery.isPending;
+  const queryError =
+    applicationsQuery.error ?? projectsQuery.error ?? withdrawMutation.error;
+  const error =
+    queryError instanceof Error ? queryError.message : queryError ? "Unable to load applications." : "";
 
   const projectsById = useMemo(
     () => new Map(projects.map((project) => [project.id, project])),
@@ -161,22 +154,14 @@ export default function MyApplicationsPage({
       return;
     }
 
-    setWithdrawingId(application.id);
     setMessage("");
-    setError("");
+    withdrawMutation.reset();
 
     try {
-      await withdrawApplicationAsync(application.id);
+      await withdrawMutation.mutateAsync(application.id);
       setMessage(isFreelanceView ? "Proposal withdrawn." : "Application withdrawn.");
-      await loadApplications();
-    } catch (caughtError) {
-      setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Unable to withdraw application.",
-      );
-    } finally {
-      setWithdrawingId(null);
+    } catch {
+      // The mutation error is rendered through the shared page state.
     }
   }
 
@@ -404,7 +389,10 @@ export default function MyApplicationsPage({
                           ? "proposal"
                           : "application"
                       } for ${application.projectTitle}`}
-                      isLoading={withdrawingId === application.id}
+                      isLoading={
+                        withdrawMutation.isPending &&
+                        withdrawMutation.variables === application.id
+                      }
                       onClick={() => handleWithdraw(application)}
                     >
                       <XCircle size={17} aria-hidden="true" />

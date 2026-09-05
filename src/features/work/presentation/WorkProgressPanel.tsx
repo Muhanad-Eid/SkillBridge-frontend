@@ -14,6 +14,7 @@ import {
   UserRoundCheck,
 } from "lucide-react";
 import Button from "../../../shared/components/Button";
+import { HttpError } from "../../../shared/api/httpClient";
 import DataState from "../../../shared/components/DataState";
 import StatusBadge from "../../../shared/components/StatusBadge";
 import { WorkSubmissionStatuses } from "../../applications/domain/applicationTypes";
@@ -235,7 +236,10 @@ export default function WorkProgressPanel({
       return true;
     } catch (caughtError) {
       setError(
-        caughtError instanceof Error
+        caughtError instanceof HttpError &&
+        caughtError.code === "PreviousMilestoneNotApproved"
+          ? "The previous milestone is still awaiting approval. It must be approved before you can submit this step."
+          : caughtError instanceof Error
           ? caughtError.message
           : "Unable to update the work record.",
       );
@@ -327,6 +331,18 @@ export default function WorkProgressPanel({
   const milestonesApproved = record.milestones.every(
     (milestone) => milestone.status === MilestoneStatuses.Approved,
   );
+  const usesDirectSubmission =
+    record.opportunityType === OpportunityTypes.FreelanceTask ||
+    record.opportunityType === OpportunityTypes.SkillDevelopmentChallenge;
+  const directSubmissionLabel =
+    record.opportunityType === OpportunityTypes.SkillDevelopmentChallenge
+      ? "challenge"
+      : "task";
+  const workRecordTitle = usesDirectSubmission
+    ? `${directSubmissionLabel[0].toUpperCase()}${directSubmissionLabel.slice(1)} submission and approval`
+    : record.opportunityType === OpportunityTypes.UniversityTraining
+      ? "Training delivery and approval"
+      : "Milestones and final approval";
   const currentParticipantMilestoneIndex = !isCompany
     ? record.milestones.findIndex(
         (milestone, index) =>
@@ -475,7 +491,7 @@ export default function WorkProgressPanel({
       <header className="work-hub-panel-header">
         <div>
           <span>Work record</span>
-          <h2>Milestones and final approval</h2>
+          <h2>{workRecordTitle}</h2>
         </div>
         <StatusBadge
           tone={
@@ -610,6 +626,13 @@ export default function WorkProgressPanel({
         </section>
       ) : null}
 
+      {usesDirectSubmission && record.milestones.length === 0 ? (
+        <div className="notice" role="status">
+          This {directSubmissionLabel} uses one completed delivery and direct
+          evaluation. There are no milestone submissions for this work record.
+        </div>
+      ) : null}
+
       <section className="work-next-action" aria-labelledby="work-next-action-title">
         <div>
           <span>Next required action</span>
@@ -657,10 +680,15 @@ export default function WorkProgressPanel({
             onSubmit={handleFinalSubmission}
           >
             <div>
-              <strong>Submit final work</strong>
+              <strong>
+                {usesDirectSubmission
+                  ? `Submit completed ${directSubmissionLabel}`
+                  : "Submit final work"}
+              </strong>
               <p>
-                Add a summary and optional protected deliverable for provider
-                evaluation.
+                {usesDirectSubmission
+                  ? "Add the completed delivery and optional protected file for direct evaluation."
+                  : "Add a summary and optional protected deliverable for provider evaluation."}
               </p>
             </div>
             <label className="field">
@@ -1113,7 +1141,9 @@ export default function WorkProgressPanel({
       <div id="work-milestones" className="work-milestone-list">
         {record.milestones.length === 0 ? (
           <p className="work-empty-copy">
-            No detailed milestones have been added yet.
+            {usesDirectSubmission
+              ? "This opportunity uses one direct final submission instead of milestones."
+              : "No detailed milestones have been added yet."}
           </p>
         ) : (
           record.milestones.map((milestone, index) => {
@@ -1320,6 +1350,7 @@ export default function WorkProgressPanel({
       </div>
 
       {isCompany &&
+      !usesDirectSubmission &&
       canEditMilestones &&
       isWorkActive ? (
         <form className="work-add-milestone" onSubmit={handleCreateMilestone}>

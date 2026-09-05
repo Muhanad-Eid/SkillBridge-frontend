@@ -12,7 +12,7 @@ export default async function globalSetup() {
 
   const result = spawnSync(
     process.platform === "win32" ? "dotnet.exe" : "dotnet",
-    ["run", "--no-build", "--project", "SkillBridge.API", "--", "--seed-demo-data"],
+    ["run", "--project", "SkillBridge.API", "--", "--seed-demo-data"],
     {
       cwd: backendDirectory,
       env: {

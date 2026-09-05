@@ -80,6 +80,54 @@ describe("httpClient request reliability", () => {
     expect(result).toEqual({ ok: true });
   });
 
+  it("does not retry a mutation by default", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ detail: "temporary outage" }), {
+        status: 503,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    await expect(
+      httpClient("/api/test", {
+        method: "POST",
+        body: JSON.stringify({ title: "New opportunity" }),
+        retries: 2,
+        retryDelayMs: 0,
+      }),
+    ).rejects.toMatchObject({ status: 503 });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("retries a mutation only when the endpoint declares repeat safety", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch");
+    fetchMock
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ detail: "temporary outage" }), {
+          status: 503,
+          headers: { "Content-Type": "application/json" },
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ ok: true }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+
+    const result = await httpClient<{ ok: boolean }>("/api/test", {
+      method: "PUT",
+      body: JSON.stringify({ status: "saved" }),
+      retryIdempotent: true,
+      retries: 1,
+      retryDelayMs: 0,
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(result).toEqual({ ok: true });
+  });
+
   it("surfaces a user cancellation when the request is aborted", async () => {
     const controller = new AbortController();
     const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(() => {

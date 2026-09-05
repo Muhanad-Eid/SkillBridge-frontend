@@ -24,6 +24,10 @@ export function getWorkNextAction(
     record.workStatus === WorkSubmissionStatuses.NotSubmitted ||
     record.workStatus === WorkSubmissionStatuses.ChangesRequested;
   const isWorkActive = record.projectStatus === ProjectStatuses.InProgress;
+  const isMicroTask =
+    record.opportunityType === OpportunityTypes.FreelanceTask;
+  const isSkillChallenge =
+    record.opportunityType === OpportunityTypes.SkillDevelopmentChallenge;
   const milestonesApproved = record.milestones.every(
     (milestone) => milestone.status === MilestoneStatuses.Approved,
   );
@@ -126,7 +130,11 @@ export function getWorkNextAction(
 
   if (isCompany && record.workStatus === WorkSubmissionStatuses.Submitted) {
     return {
-      label: "Evaluate final work",
+      label: isMicroTask
+        ? "Evaluate task submission"
+        : isSkillChallenge
+          ? "Evaluate challenge submission"
+          : "Evaluate final work",
       detail:
         "Evaluate every criterion against the accepted Evidence Contract, then approve or request changes.",
       targetId: "final-review",
@@ -222,9 +230,19 @@ export function getWorkNextAction(
     const revision =
       record.workStatus === WorkSubmissionStatuses.ChangesRequested;
     return {
-      label: revision ? "Submit the requested revision" : "Submit final work",
+      label: revision
+        ? "Submit the requested revision"
+        : isMicroTask
+          ? "Submit task"
+          : isSkillChallenge
+            ? "Submit challenge"
+            : "Submit final work",
       detail:
-        "All participant prerequisites are complete. Send the final work for criterion-level evaluation.",
+        isMicroTask
+          ? "Submit the completed task for direct criterion-level evaluation."
+          : isSkillChallenge
+            ? "Submit the completed challenge for direct criterion-level evaluation."
+            : "All participant prerequisites are complete. Send the final work for criterion-level evaluation.",
       targetId: "final-submission",
       actionLabel: revision ? "Open revision form" : "Open submission form",
     };

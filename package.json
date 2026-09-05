@@ -8,6 +8,8 @@
     "dev:client": "vite",
     "dev:full": "node scripts/dev-full.mjs",
     "build": "tsc -b && vite build",
+    "api:contracts": "node scripts/generate-api-contracts.mjs",
+    "api:contracts:check": "npm run api:contracts && git diff --exit-code -- src/shared/api/generated",
     "e2e": "playwright test",
     "e2e:headed": "playwright test --headed",
     "e2e:ui": "playwright test --ui",
@@ -17,6 +19,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.102.8",
     "bootstrap": "^5.3.8",
     "lucide-react": "^1.23.0",
     "react": "^19.2.7",
@@ -25,6 +28,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@hey-api/openapi-ts": "^0.99.0",
     "@playwright/test": "^1.62.1",
     "@types/node": "^24.13.2",
     "@types/react": "^19.2.17",
